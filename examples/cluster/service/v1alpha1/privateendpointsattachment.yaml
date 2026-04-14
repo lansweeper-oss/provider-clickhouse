@@ -1,0 +1,25 @@
+apiVersion: service.clickhouse.crossplane.io/v1alpha1
+kind: PrivateEndpointsAttachment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/privateendpointsattachment
+  labels:
+    testing.upbound.io/example-name: attachment
+  name: attachment
+spec:
+  forProvider:
+    privateEndpointIds:
+    - ${clickhouse_private_endpoint_registration.endpoint.id}
+
+---
+
+apiVersion: clickhouse.clickhouse.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/privateendpointsattachment
+  labels:
+    testing.upbound.io/example-name: svc
+  name: svc
+spec:
+  forProvider: {}

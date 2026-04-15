@@ -1,8 +1,9 @@
-FROM alpine:3.23.2
-RUN apk --no-cache add ca-certificates bash
-
+ARG TARGETPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
+
+FROM --platform=${TARGETPLATFORM} alpine:3.23.2
+RUN apk --no-cache add ca-certificates bash
 
 ADD "bin/${TARGETOS}_${TARGETARCH}/provider" /usr/local/bin/provider
 

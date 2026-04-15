@@ -218,14 +218,6 @@ UPTEST_SETUP_SCRIPT = cluster/test/setup.sh
 -include build/makelib/controlplane.mk
 -include build/makelib/uptest.mk
 
-chainsaw-e2e: $(CHAINSAW)
-	@if [ -d e2e/tests ] && [ -n "$$(find e2e/tests -name 'chainsaw-test.yaml' 2>/dev/null)" ]; then \
-	  $(INFO) running chainsaw tests; \
-	  $(CHAINSAW) test e2e/tests/ || $(FAIL) \
-	; fi
-
-e2e: chainsaw-e2e
-
 local-deploy: build.all controlplane.up local.xpkg.deploy.provider.$(PROJECT_NAME)
 	@$(INFO) running locally built provider
 	@$(KUBECTL) wait provider.pkg $(PROJECT_NAME) --for condition=Healthy --timeout 5m

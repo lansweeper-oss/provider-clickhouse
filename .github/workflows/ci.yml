@@ -100,7 +100,9 @@ jobs:
 
   build-test:
     runs-on: ubuntu-24.04
-    needs: detect-noop
+    needs:
+      - detect-noop
+      - lint
     if: needs.detect-noop.outputs.noop != 'true'
     steps:
       - name: Cleanup Disk

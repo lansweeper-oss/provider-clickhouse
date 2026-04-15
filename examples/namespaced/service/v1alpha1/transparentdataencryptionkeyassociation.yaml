@@ -1,0 +1,26 @@
+apiVersion: service.clickhouse.m.crossplane.io/v1alpha1
+kind: TransparentDataEncryptionKeyAssociation
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/transparentdataencryptionkeyassociation
+  labels:
+    testing.upbound.io/example-name: service_key_association
+  name: service-key-association
+  namespace: crossplane-system
+spec:
+  forProvider:
+    keyId: ${aws_kms_key.enc.arn}
+
+---
+
+apiVersion: clickhouse.clickhouse.m.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/transparentdataencryptionkeyassociation
+  labels:
+    testing.upbound.io/example-name: service
+  name: service
+  namespace: crossplane-system
+spec:
+  forProvider: {}

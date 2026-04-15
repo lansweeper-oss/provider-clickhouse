@@ -1,0 +1,26 @@
+apiVersion: clickhouse.clickhouse.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickhouse/v1alpha1/service
+  labels:
+    testing.upbound.io/example-name: service
+  name: service
+spec:
+  forProvider:
+    cloudProvider: aws
+    idleScaling: true
+    idleTimeoutMinutes: 5
+    ipAccess:
+    - description: Test IP
+      source: 192.168.2.63
+    maxTotalMemoryGb: 360
+    minTotalMemoryGb: 24
+    name: My Service
+    passwordHashSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+    region: us-east-1
+    tags:
+      Environment: Staging

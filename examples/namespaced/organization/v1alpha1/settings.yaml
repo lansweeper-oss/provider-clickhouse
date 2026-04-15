@@ -1,0 +1,12 @@
+apiVersion: organization.clickhouse.m.crossplane.io/v1alpha1
+kind: Settings
+metadata:
+  annotations:
+    meta.upbound.io/example-id: organization/v1alpha1/settings
+  labels:
+    testing.upbound.io/example-name: org_settings
+  name: org-settings
+  namespace: crossplane-system
+spec:
+  forProvider:
+    coreDumpsEnabled: true

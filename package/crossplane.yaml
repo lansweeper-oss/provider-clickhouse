@@ -1,0 +1,15 @@
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  annotations:
+    meta.crossplane.io/maintainer: Lansweeper <PlatformTeam@lansweeper.com>
+    meta.crossplane.io/source: github.com/lansweeper-oss/provider-clickhouse
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: An Upjet-based Crossplane provider for managing ClickHouse
+    meta.crossplane.io/readme: |
+      `provider-clickhouse` is an Upjet-based Crossplane provider built on the ClickHouse Terraform provider.
+      It enables declarative management of ClickHouse services, organization settings and private endpoints.
+  name: provider-clickhouse
+spec:
+  capabilities:
+    - SafeStart

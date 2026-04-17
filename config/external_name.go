@@ -2,40 +2,47 @@ package config
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/crossplane/upjet/v2/pkg/config"
 )
 
-// sentinelUUID is substituted for an empty external-name so the upstream
-// terraform-provider-clickhouse Read handlers do not issue a GET on the
-// collection endpoint (trailing slash on empty id), which returns a JSON array
-// and fails to unmarshal into ResponseWithResult[api.Service]. A non-v4 UUID
-// is used so it cannot collide with a real service id assigned by ClickHouse
-// Cloud. GET /services/<sentinel> returns 404, handled cleanly by
-// api.IsNotFound in the upstream provider.
+// sentinelUUID is substituted for any external-name that is not a real
+// ClickHouse Cloud resource id (empty, or the k8s metadata.name that
+// Crossplane defaults to when no external-name annotation is set). Upstream
+// terraform-provider-clickhouse Read handlers forward the id to the
+// ClickHouse API without validation; non-UUID or empty values hit wrong
+// endpoints and return arrays that fail to unmarshal into
+// ResponseWithResult[api.Service]. The sentinel is a syntactically valid
+// UUID with an invalid v4 version nibble, so it cannot collide with a real
+// id and routes to GET /services/<sentinel> → 404 → api.IsNotFound.
 const sentinelUUID = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+
+// uuidRe matches a canonical UUID. Used to detect a real ClickHouse Cloud
+// resource id versus a pre-create placeholder (k8s name or empty).
+var uuidRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 // ExternalNameConfigs contains all external name configurations for this
 // provider.
 var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_organization_settings":                               config.IdentifierFromProvider,
-	"clickhouse_service":                                             withSentinelOnEmpty(config.IdentifierFromProvider),
-	"clickhouse_service_private_endpoints_attachment":                withSentinelOnEmpty(config.ParameterAsIdentifier("service_id")),
-	"clickhouse_service_transparent_data_encryption_key_association": withSentinelOnEmpty(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service":                                             withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_service_private_endpoints_attachment":                withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_transparent_data_encryption_key_association": withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 }
 
-// withSentinelOnEmpty wraps an ExternalName so GetIDFn returns sentinelUUID
-// whenever the parent would return an empty id. Required for resources whose
-// upstream Read handler calls the ClickHouse API without guarding against an
-// empty identifier.
-func withSentinelOnEmpty(base config.ExternalName) config.ExternalName {
+// withSentinelWhenNotUUID wraps an ExternalName so GetIDFn returns sentinelUUID
+// whenever the parent would return a value that is not a canonical UUID.
+// Covers empty (IdentifierFromProvider pre-create) and k8s metadata.name
+// fallback (Crossplane default when external-name annotation is unset).
+func withSentinelWhenNotUUID(base config.ExternalName) config.ExternalName {
 	parentGetID := base.GetIDFn
 	base.GetIDFn = func(ctx context.Context, externalName string, parameters map[string]any, setup map[string]any) (string, error) {
 		id, err := parentGetID(ctx, externalName, parameters, setup)
 		if err != nil {
 			return "", err
 		}
-		if id == "" {
+		if !uuidRe.MatchString(id) {
 			return sentinelUUID, nil
 		}
 		return id, nil

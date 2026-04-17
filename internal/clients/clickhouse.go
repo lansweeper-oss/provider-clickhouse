@@ -50,11 +50,22 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 			return ps, errors.Wrap(err, errUnmarshalCredentials)
 		}
 
+		// Validate required credentials.
+		for _, key := range []string{"organization_id", "token_key", "token_secret"} {
+			if creds[key] == "" {
+				return ps, errors.Errorf("required credential %q is missing or empty", key)
+			}
+		}
+
 		// Set credentials in Terraform provider configuration.
-		/*ps.Configuration = map[string]any{
-			"username": creds["username"],
-			"password": creds["password"],
-		}*/
+		ps.Configuration = map[string]any{
+			"organization_id": creds["organization_id"],
+			"token_key":       creds["token_key"],
+			"token_secret":    creds["token_secret"],
+		}
+		if v, ok := creds["api_url"]; ok && v != "" {
+			ps.Configuration["api_url"] = v
+		}
 		return ps, nil
 	}
 }

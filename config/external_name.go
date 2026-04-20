@@ -20,9 +20,13 @@ import (
 // upstream's api.IsNotFound (strings.HasPrefix "status: 404") does not catch.
 // An all-zero v4 cannot be assigned by the API so the request returns 404 and
 // is handled cleanly by syncServiceState.
+//
+// Deliberately v4, NOT v7 (which ClickHouse Cloud itself issues for real
+// resource ids): using v7 risks colliding with a real service id and routing
+// the sentinel request to an existing resource instead of returning 404.
 const sentinelUUID = "00000000-0000-1000-8000-000000000000"
 
-// uuidRe matches a canonical UUID. Used to detect a real ClickHouse Cloud
+// uuidRe matches a canonical UUID. Ugpssed to detect a real ClickHouse Cloud
 // resource id versus a pre-create placeholder (k8s name or empty).
 var uuidRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 

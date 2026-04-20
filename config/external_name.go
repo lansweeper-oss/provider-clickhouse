@@ -20,7 +20,7 @@ import (
 // upstream's api.IsNotFound (strings.HasPrefix "status: 404") does not catch.
 // An all-zero v4 cannot be assigned by the API so the request returns 404 and
 // is handled cleanly by syncServiceState.
-const sentinelUUID = "00000000-0000-4000-8000-000000000000"
+const sentinelUUID = "00000000-0000-1000-8000-000000000000"
 
 // uuidRe matches a canonical UUID. Used to detect a real ClickHouse Cloud
 // resource id versus a pre-create placeholder (k8s name or empty).

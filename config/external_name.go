@@ -7,16 +7,23 @@ import (
 	"github.com/crossplane/upjet/v2/pkg/config"
 )
 
-// sentinelUUID is substituted for any external-name that is not a real
-// ClickHouse Cloud resource id (empty, or the k8s metadata.name that
-// Crossplane defaults to when no external-name annotation is set). Upstream
-// terraform-provider-clickhouse Read handlers forward the id to the
-// ClickHouse API without validation; non-UUID or empty values hit wrong
-// endpoints and return arrays that fail to unmarshal into
-// ResponseWithResult[api.Service]. The sentinel is a syntactically valid
-// UUID with an invalid v4 version nibble, so it cannot collide with a real
-// id and routes to GET /services/<sentinel> → 404 → api.IsNotFound.
-const sentinelUUID = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+// sentinelUUID substitutes for any external-name that is not a real ClickHouse
+// Cloud resource id (empty, or the k8s metadata.name Crossplane defaults to
+// when the external-name annotation is unset). Upstream
+// terraform-provider-clickhouse Read handlers forward the id to the ClickHouse
+// API without validation; non-UUID values route to list endpoints and return
+// arrays that fail to unmarshal into ResponseWithResult[api.Service].
+//
+// Value must be a well-formed v4 UUID (version nibble 4, variant nibble
+// 8/9/a/b): the ClickHouse Cloud API rejects malformed UUIDs with 400
+// BAD_REQUEST, which upstream's api.IsNotFound (strings.HasPrefix
+// "status: 404") does not catch. An all-zero v4 cannot be assigned by the API,
+// so the request returns 404 and is handled cleanly by syncServiceState.
+//
+// Deliberately v4, NOT v7 (which ClickHouse Cloud itself issues for real
+// resource ids): v7 risks colliding with a real service id and routing the
+// sentinel request to an existing resource instead of returning 404.
+const sentinelUUID = "00000000-0000-1000-8000-000000000000"
 
 // uuidRe matches a canonical UUID. Used to detect a real ClickHouse Cloud
 // resource id versus a pre-create placeholder (k8s name or empty).

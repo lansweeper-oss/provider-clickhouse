@@ -23,6 +23,11 @@ func gvkOverride() config.ResourceOption {
 }
 
 func Configure(p *config.Provider) {
+	p.AddResourceConfigurator("clickhouse_service", func(r *config.Resource) {
+		r.LateInitializer = config.LateInitializer{
+			IgnoredFields: []string{"warehouse_id", "backup_configuration", "password"},
+		}
+	})
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {
 		r.References = config.References{
 			"service_id": {

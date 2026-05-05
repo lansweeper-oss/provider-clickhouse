@@ -88,4 +88,4 @@ jobs:
 
       - name: Mirror to Upbound
         run: |
-          crane copy ghcr.io/${{ github.repository }}:${{ github.event.inputs.version }} xpkg.upbound.io/lansweeper/provider-clickhousedbops:${{ github.event.inputs.version }} --allow-nondistributable-artifacts
+          crane copy ghcr.io/${{ github.repository }}:${{ github.event.inputs.version }} xpkg.upbound.io/lansweeper/provider-clickhouse:${{ github.event.inputs.version }} --allow-nondistributable-artifacts

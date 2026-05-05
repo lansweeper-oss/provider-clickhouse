@@ -34,6 +34,7 @@ func Configure(p *config.Provider) {
 				TerraformName: "clickhouse_service",
 			},
 		}
+		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
 	})
 	p.AddResourceConfigurator("clickhouse_service_transparent_data_encryption_key_association", func(r *config.Resource) {
 		r.References = config.References{
@@ -41,5 +42,6 @@ func Configure(p *config.Provider) {
 				TerraformName: "clickhouse_service",
 			},
 		}
+		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
 	})
 }

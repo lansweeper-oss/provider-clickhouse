@@ -8,6 +8,24 @@ import (
 	"github.com/pkg/errors"
 )
 
+// getExternalNameFromTFParam returns a GetExternalNameFn that reads the named
+// parameter from tfstate. Use for TF resources whose schema does not expose an
+// "id" attribute, where upjet's default IDAsExternalName fails post-apply with
+// "cannot find id in tfstate".
+func getExternalNameFromTFParam(param string) func(map[string]any) (string, error) {
+	return func(tfstate map[string]any) (string, error) {
+		v, ok := tfstate[param]
+		if !ok {
+			return "", errors.Errorf("cannot find %s in tfstate", param)
+		}
+		s, ok := v.(string)
+		if !ok {
+			return "", errors.Errorf("%s in tfstate is not a string", param)
+		}
+		return s, nil
+	}
+}
+
 // sentinelUUID stands in for external-names that are not real ClickHouse Cloud
 // ids (empty, or the k8s metadata.name default). It must be a well-formed UUID
 // the API will never assign, so the Read returns a clean 404 instead of
@@ -24,29 +42,8 @@ var uuidRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[
 var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_organization_settings":                               config.IdentifierFromProvider,
 	"clickhouse_service":                                             withSentinelWhenNotUUID(config.IdentifierFromProvider),
-	"clickhouse_service_private_endpoints_attachment":                withSentinelWhenNotUUID(parameterAsIdentifierReadingTFParam("service_id")),
-	"clickhouse_service_transparent_data_encryption_key_association": withSentinelWhenNotUUID(parameterAsIdentifierReadingTFParam("service_id")),
-}
-
-// parameterAsIdentifierReadingTFParam wraps config.ParameterAsIdentifier and
-// overrides GetExternalNameFn to read the parameter value from tfstate instead
-// of "id". Required for TF resources whose schema does not expose an "id"
-// attribute (e.g. clickhouse_service_private_endpoints_attachment); the default
-// IDAsExternalName fails post-apply with "cannot find id in tfstate".
-func parameterAsIdentifierReadingTFParam(param string) config.ExternalName {
-	e := config.ParameterAsIdentifier(param)
-	e.GetExternalNameFn = func(tfstate map[string]any) (string, error) {
-		v, ok := tfstate[param]
-		if !ok {
-			return "", errors.Errorf("cannot find %s in tfstate", param)
-		}
-		s, ok := v.(string)
-		if !ok {
-			return "", errors.Errorf("%s in tfstate is not a string", param)
-		}
-		return s, nil
-	}
-	return e
+	"clickhouse_service_private_endpoints_attachment":                withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_transparent_data_encryption_key_association": withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 }
 
 // withSentinelWhenNotUUID wraps an ExternalName so GetIDFn returns sentinelUUID

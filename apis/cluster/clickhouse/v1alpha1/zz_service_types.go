@@ -344,7 +344,7 @@ type ServiceInitParameters struct {
 	PasswordHashSecretRef *v1.SecretKeySelector `json:"passwordHashSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) Password for the default user. One of either password, password_wo, or password_hash must be specified.
-	// Password for the default user. One of either `password`, `password_wo`, or `password_hash` must be specified.
+	// Password for the default ClickHouse user. When passwordSecretRef is set, that secret is used (Bring Your Own Password). Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
 	PasswordSecretRef *v1.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only, not persisted to state).
@@ -608,7 +608,7 @@ type ServiceParameters struct {
 	PasswordHashSecretRef *v1.SecretKeySelector `json:"passwordHashSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) Password for the default user. One of either password, password_wo, or password_hash must be specified.
-	// Password for the default user. One of either `password`, `password_wo`, or `password_hash` must be specified.
+	// Password for the default ClickHouse user. When passwordSecretRef is set, that secret is used (Bring Your Own Password). Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
 	// +kubebuilder:validation:Optional
 	PasswordSecretRef *v1.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 

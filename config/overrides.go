@@ -35,10 +35,9 @@ func Configure(p *config.Provider) {
 				"spec.writeConnectionSecretToRef",
 			))
 		if pw, ok := r.TerraformResource.Schema["password"]; ok {
-			pw.Description = "Password for the default ClickHouse user. " +
-				"When passwordSecretRef is set, that secret is used (Bring " +
-				"Your Own Password). Otherwise a password is auto-generated " +
-				"and written to writeConnectionSecretToRef."
+			pw.Description = "Password for the default ClickHouse user.\n" +
+				"When passwordSecretRef is set, that secret is used (Bring Your Own Password).\n" +
+				"Otherwise a password is auto-generated and written to writeConnectionSecretToRef."
 		}
 	})
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {

@@ -230,7 +230,9 @@ spec:
                     type: object
                   passwordSecretRef:
                     description: |-
-                      Password for the default ClickHouse user. When passwordSecretRef is set, that secret is used (Bring Your Own Password). Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
+                      Password for the default ClickHouse user. 
+                      When passwordSecretRef is set, that secret is used (Bring Your Own Password). 
+                      Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
                     properties:
                       key:
                         description: The key to select.
@@ -490,7 +492,9 @@ spec:
                     type: object
                   passwordSecretRef:
                     description: |-
-                      Password for the default ClickHouse user. When passwordSecretRef is set, that secret is used (Bring Your Own Password). Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
+                      Password for the default ClickHouse user. 
+                      When passwordSecretRef is set, that secret is used (Bring Your Own Password). 
+                      Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
                     properties:
                       key:
                         description: The key to select.

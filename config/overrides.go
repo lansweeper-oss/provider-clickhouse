@@ -3,6 +3,8 @@ package config
 import (
 	"github.com/crossplane/upjet/v2/pkg/config"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/lansweeper-oss/provider-clickhouse/config/common"
 )
 
 var gkvOverrideMap = map[string]schema.GroupVersionKind{}
@@ -26,6 +28,16 @@ func Configure(p *config.Provider) {
 	p.AddResourceConfigurator("clickhouse_service", func(r *config.Resource) {
 		r.LateInitializer = config.LateInitializer{
 			IgnoredFields: []string{"warehouse_id", "backup_configuration", "password"},
+		}
+		r.InitializerFns = append(r.InitializerFns,
+			common.PasswordGenerator(
+				"spec.forProvider.passwordSecretRef",
+				"spec.writeConnectionSecretToRef",
+			))
+		if pw, ok := r.TerraformResource.Schema["password"]; ok {
+			pw.Description = "Password for the default ClickHouse user.\n" +
+				"When passwordSecretRef is set, that secret is used (Bring Your Own Password).\n" +
+				"Otherwise a password is auto-generated and written to writeConnectionSecretToRef."
 		}
 	})
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {

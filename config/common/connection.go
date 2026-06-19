@@ -6,14 +6,12 @@ import (
 	"github.com/crossplane/upjet/v2/pkg/config"
 )
 
-// defaultUsername is the ClickHouse service admin user.
 const defaultUsername = "default"
 
 var endpointProtocols = []string{"https", "nativesecure", "mysql"}
 
-// EndpointConnectionDetails emits neutral connection facts (every endpoint's
-// host/port, private DNS, username) so consumers can build any connection
-// shape. Password comes from the default mapping, so it is not re-emitted.
+// EndpointConnectionDetails emits neutral facts instead of a fixed shape so
+// consumers stay free to pick their own protocol and auth strategy.
 func EndpointConnectionDetails() config.AdditionalConnectionDetailsFn {
 	return func(attr map[string]any) (map[string][]byte, error) {
 		out := map[string][]byte{}
@@ -31,6 +29,8 @@ func EndpointConnectionDetails() config.AdditionalConnectionDetailsFn {
 		}
 		put("private_dns_hostname", digString(attr, "private_endpoint_config", "private_dns_hostname"))
 		put("username", defaultUsername)
+		// password is omitted: the default connection-detail mapping already
+		// emits it, and re-emitting collides and errors.
 
 		if len(out) == 0 {
 			return nil, nil
@@ -39,17 +39,14 @@ func EndpointConnectionDetails() config.AdditionalConnectionDetailsFn {
 	}
 }
 
-// digString returns the string at the key path, or "" if missing/wrong type.
 func digString(attr map[string]any, keys ...string) string {
-	v := dig(attr, keys...)
-	s, _ := v.(string)
+	s, _ := dig(attr, keys...).(string)
 	return s
 }
 
-// digInt returns the int at the key path (float64 coerced), or 0.
 func digInt(attr map[string]any, keys ...string) int {
 	switch n := dig(attr, keys...).(type) {
-	case float64:
+	case float64: // TF JSON numbers decode as float64
 		return int(n)
 	case int:
 		return n
@@ -58,7 +55,6 @@ func digInt(attr map[string]any, keys ...string) int {
 	}
 }
 
-// dig walks keys through nested maps, unwrapping single-element list blocks.
 func dig(attr map[string]any, keys ...string) any {
 	var cur any = attr
 	for _, k := range keys {
@@ -71,12 +67,11 @@ func dig(attr map[string]any, keys ...string) any {
 	return cur
 }
 
-// asMap coerces v to a map, unwrapping a single-element list. Nil if neither.
 func asMap(v any) map[string]any {
 	switch t := v.(type) {
 	case map[string]any:
 		return t
-	case []any:
+	case []any: // TF blocks can render as a single-element list
 		if len(t) == 0 {
 			return nil
 		}

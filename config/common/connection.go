@@ -1,6 +1,8 @@
 package common
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/crossplane/upjet/v2/pkg/config"
@@ -10,8 +12,9 @@ const defaultUsername = "default"
 
 var endpointProtocols = []string{"https", "nativesecure", "mysql"}
 
-// EndpointConnectionDetails emits neutral facts instead of a fixed shape so
-// consumers stay free to pick their own protocol and auth strategy.
+// EndpointConnectionDetails emits neutral per-endpoint facts so consumers stay
+// free to pick their own protocol/strategy, plus a provider_credentials blob in
+// the shape the default ClickHouse app expects.
 func EndpointConnectionDetails() config.AdditionalConnectionDetailsFn {
 	return func(attr map[string]any) (map[string][]byte, error) {
 		out := map[string][]byte{}
@@ -29,14 +32,47 @@ func EndpointConnectionDetails() config.AdditionalConnectionDetailsFn {
 		}
 		put("private_dns_hostname", digString(attr, "private_endpoint_config", "private_dns_hostname"))
 		put("username", defaultUsername)
-		// password is omitted: the default connection-detail mapping already
-		// emits it, and re-emitting collides and errors.
+
+		if err := putProviderCredentials(out, attr); err != nil {
+			return nil, err
+		}
 
 		if len(out) == 0 {
 			return nil, nil
 		}
 		return out, nil
 	}
+}
+
+// putProviderCredentials adds the assembled credentials blob, preferring the
+// private DNS host and the nativesecure endpoint. Skipped when the service is
+// not ready (no host or password yet), to avoid writing a half-built blob.
+func putProviderCredentials(out map[string][]byte, attr map[string]any) error {
+	host := digString(attr, "private_endpoint_config", "private_dns_hostname")
+	if host == "" {
+		host = digString(attr, "endpoints", "nativesecure", "host")
+	}
+	password := digString(attr, "password")
+	if host == "" || password == "" {
+		return nil
+	}
+
+	creds := map[string]any{
+		"host":     host,
+		"port":     digInt(attr, "endpoints", "nativesecure", "port"),
+		"protocol": "nativesecure",
+		"auth_config": map[string]any{
+			"strategy": "password",
+			"username": defaultUsername,
+			"password": password,
+		},
+	}
+	b, err := json.Marshal(creds)
+	if err != nil {
+		return fmt.Errorf("cannot marshal provider_credentials: %w", err)
+	}
+	out["provider_credentials"] = b
+	return nil
 }
 
 func digString(attr map[string]any, keys ...string) string {

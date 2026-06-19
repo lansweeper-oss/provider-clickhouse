@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,4 +133,69 @@ func TestEndpointConnectionDetails(t *testing.T) {
 		assert.Equal(t, []byte("h.https"), out["https_host"])
 		assert.NotContains(t, out, "https_port")
 	})
+
+	t.Run("provider_credentials uses nativesecure endpoint", func(t *testing.T) {
+		attr := map[string]any{
+			"password": "s3cret",
+			"endpoints": map[string]any{
+				"nativesecure": map[string]any{"host": "h.native", "port": float64(9440)},
+			},
+		}
+		out, err := fn(attr)
+		require.NoError(t, err)
+
+		var got providerCredentials
+		require.NoError(t, json.Unmarshal(out["provider_credentials"], &got))
+		assert.Equal(t, "h.native", got.Host)
+		assert.Equal(t, 9440, got.Port)
+		assert.Equal(t, "nativesecure", got.Protocol)
+		assert.Equal(t, "password", got.AuthConfig.Strategy)
+		assert.Equal(t, "default", got.AuthConfig.Username)
+		assert.Equal(t, "s3cret", got.AuthConfig.Password)
+	})
+
+	t.Run("provider_credentials prefers private dns host", func(t *testing.T) {
+		attr := map[string]any{
+			"password": "s3cret",
+			"private_endpoint_config": map[string]any{"private_dns_hostname": "private.dns"},
+			"endpoints": map[string]any{
+				"nativesecure": map[string]any{"host": "public.host", "port": float64(9440)},
+			},
+		}
+		out, err := fn(attr)
+		require.NoError(t, err)
+
+		var got providerCredentials
+		require.NoError(t, json.Unmarshal(out["provider_credentials"], &got))
+		assert.Equal(t, "private.dns", got.Host)
+		assert.Equal(t, 9440, got.Port)
+	})
+
+	t.Run("provider_credentials skipped without password", func(t *testing.T) {
+		attr := map[string]any{
+			"endpoints": map[string]any{
+				"nativesecure": map[string]any{"host": "h.native", "port": float64(9440)},
+			},
+		}
+		out, err := fn(attr)
+		require.NoError(t, err)
+		assert.NotContains(t, out, "provider_credentials")
+	})
+
+	t.Run("provider_credentials skipped without host", func(t *testing.T) {
+		out, err := fn(map[string]any{"password": "s3cret"})
+		require.NoError(t, err)
+		assert.NotContains(t, out, "provider_credentials")
+	})
+}
+
+type providerCredentials struct {
+	Host       string `json:"host"`
+	Port       int    `json:"port"`
+	Protocol   string `json:"protocol"`
+	AuthConfig struct {
+		Strategy string `json:"strategy"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	} `json:"auth_config"`
 }

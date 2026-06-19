@@ -39,7 +39,7 @@ func Configure(p *config.Provider) {
 				"When passwordSecretRef is set, that secret is used (Bring Your Own Password).\n" +
 				"Otherwise a password is auto-generated and written to writeConnectionSecretToRef."
 		}
-		r.Sensitive.AdditionalConnectionDetailsFn = common.ProviderCredentialsConnectionDetails()
+		r.Sensitive.AdditionalConnectionDetailsFn = common.EndpointConnectionDetails()
 	})
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {
 		r.References = config.References{

@@ -1,64 +1,54 @@
 package common
 
 import (
-	"encoding/json"
-	"fmt"
+	"strconv"
 
 	"github.com/crossplane/upjet/v2/pkg/config"
 )
 
-const (
-	// providerCredentialsKey is the single connection-secret key holding the
-	// JSON-encoded credentials blob consumed downstream.
-	providerCredentialsKey = "provider_credentials"
-	// nativesecureProtocol is the ClickHouse native protocol over TLS.
-	nativesecureProtocol = "nativesecure"
-	// defaultUsername is the built-in ClickHouse service user.
-	defaultUsername = "default"
-)
+// defaultUsername is the built-in ClickHouse service admin user that the
+// generated/BYOP password belongs to.
+const defaultUsername = "default"
 
-// ProviderCredentialsConnectionDetails returns an AdditionalConnectionDetailsFn
-// that emits a single "provider_credentials" key into the connection secret.
+// endpointProtocols are the per-protocol endpoint blocks exposed in the
+// clickhouse_service Terraform state.
+var endpointProtocols = []string{"https", "nativesecure", "mysql"}
+
+// EndpointConnectionDetails returns an AdditionalConnectionDetailsFn that emits
+// neutral, policy-free connection facts into the connection secret. It does NOT
+// pick a protocol or auth strategy — it surfaces every endpoint the service
+// exposes so the consumer can assemble whatever connection shape it needs.
 //
-// The value is JSON of the form:
+// Keys emitted (empty values skipped):
 //
-//	{
-//	  "host": "<private_dns_hostname || endpoints.nativesecure.host>",
-//	  "port": <endpoints.nativesecure.port>,
-//	  "protocol": "nativesecure",
-//	  "auth_config": {"strategy": "password", "username": "default", "password": "<plaintext>"}
-//	}
+//	<protocol>_host / <protocol>_port   for https, nativesecure, mysql
+//	private_dns_hostname                 (private endpoint, when configured)
+//	username                             ("default" service admin user)
 //
-// When the service is not yet ready (no host or no password in the Terraform
-// state) it emits nothing rather than an incomplete/erroring secret.
-func ProviderCredentialsConnectionDetails() config.AdditionalConnectionDetailsFn {
+// The password is already written by the resource's default connection-detail
+// mapping, so it is intentionally not re-emitted here.
+func EndpointConnectionDetails() config.AdditionalConnectionDetailsFn {
 	return func(attr map[string]any) (map[string][]byte, error) {
-		host := digString(attr, "private_endpoint_config", "private_dns_hostname")
-		if host == "" {
-			host = digString(attr, "endpoints", "nativesecure", "host")
+		out := map[string][]byte{}
+		put := func(key, val string) {
+			if val != "" {
+				out[key] = []byte(val)
+			}
 		}
-		port := digInt(attr, "endpoints", "nativesecure", "port")
-		passwd := digString(attr, "password")
 
-		if host == "" || passwd == "" {
+		for _, proto := range endpointProtocols {
+			put(proto+"_host", digString(attr, "endpoints", proto, "host"))
+			if port := digInt(attr, "endpoints", proto, "port"); port != 0 {
+				out[proto+"_port"] = []byte(strconv.Itoa(port))
+			}
+		}
+		put("private_dns_hostname", digString(attr, "private_endpoint_config", "private_dns_hostname"))
+		put("username", defaultUsername)
+
+		if len(out) == 0 {
 			return nil, nil
 		}
-
-		creds := map[string]any{
-			"host":     host,
-			"port":     port,
-			"protocol": nativesecureProtocol,
-			"auth_config": map[string]any{
-				"strategy": "password",
-				"username": defaultUsername,
-				"password": passwd,
-			},
-		}
-		b, err := json.Marshal(creds)
-		if err != nil {
-			return nil, fmt.Errorf("cannot marshal %s: %w", providerCredentialsKey, err)
-		}
-		return map[string][]byte{providerCredentialsKey: b}, nil
+		return out, nil
 	}
 }
 

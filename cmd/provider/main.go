@@ -167,7 +167,6 @@ func main() {
 		// terraform.WithProviderRunner(terraform.NewSharedProvider(log, os.Getenv("TERRAFORM_NATIVE_PROVIDER_PATH"), terraform.WithNativeProviderArgs("-debuggable")))
 		WorkspaceStore: terraform.NewWorkspaceStore(log),
 		SetupFn:        clients.TerraformSetupBuilder(*terraformVersion, *providerSource, *providerVersion),
-		StartWebhooks:  *certsDir != "",
 	}
 
 	namespacedOpts := tjcontroller.Options{
@@ -188,7 +187,6 @@ func main() {
 		// terraform.WithProviderRunner(terraform.NewSharedProvider(log, os.Getenv("TERRAFORM_NATIVE_PROVIDER_PATH"), terraform.WithNativeProviderArgs("-debuggable")))
 		WorkspaceStore: terraform.NewWorkspaceStore(log),
 		SetupFn:        clients.TerraformSetupBuilder(*terraformVersion, *providerSource, *providerVersion),
-		StartWebhooks:  *certsDir != "",
 	}
 
 	if *enableManagementPolicies {
@@ -212,6 +210,12 @@ func main() {
 		}
 		clusterOpts.ChangeLogOptions = &clo
 		namespacedOpts.ChangeLogOptions = &clo
+	}
+
+	startWebhooks := *certsDir != ""
+	if startWebhooks {
+		kingpin.FatalIfError(controllerCluster.SetupWebhookWithManager(mgr), "Cannot setup cluster-scoped webhooks")
+		kingpin.FatalIfError(controllerNamespaced.SetupWebhookWithManager(mgr), "Cannot setup namespaced webhooks")
 	}
 
 	canSafeStart, err := canWatchCRD(context.TODO(), mgr)

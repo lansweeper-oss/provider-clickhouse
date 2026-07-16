@@ -16,3 +16,4 @@ examples-generated
 
 .claude/
 __pycache__/
+/third_party

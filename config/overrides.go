@@ -37,16 +37,16 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_clickpipe_cdc_infrastructure", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickpipe", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
 	})
@@ -56,16 +56,16 @@ func Configure(p *config.Provider) {
 			"reverse_private_endpoint_id": {
 				TerraformName: "clickhouse_clickpipes_reverse_private_endpoint",
 			},
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickpipes_reverse_private_endpoint", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
 	})
@@ -97,38 +97,38 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
-		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
+		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
 
 	p.AddResourceConfigurator("clickhouse_service_scheduled_scaling", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
-		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
+		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
 
 	p.AddResourceConfigurator("clickhouse_service_transparent_data_encryption_key_association", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
-		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
+		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
 
 	p.AddResourceConfigurator("clickhouse_service_upgrade_window", func(r *config.Resource) {
 		r.References = config.References{
-			"service_id": {
-				TerraformName: "clickhouse_service",
+			serviceIDParam: {
+				TerraformName: clickhouseService,
 			},
 		}
-		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
+		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
 }
 

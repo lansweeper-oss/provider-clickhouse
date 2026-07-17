@@ -34,7 +34,16 @@ type ReversePrivateEndpointInitParameters struct {
 
 	// (String) The ID of the ClickHouse service to associate with this reverse private endpoint
 	// The ID of the ClickHouse service to associate with this reverse private endpoint
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickhouse/v1alpha1.Service
 	ServiceID *string `json:"serviceId,omitempty" tf:"service_id,omitempty"`
+
+	// Reference to a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDRef *v1.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDSelector *v1.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
 
 	// (String) Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
 	// Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
@@ -135,8 +144,17 @@ type ReversePrivateEndpointParameters struct {
 
 	// (String) The ID of the ClickHouse service to associate with this reverse private endpoint
 	// The ID of the ClickHouse service to associate with this reverse private endpoint
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickhouse/v1alpha1.Service
 	// +kubebuilder:validation:Optional
 	ServiceID *string `json:"serviceId,omitempty" tf:"service_id,omitempty"`
+
+	// Reference to a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDRef *v1.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDSelector *v1.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
 
 	// (String) Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
 	// Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
@@ -196,7 +214,6 @@ type ReversePrivateEndpoint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.description) || (has(self.initProvider) && has(self.initProvider.description))",message="spec.forProvider.description is a required parameter"
-	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.serviceId) || (has(self.initProvider) && has(self.initProvider.serviceId))",message="spec.forProvider.serviceId is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.type) || (has(self.initProvider) && has(self.initProvider.type))",message="spec.forProvider.type is a required parameter"
 	Spec   ReversePrivateEndpointSpec   `json:"spec"`
 	Status ReversePrivateEndpointStatus `json:"status,omitempty"`

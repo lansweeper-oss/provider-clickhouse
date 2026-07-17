@@ -40,24 +40,19 @@ var uuidRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[
 // ExternalNameConfigs contains all external name configurations for this
 // provider.
 var ExternalNameConfigs = map[string]config.ExternalName{
-	"clickhouse_organization_settings":                               config.IdentifierFromProvider,
-	"clickhouse_service":                                             withSentinelWhenNotUUID(config.IdentifierFromProvider),
-	"clickhouse_service_private_endpoints_attachment":                withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-	"clickhouse_service_transparent_data_encryption_key_association": withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-
+	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 	"clickhouse_clickpipe":                                              config.IdentifierFromProvider,
-	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns": config.IdentifierFromProvider,
-
-	"clickhouse_clickpipe_cdc_infrastructure": withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-
-	"clickhouse_service_scheduled_scaling": withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-	"clickhouse_service_upgrade_window":    withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-
-	"clickhouse_role":            withSentinelWhenNotUUID(config.IdentifierFromProvider),
-	"clickhouse_role_assignment": withSentinelWhenNotUUID(config.ParameterAsIdentifier("role_id")),
-
-	"clickhouse_postgres_service": withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
+	"clickhouse_organization_settings":                                  config.IdentifierFromProvider,
+	"clickhouse_postgres_service":                                       withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_role_assignment":                                        withSentinelWhenNotUUID(config.ParameterAsIdentifier("role_id")),
+	"clickhouse_role":                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_service_private_endpoints_attachment":                   withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_scheduled_scaling":                              withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_transparent_data_encryption_key_association":    withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_upgrade_window":                                 withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service":                                                withSentinelWhenNotUUID(config.IdentifierFromProvider),
 }
 
 // withSentinelWhenNotUUID wraps an ExternalName so GetIDFn returns sentinelUUID

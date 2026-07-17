@@ -9,6 +9,8 @@ metadata:
 spec:
   forProvider:
     description: VPC_ENDPOINT_SERVICE reverse private endpoint for ClickPipes
-    serviceId: 3a10a385-ced2-452e-abb8-908c80976a8f
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
     type: VPC_ENDPOINT_SERVICE
     vpcEndpointServiceName: com.amazonaws.vpce.eu-west-1.vpce-svc-080826a65b5b27d4e

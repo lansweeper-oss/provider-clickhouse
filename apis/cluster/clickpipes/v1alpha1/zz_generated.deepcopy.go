@@ -9,6 +9,7 @@
 package v1alpha1
 
 import (
+	"github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -141,10 +142,30 @@ func (in *ReversePrivateEndpointCustomPrivateDNSInitParameters) DeepCopyInto(out
 		*out = new(string)
 		**out = **in
 	}
+	if in.ReversePrivateEndpointIDRef != nil {
+		in, out := &in.ReversePrivateEndpointIDRef, &out.ReversePrivateEndpointIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ReversePrivateEndpointIDSelector != nil {
+		in, out := &in.ReversePrivateEndpointIDSelector, &out.ReversePrivateEndpointIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ServiceID != nil {
 		in, out := &in.ServiceID, &out.ServiceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.ServiceIDRef != nil {
+		in, out := &in.ServiceIDRef, &out.ServiceIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServiceIDSelector != nil {
+		in, out := &in.ServiceIDSelector, &out.ServiceIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -242,10 +263,30 @@ func (in *ReversePrivateEndpointCustomPrivateDNSParameters) DeepCopyInto(out *Re
 		*out = new(string)
 		**out = **in
 	}
+	if in.ReversePrivateEndpointIDRef != nil {
+		in, out := &in.ReversePrivateEndpointIDRef, &out.ReversePrivateEndpointIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ReversePrivateEndpointIDSelector != nil {
+		in, out := &in.ReversePrivateEndpointIDSelector, &out.ReversePrivateEndpointIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ServiceID != nil {
 		in, out := &in.ServiceID, &out.ServiceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.ServiceIDRef != nil {
+		in, out := &in.ServiceIDRef, &out.ServiceIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServiceIDSelector != nil {
+		in, out := &in.ServiceIDSelector, &out.ServiceIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -321,6 +362,16 @@ func (in *ReversePrivateEndpointInitParameters) DeepCopyInto(out *ReversePrivate
 		in, out := &in.ServiceID, &out.ServiceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.ServiceIDRef != nil {
+		in, out := &in.ServiceIDRef, &out.ServiceIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServiceIDSelector != nil {
+		in, out := &in.ServiceIDSelector, &out.ServiceIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Type != nil {
 		in, out := &in.Type, &out.Type
@@ -510,6 +561,16 @@ func (in *ReversePrivateEndpointParameters) DeepCopyInto(out *ReversePrivateEndp
 		in, out := &in.ServiceID, &out.ServiceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.ServiceIDRef != nil {
+		in, out := &in.ServiceIDRef, &out.ServiceIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServiceIDSelector != nil {
+		in, out := &in.ServiceIDSelector, &out.ServiceIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Type != nil {
 		in, out := &in.Type, &out.Type

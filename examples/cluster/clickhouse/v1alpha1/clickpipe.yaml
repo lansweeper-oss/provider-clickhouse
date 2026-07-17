@@ -27,7 +27,9 @@ spec:
     - replicaCpuMillicores: 250
       replicaMemoryGb: 1
       replicas: 2
-    serviceId: e9465b4b-f7e5-4937-8e21-8d508b02843d
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
     source:
     - kafka:
       - brokers: my-kafka-broker:9092

@@ -10,5 +10,9 @@ spec:
   forProvider:
     mapping:
     - privateDnsName: my-service.example.com
-    reversePrivateEndpointId: 12345678-1234-1234-1234-123456789012
-    serviceId: 3a10a385-ced2-452e-abb8-908c80976a8f
+    reversePrivateEndpointIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example

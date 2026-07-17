@@ -9,8 +9,8 @@
 package v1alpha1
 
 import (
-	commonv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -321,9 +321,19 @@ func (in *ClickpipeInitParameters) DeepCopyInto(out *ClickpipeInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ServiceIDRef != nil {
+		in, out := &in.ServiceIDRef, &out.ServiceIDRef
+		*out = new(v1.NamespacedReference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServiceIDSelector != nil {
+		in, out := &in.ServiceIDSelector, &out.ServiceIDSelector
+		*out = new(v1.NamespacedSelector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
-		*out = new(v1.JSON)
+		*out = new(apiextensionsv1.JSON)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Source != nil {
@@ -422,7 +432,7 @@ func (in *ClickpipeObservation) DeepCopyInto(out *ClickpipeObservation) {
 	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
-		*out = new(v1.JSON)
+		*out = new(apiextensionsv1.JSON)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Source != nil {
@@ -487,9 +497,19 @@ func (in *ClickpipeParameters) DeepCopyInto(out *ClickpipeParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ServiceIDRef != nil {
+		in, out := &in.ServiceIDRef, &out.ServiceIDRef
+		*out = new(v1.NamespacedReference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServiceIDSelector != nil {
+		in, out := &in.ServiceIDSelector, &out.ServiceIDSelector
+		*out = new(v1.NamespacedSelector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
-		*out = new(v1.JSON)
+		*out = new(apiextensionsv1.JSON)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Source != nil {
@@ -1313,27 +1333,27 @@ func (in *KafkaCredentialsInitParameters) DeepCopyInto(out *KafkaCredentialsInit
 	*out = *in
 	if in.AccessKeyIDSecretRef != nil {
 		in, out := &in.AccessKeyIDSecretRef, &out.AccessKeyIDSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.CertificateSecretRef != nil {
 		in, out := &in.CertificateSecretRef, &out.CertificateSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.ConnectionStringSecretRef != nil {
 		in, out := &in.ConnectionStringSecretRef, &out.ConnectionStringSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -1343,17 +1363,17 @@ func (in *KafkaCredentialsInitParameters) DeepCopyInto(out *KafkaCredentialsInit
 	}
 	if in.PrivateKeySecretRef != nil {
 		in, out := &in.PrivateKeySecretRef, &out.PrivateKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.SecretKeySecretRef != nil {
 		in, out := &in.SecretKeySecretRef, &out.SecretKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.UsernameSecretRef != nil {
 		in, out := &in.UsernameSecretRef, &out.UsernameSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 }
@@ -1393,27 +1413,27 @@ func (in *KafkaCredentialsParameters) DeepCopyInto(out *KafkaCredentialsParamete
 	*out = *in
 	if in.AccessKeyIDSecretRef != nil {
 		in, out := &in.AccessKeyIDSecretRef, &out.AccessKeyIDSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.CertificateSecretRef != nil {
 		in, out := &in.CertificateSecretRef, &out.CertificateSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.ConnectionStringSecretRef != nil {
 		in, out := &in.ConnectionStringSecretRef, &out.ConnectionStringSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -1423,17 +1443,17 @@ func (in *KafkaCredentialsParameters) DeepCopyInto(out *KafkaCredentialsParamete
 	}
 	if in.PrivateKeySecretRef != nil {
 		in, out := &in.PrivateKeySecretRef, &out.PrivateKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.SecretKeySecretRef != nil {
 		in, out := &in.SecretKeySecretRef, &out.SecretKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.UsernameSecretRef != nil {
 		in, out := &in.UsernameSecretRef, &out.UsernameSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 }
@@ -1891,12 +1911,12 @@ func (in *MongodbCredentialsInitParameters) DeepCopyInto(out *MongodbCredentials
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -1951,12 +1971,12 @@ func (in *MongodbCredentialsParameters) DeepCopyInto(out *MongodbCredentialsPara
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -2412,12 +2432,12 @@ func (in *MySQLCredentialsInitParameters) DeepCopyInto(out *MySQLCredentialsInit
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -2463,12 +2483,12 @@ func (in *MySQLCredentialsParameters) DeepCopyInto(out *MySQLCredentialsParamete
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -3176,12 +3196,12 @@ func (in *ObjectStorageAccessKeyInitParameters) DeepCopyInto(out *ObjectStorageA
 	*out = *in
 	if in.AccessKeyIDSecretRef != nil {
 		in, out := &in.AccessKeyIDSecretRef, &out.AccessKeyIDSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.SecretKeySecretRef != nil {
 		in, out := &in.SecretKeySecretRef, &out.SecretKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 }
@@ -3216,12 +3236,12 @@ func (in *ObjectStorageAccessKeyParameters) DeepCopyInto(out *ObjectStorageAcces
 	*out = *in
 	if in.AccessKeyIDSecretRef != nil {
 		in, out := &in.AccessKeyIDSecretRef, &out.AccessKeyIDSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.SecretKeySecretRef != nil {
 		in, out := &in.SecretKeySecretRef, &out.SecretKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 }
@@ -3261,7 +3281,7 @@ func (in *ObjectStorageInitParameters) DeepCopyInto(out *ObjectStorageInitParame
 	}
 	if in.ConnectionStringSecretRef != nil {
 		in, out := &in.ConnectionStringSecretRef, &out.ConnectionStringSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.Delimiter != nil {
@@ -3296,7 +3316,7 @@ func (in *ObjectStorageInitParameters) DeepCopyInto(out *ObjectStorageInitParame
 	}
 	if in.ServiceAccountKeySecretRef != nil {
 		in, out := &in.ServiceAccountKeySecretRef, &out.ServiceAccountKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.SkipInitialLoad != nil {
@@ -3441,7 +3461,7 @@ func (in *ObjectStorageParameters) DeepCopyInto(out *ObjectStorageParameters) {
 	}
 	if in.ConnectionStringSecretRef != nil {
 		in, out := &in.ConnectionStringSecretRef, &out.ConnectionStringSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.Delimiter != nil {
@@ -3476,7 +3496,7 @@ func (in *ObjectStorageParameters) DeepCopyInto(out *ObjectStorageParameters) {
 	}
 	if in.ServiceAccountKeySecretRef != nil {
 		in, out := &in.ServiceAccountKeySecretRef, &out.ServiceAccountKeySecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.SkipInitialLoad != nil {
@@ -3747,12 +3767,12 @@ func (in *PostgresCredentialsInitParameters) DeepCopyInto(out *PostgresCredentia
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -3798,12 +3818,12 @@ func (in *PostgresCredentialsParameters) DeepCopyInto(out *PostgresCredentialsPa
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -5127,12 +5147,12 @@ func (in *SchemaRegistryCredentialsInitParameters) DeepCopyInto(out *SchemaRegis
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -5178,12 +5198,12 @@ func (in *SchemaRegistryCredentialsParameters) DeepCopyInto(out *SchemaRegistryC
 	*out = *in
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -5398,7 +5418,7 @@ func (in *ServiceInitParameters) DeepCopyInto(out *ServiceInitParameters) {
 	}
 	if in.DoubleSha1PasswordHashSecretRef != nil {
 		in, out := &in.DoubleSha1PasswordHashSecretRef, &out.DoubleSha1PasswordHashSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.EnableCoreDumps != nil {
@@ -5470,17 +5490,17 @@ func (in *ServiceInitParameters) DeepCopyInto(out *ServiceInitParameters) {
 	}
 	if in.PasswordHashSecretRef != nil {
 		in, out := &in.PasswordHashSecretRef, &out.PasswordHashSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {
@@ -5796,7 +5816,7 @@ func (in *ServiceParameters) DeepCopyInto(out *ServiceParameters) {
 	}
 	if in.DoubleSha1PasswordHashSecretRef != nil {
 		in, out := &in.DoubleSha1PasswordHashSecretRef, &out.DoubleSha1PasswordHashSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.EnableCoreDumps != nil {
@@ -5868,17 +5888,17 @@ func (in *ServiceParameters) DeepCopyInto(out *ServiceParameters) {
 	}
 	if in.PasswordHashSecretRef != nil {
 		in, out := &in.PasswordHashSecretRef, &out.PasswordHashSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoSecretRef != nil {
 		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
-		*out = new(commonv1.LocalSecretKeySelector)
+		*out = new(v1.LocalSecretKeySelector)
 		**out = **in
 	}
 	if in.PasswordWoVersion != nil {

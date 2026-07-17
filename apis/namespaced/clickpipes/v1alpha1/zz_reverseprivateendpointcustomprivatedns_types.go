@@ -43,11 +43,29 @@ type ReversePrivateEndpointCustomPrivateDNSInitParameters struct {
 
 	// (String) The ID of the ClickPipes reverse private endpoint to manage custom private DNS mappings for.
 	// The ID of the ClickPipes reverse private endpoint to manage custom private DNS mappings for.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.ReversePrivateEndpoint
 	ReversePrivateEndpointID *string `json:"reversePrivateEndpointId,omitempty" tf:"reverse_private_endpoint_id,omitempty"`
+
+	// Reference to a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIDRef *v1.NamespacedReference `json:"reversePrivateEndpointIdRef,omitempty" tf:"-"`
+
+	// Selector for a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIDSelector *v1.NamespacedSelector `json:"reversePrivateEndpointIdSelector,omitempty" tf:"-"`
 
 	// (String) The ID of the ClickHouse service that owns the reverse private endpoint.
 	// The ID of the ClickHouse service that owns the reverse private endpoint.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickhouse/v1alpha1.Service
 	ServiceID *string `json:"serviceId,omitempty" tf:"service_id,omitempty"`
+
+	// Reference to a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDRef *v1.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDSelector *v1.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
 }
 
 type ReversePrivateEndpointCustomPrivateDNSObservation struct {
@@ -75,13 +93,31 @@ type ReversePrivateEndpointCustomPrivateDNSParameters struct {
 
 	// (String) The ID of the ClickPipes reverse private endpoint to manage custom private DNS mappings for.
 	// The ID of the ClickPipes reverse private endpoint to manage custom private DNS mappings for.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.ReversePrivateEndpoint
 	// +kubebuilder:validation:Optional
 	ReversePrivateEndpointID *string `json:"reversePrivateEndpointId,omitempty" tf:"reverse_private_endpoint_id,omitempty"`
 
+	// Reference to a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIDRef *v1.NamespacedReference `json:"reversePrivateEndpointIdRef,omitempty" tf:"-"`
+
+	// Selector for a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIDSelector *v1.NamespacedSelector `json:"reversePrivateEndpointIdSelector,omitempty" tf:"-"`
+
 	// (String) The ID of the ClickHouse service that owns the reverse private endpoint.
 	// The ID of the ClickHouse service that owns the reverse private endpoint.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickhouse/v1alpha1.Service
 	// +kubebuilder:validation:Optional
 	ServiceID *string `json:"serviceId,omitempty" tf:"service_id,omitempty"`
+
+	// Reference to a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDRef *v1.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in clickhouse to populate serviceId.
+	// +kubebuilder:validation:Optional
+	ServiceIDSelector *v1.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
 }
 
 // ReversePrivateEndpointCustomPrivateDNSSpec defines the desired state of ReversePrivateEndpointCustomPrivateDNS
@@ -121,8 +157,6 @@ type ReversePrivateEndpointCustomPrivateDNS struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.mapping) || (has(self.initProvider) && has(self.initProvider.mapping))",message="spec.forProvider.mapping is a required parameter"
-	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.reversePrivateEndpointId) || (has(self.initProvider) && has(self.initProvider.reversePrivateEndpointId))",message="spec.forProvider.reversePrivateEndpointId is a required parameter"
-	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.serviceId) || (has(self.initProvider) && has(self.initProvider.serviceId))",message="spec.forProvider.serviceId is a required parameter"
 	Spec   ReversePrivateEndpointCustomPrivateDNSSpec   `json:"spec"`
 	Status ReversePrivateEndpointCustomPrivateDNSStatus `json:"status,omitempty"`
 }

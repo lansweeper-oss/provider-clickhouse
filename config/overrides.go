@@ -26,21 +26,6 @@ func gvkOverride() config.ResourceOption {
 }
 
 func Configure(p *config.Provider) {
-	p.AddResourceConfigurator("clickhouse_service", func(r *config.Resource) {
-		r.LateInitializer = config.LateInitializer{
-			IgnoredFields: []string{"warehouse_id", "backup_configuration", "password"},
-		}
-		r.InitializerFns = append(r.InitializerFns,
-			common.PasswordGenerator(
-				"spec.forProvider.passwordSecretRef",
-				"spec.writeConnectionSecretToRef",
-			))
-		if pw, ok := r.TerraformResource.Schema["password"]; ok {
-			pw.Description = "Password for the default ClickHouse user.\n" +
-				"When passwordSecretRef is set, that secret is used (Bring Your Own Password).\n" +
-				"Otherwise a password is auto-generated and written to writeConnectionSecretToRef."
-		}
-	})
 	p.AddResourceConfigurator("clickhouse_clickpipe", func(r *config.Resource) {
 		// Upjet only supports primitive types (string, *string, …) as sensitive.
 		// The upstream TF provider marks several nested credential blocks as
@@ -49,6 +34,67 @@ func Configure(p *config.Provider) {
 		// Sensitive flag and become proper SecretRef fields.
 		clearSensitiveOnNestedBlocks(r.TerraformResource.Schema)
 	})
+
+	p.AddResourceConfigurator("clickhouse_clickpipe_cdc_infrastructure", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickpipe", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns", func(r *config.Resource) {
+		r.References = config.References{
+			"reverse_private_endpoint_id": {
+				TerraformName: "clickhouse_clickpipes_reverse_private_endpoint",
+			},
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickpipes_reverse_private_endpoint", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_role_assignment", func(r *config.Resource) {
+		r.References = config.References{
+			"role_id": {
+				TerraformName: "clickhouse_role",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_service", func(r *config.Resource) {
+		r.LateInitializer = config.LateInitializer{
+			IgnoredFields: []string{"warehouse_id", "backup_configuration", "password"},
+		}
+		r.InitializerFns = append(r.InitializerFns,
+			common.PasswordGenerator(
+				"spec.forProvider.passwordSecretRef",
+				"spec.writeConnectionSecretToRef",
+			),
+		)
+		if pw, ok := r.TerraformResource.Schema["password"]; ok {
+			pw.Description = "Password for the default ClickHouse user.\n" +
+				"When passwordSecretRef is set, that secret is used (Bring Your Own Password).\n" +
+				"Otherwise a password is auto-generated and written to writeConnectionSecretToRef."
+		}
+	})
+
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {
 		r.References = config.References{
 			"service_id": {
@@ -57,7 +103,26 @@ func Configure(p *config.Provider) {
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
 	})
+
+	p.AddResourceConfigurator("clickhouse_service_scheduled_scaling", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
+	})
+
 	p.AddResourceConfigurator("clickhouse_service_transparent_data_encryption_key_association", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+		r.ExternalName.GetExternalNameFn = getExternalNameFromTFParam("service_id")
+	})
+
+	p.AddResourceConfigurator("clickhouse_service_upgrade_window", func(r *config.Resource) {
 		r.References = config.References{
 			"service_id": {
 				TerraformName: "clickhouse_service",
@@ -71,7 +136,7 @@ func Configure(p *config.Provider) {
 // clears Sensitive on any entry that contains a nested Resource (i.e. is not a
 // leaf). Leaf fields retain their Sensitive flag so upjet generates SecretRef
 // fields for them. This is needed because upjet panics when a complex/nested
-// type is marked sensitive — only primitive types are supported.
+// type is marked sensitive; only primitive types are supported.
 func clearSensitiveOnNestedBlocks(m map[string]*sdkschema.Schema) {
 	for _, s := range m {
 		if s.Elem == nil {

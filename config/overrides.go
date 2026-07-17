@@ -33,9 +33,6 @@ func Configure(p *config.Provider) {
 		// so upjet can generate CRDs; leaf string fields keep their own
 		// Sensitive flag and become proper SecretRef fields.
 		clearSensitiveOnNestedBlocks(r.TerraformResource.Schema)
-	})
-
-	p.AddResourceConfigurator("clickhouse_clickpipe_cdc_infrastructure", func(r *config.Resource) {
 		r.References = config.References{
 			serviceIDParam: {
 				TerraformName: clickhouseService,
@@ -43,7 +40,7 @@ func Configure(p *config.Provider) {
 		}
 	})
 
-	p.AddResourceConfigurator("clickhouse_clickpipe", func(r *config.Resource) {
+	p.AddResourceConfigurator("clickhouse_clickpipe_cdc_infrastructure", func(r *config.Resource) {
 		r.References = config.References{
 			serviceIDParam: {
 				TerraformName: clickhouseService,

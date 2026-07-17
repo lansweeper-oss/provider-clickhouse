@@ -1,0 +1,44 @@
+apiVersion: iam.clickhouse.crossplane.io/v1alpha1
+kind: Role
+metadata:
+  annotations:
+    meta.upbound.io/example-id: iam/v1alpha1/role
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: my-custom-role
+    policies:
+    - effect: ALLOW
+      permissions:
+      - control-plane:organization:create-api-keys
+      resources:
+      - organization/<org-id>
+    - effect: ALLOW
+      permissions:
+      - control-plane:service:view-backups
+      resources:
+      - instance/<service-id>
+    - effect: ALLOW
+      permissions:
+      - sql-console:database:access
+      resources:
+      - instance/<service-id>
+      tags:
+        role: sql-console-readonly
+
+---
+
+apiVersion: role.clickhouse.crossplane.io/v1alpha1
+kind: Assignment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: iam/v1alpha1/role
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    userIds:
+    - ${data.clickhouse_user.alice.id}

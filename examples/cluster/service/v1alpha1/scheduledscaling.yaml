@@ -1,0 +1,38 @@
+apiVersion: service.clickhouse.crossplane.io/v1alpha1
+kind: ScheduledScaling
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/scheduledscaling
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    entries:
+    - endHourUtc: 18
+      idleScaling: false
+      maxReplicas: 3
+      minReplicas: 3
+      name: Business hours
+      startHourUtc: 8
+      weekdays:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    - endHourUtc: 6
+      idleScaling: true
+      idleTimeoutMinutes: 5
+      maxReplicas: 1
+      minReplicas: 1
+      name: Overnight
+      startHourUtc: 22
+      weekdays:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6

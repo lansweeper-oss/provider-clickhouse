@@ -1,0 +1,16 @@
+apiVersion: clickpipes.clickhouse.crossplane.io/v1alpha1
+kind: ReversePrivateEndpoint
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipes/v1alpha1/reverseprivateendpoint
+  labels:
+    testing.upbound.io/example-name: vpc_endpoint_service
+  name: vpc-endpoint-service
+spec:
+  forProvider:
+    description: VPC_ENDPOINT_SERVICE reverse private endpoint for ClickPipes
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    type: VPC_ENDPOINT_SERVICE
+    vpcEndpointServiceName: com.amazonaws.vpce.eu-west-1.vpce-svc-080826a65b5b27d4e

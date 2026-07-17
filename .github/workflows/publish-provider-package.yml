@@ -5,11 +5,7 @@ on:
     inputs:
       version:
         description: Version string to use while publishing the package (e.g. v1.0.0-alpha.1)
-        default: ''
-        required: false
-      go-version:
-        description: Go version to use if building needs to be done
-        default: '1.26'
+        default: ""
         required: false
 
 jobs:
@@ -47,7 +43,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
-          go-version: ${{ github.event.inputs.go-version }}
+          go-version-file: go.mod
 
       - name: Vendor Dependencies
         run: make vendor vendor.check

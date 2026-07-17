@@ -10,4 +10,10 @@ package v1alpha1
 func (tr *PrivateEndpointsAttachment) Hub() {}
 
 // Hub marks this type as a conversion hub.
+func (tr *ScheduledScaling) Hub() {}
+
+// Hub marks this type as a conversion hub.
 func (tr *TransparentDataEncryptionKeyAssociation) Hub() {}
+
+// Hub marks this type as a conversion hub.
+func (tr *UpgradeWindow) Hub() {}

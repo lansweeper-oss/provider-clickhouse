@@ -1,0 +1,267 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.21.0
+  name: upgradewindows.service.clickhouse.m.crossplane.io
+spec:
+  group: service.clickhouse.m.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - clickhouse
+    kind: UpgradeWindow
+    listKind: UpgradeWindowList
+    plural: upgradewindows
+    singular: upgradewindow
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: 'UpgradeWindow is the Schema for the UpgradeWindows API. You
+          can use the clickhouse_service_upgrade_window resource to pin the weekly
+          upgrade window for a ClickHouse Cloud service. When configured, the data
+          plane only attempts service upgrades during the declared window. The window
+          is a single weekly recurrence: a weekday plus a start_hour_utc. The window
+          currently lasts 6 hours from start_hour_utc; duration is returned by the
+          API and exposed as a read-only attribute. ~> Note: This resource is in alpha.
+          Setting or updating an upgrade window requires the canUseScheduledUpgrades
+          entitlement — reach out to ClickHouse support if the API returns 403 FORBIDDEN.
+          Deleting an upgrade window is allowed even after the entitlement is lost,
+          so existing windows can always be cleared. Primary services only The upgrade
+          window can only be set on primary services. Secondary services inherit the
+          window from their primary. Applying this resource against a secondary service
+          returns a 400 with the message cannot set upgrade window on a secondary
+          service, surfaced by the provider as Upgrade windows can only be set on
+          primary services. Allowed values weekday: 0 (Sunday) – 6 (Saturday)start_hour_utc:
+          one of 0, 6, 12, 18 Best-effort overwrite protection Create performs a GET
+          before issuing the PUT so that an existing window (e.g. one configured out-of-band)
+          surfaces a "please import" diagnostic instead of being silently overwritten.
+          The check is best-effort: a window created between this resource''s GET
+          and PUT (e.g. Import'
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: UpgradeWindowSpec defines the desired state of UpgradeWindow
+            properties:
+              forProvider:
+                properties:
+                  startHourUtc:
+                    description: |-
+                      : one of 0, 6, 12, 18
+                      UTC hour when the upgrade window starts. Must be one of 0, 6, 12, or 18.
+                    type: number
+                  weekday:
+                    description: |-
+                      : 0 (Sunday) – 6 (Saturday)
+                      Day of the week the upgrade window starts. 0 = Sunday, 1 = Monday, …, 6 = Saturday.
+                    type: number
+                type: object
+              initProvider:
+                description: |-
+                  THIS IS A BETA FIELD. It will be honored
+                  unless the Management Policies feature flag is disabled.
+                  InitProvider holds the same fields as ForProvider, with the exception
+                  of Identifier and other resource reference fields. The fields that are
+                  in InitProvider are merged into ForProvider when the resource is created.
+                  The same fields are also added to the terraform ignore_changes hook, to
+                  avoid updating them after creation. This is useful for fields that are
+                  required on creation, but we do not desire to update them after creation,
+                  for example because of an external controller is managing them, like an
+                  autoscaler.
+                properties:
+                  startHourUtc:
+                    description: |-
+                      : one of 0, 6, 12, 18
+                      UTC hour when the upgrade window starts. Must be one of 0, 6, 12, or 18.
+                    type: number
+                  weekday:
+                    description: |-
+                      : 0 (Sunday) – 6 (Saturday)
+                      Day of the week the upgrade window starts. 0 = Sunday, 1 = Monday, …, 6 = Saturday.
+                    type: number
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+            x-kubernetes-validations:
+            - message: spec.forProvider.startHourUtc is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.startHourUtc)
+                || (has(self.initProvider) && has(self.initProvider.startHourUtc))'
+            - message: spec.forProvider.weekday is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.weekday)
+                || (has(self.initProvider) && has(self.initProvider.weekday))'
+          status:
+            description: UpgradeWindowStatus defines the observed state of UpgradeWindow.
+            properties:
+              atProvider:
+                properties:
+                  duration:
+                    description: |-
+                      Length of the upgrade window in hours. Server-controlled; currently always 6.
+                    type: number
+                  id:
+                    description: Resource identifier. Equal to service_id
+                      (one window per service).
+                    type: string
+                  startHourUtc:
+                    description: |-
+                      : one of 0, 6, 12, 18
+                      UTC hour when the upgrade window starts. Must be one of 0, 6, 12, or 18.
+                    type: number
+                  weekday:
+                    description: |-
+                      : 0 (Sunday) – 6 (Saturday)
+                      Day of the week the upgrade window starts. 0 = Sunday, 1 = Monday, …, 6 = Saturday.
+                    type: number
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

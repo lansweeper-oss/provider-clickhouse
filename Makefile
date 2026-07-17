@@ -12,7 +12,7 @@ TERRAFORM_VERSION_VALID := $(shell [ "$(TERRAFORM_VERSION)" = "`printf "$(TERRAF
 
 export TERRAFORM_PROVIDER_SOURCE ?= ClickHouse/clickhouse
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/ClickHouse/terraform-provider-clickhouse
-export TERRAFORM_PROVIDER_VERSION ?= 3.12.0
+export TERRAFORM_PROVIDER_VERSION ?= 3.18.1
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-clickhouse
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://github.com/ClickHouse/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/releases/download/v$(TERRAFORM_PROVIDER_VERSION)
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= $(TERRAFORM_PROVIDER_DOWNLOAD_NAME)_v$(TERRAFORM_PROVIDER_VERSION)
@@ -44,8 +44,8 @@ NPROCS ?= 1
 # to half the number of CPU cores.
 GO_TEST_PARALLEL := $(shell echo $$(( $(NPROCS) / 2 )))
 
-GO_REQUIRED_VERSION ?= 1.26
-GOLANGCILINT_VERSION ?= 2.11.4
+GO_REQUIRED_VERSION ?= $(shell grep -E '^go ' go.mod | awk '{print $2}')
+GOLANGCILINT_VERSION ?= 2.12.2
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/provider $(GO_PROJECT)/cmd/generator
 GO_LDFLAGS += -X $(GO_PROJECT)/internal/version.Version=$(VERSION)
 GO_SUBDIRS += cmd internal apis
@@ -57,9 +57,9 @@ GO_SUBDIRS += cmd internal apis
 KIND_VERSION = v0.31.0
 UPTEST_VERSION = v2.2.0
 CRDDIFF_VERSION = v0.12.1
-CROSSPLANE_CLI_VERSION = v2.2.0
+CROSSPLANE_CLI_VERSION = v2.3.3
 # for e2e testing
-CROSSPLANE_VERSION = 2.2.0
+CROSSPLANE_VERSION = 2.3.3
 -include build/makelib/k8s_tools.mk
 
 # ====================================================================================
@@ -99,7 +99,7 @@ xpkg.build.provider-clickhouse: do.build.images
 
 # NOTE(hasheddan): we ensure up is installed prior to running platform-specific
 # build steps in parallel to avoid encountering an installation race condition.
-build.init: $(UP) $(CROSSPLANE_CLI) check-terraform-version
+build.init: $(UP) $(CROSSPLANE_CLI) check-terraform-version provider-source
 
 # ====================================================================================
 # Setup Terraform for fetching provider schema
@@ -152,15 +152,39 @@ $(TERRAFORM_PROVIDER_SCHEMA:.json=.generated.lst): $(TERRAFORM_PROVIDER_SCHEMA)
 	@python3 -c "import json,sys; d=json.load(open(sys.argv[1])); p=next(iter(d['provider_schemas'])); print(json.dumps(list(d['provider_schemas'][p]['resource_schemas'].keys())))" $(TERRAFORM_PROVIDER_SCHEMA) > config/generated.lst
 	@$(OK) generating resource list from provider schema
 
-generate.init: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs
+# ====================================================================================
+# Provider source extraction for the no-fork (in-process) runtime.
+#
+# The go.mod has a replace directive pointing at this directory so the
+# Crossplane provider can import pkg/provider and pkg/resource directly.
+# third_party/ is gitignored; fresh checkouts must run `make provider-source`
+# (wired into build.init and generate.init) before the Go tree compiles.
+PROVIDER_SOURCE_DIR := third_party/terraform-provider-clickhouse
+
+provider-source:
+	@if [ ! -d "$(PROVIDER_SOURCE_DIR)/pkg/provider" ]; then \
+		$(INFO) extracting ClickHouse provider source v$(TERRAFORM_PROVIDER_VERSION); \
+		rm -rf "$(PROVIDER_SOURCE_DIR)"; \
+		git clone -c advice.detachedHead=false --depth 1 --branch "v$(TERRAFORM_PROVIDER_VERSION)" "$(TERRAFORM_PROVIDER_REPO)" "$(PROVIDER_SOURCE_DIR)" || $(FAIL); \
+		rm -rf "$(PROVIDER_SOURCE_DIR)/.git"; \
+		$(OK) extracting ClickHouse provider source v$(TERRAFORM_PROVIDER_VERSION); \
+	fi
+
+generate.init: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs provider-source
 generate.done: copy-examples clean-descriptions
+
+go.modules.download: provider-source
+
+clean: provider-source-clean
+provider-source-clean:
+	rm -rf "$(PROVIDER_SOURCE_DIR)"
 
 clean-descriptions:
 	@$(INFO) cleaning generated field descriptions
 	@python3 scripts/clean_descriptions.py package/crds/
 	@$(OK) cleaning generated field descriptions
 
-.PHONY: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs check-terraform-version clean-descriptions
+.PHONY: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs check-terraform-version clean-descriptions provider-source provider-source-clean
 # ====================================================================================
 # Targets
 
@@ -294,6 +318,8 @@ help-special: crossplane.help
 # TODO(negz): Update CI to use these targets.
 vendor: modules.download
 vendor.check: modules.check
+
+go.modules.download: provider-source
 
 # Copy examples-generated to examples
 copy-examples:

@@ -58,6 +58,56 @@ func (mg *PrivateEndpointsAttachment) SetWriteConnectionSecretToReference(r *xpv
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
+// GetCondition of this ScheduledScaling.
+func (mg *ScheduledScaling) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this ScheduledScaling.
+func (mg *ScheduledScaling) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetManagementPolicies of this ScheduledScaling.
+func (mg *ScheduledScaling) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// GetProviderConfigReference of this ScheduledScaling.
+func (mg *ScheduledScaling) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+// GetWriteConnectionSecretToReference of this ScheduledScaling.
+func (mg *ScheduledScaling) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this ScheduledScaling.
+func (mg *ScheduledScaling) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this ScheduledScaling.
+func (mg *ScheduledScaling) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this ScheduledScaling.
+func (mg *ScheduledScaling) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
+}
+
+// SetProviderConfigReference of this ScheduledScaling.
+func (mg *ScheduledScaling) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+// SetWriteConnectionSecretToReference of this ScheduledScaling.
+func (mg *ScheduledScaling) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this TransparentDataEncryptionKeyAssociation.
 func (mg *TransparentDataEncryptionKeyAssociation) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
@@ -105,5 +155,55 @@ func (mg *TransparentDataEncryptionKeyAssociation) SetProviderConfigReference(r 
 
 // SetWriteConnectionSecretToReference of this TransparentDataEncryptionKeyAssociation.
 func (mg *TransparentDataEncryptionKeyAssociation) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetCondition of this UpgradeWindow.
+func (mg *UpgradeWindow) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this UpgradeWindow.
+func (mg *UpgradeWindow) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetManagementPolicies of this UpgradeWindow.
+func (mg *UpgradeWindow) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// GetProviderConfigReference of this UpgradeWindow.
+func (mg *UpgradeWindow) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+// GetWriteConnectionSecretToReference of this UpgradeWindow.
+func (mg *UpgradeWindow) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this UpgradeWindow.
+func (mg *UpgradeWindow) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this UpgradeWindow.
+func (mg *UpgradeWindow) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this UpgradeWindow.
+func (mg *UpgradeWindow) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
+}
+
+// SetProviderConfigReference of this UpgradeWindow.
+func (mg *UpgradeWindow) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+// SetWriteConnectionSecretToReference of this UpgradeWindow.
+func (mg *UpgradeWindow) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

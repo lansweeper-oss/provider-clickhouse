@@ -8,19 +8,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-// getExternalNameFromTFParam returns a GetExternalNameFn that reads the named
-// parameter from tfstate. Use for TF resources whose schema does not expose an
-// "id" attribute, where upjet's default IDAsExternalName fails post-apply with
-// "cannot find id in tfstate".
-func getExternalNameFromTFParam(param string) func(map[string]any) (string, error) {
+const (
+	clickhouseService = "clickhouse_service"
+	serviceIDParam    = "service_id"
+)
+
+// getExternalNameFromServiceID returns a GetExternalNameFn that reads
+// "service_id" from tfstate. Use for TF resources whose schema does not expose
+// an "id" attribute, where upjet's default IDAsExternalName fails post-apply
+// with "cannot find id in tfstate".
+func getExternalNameFromServiceID() func(map[string]any) (string, error) {
 	return func(tfstate map[string]any) (string, error) {
-		v, ok := tfstate[param]
+		v, ok := tfstate[serviceIDParam]
 		if !ok {
-			return "", errors.Errorf("cannot find %s in tfstate", param)
+			return "", errors.Errorf("cannot find %s in tfstate", serviceIDParam)
 		}
 		s, ok := v.(string)
 		if !ok {
-			return "", errors.Errorf("%s in tfstate is not a string", param)
+			return "", errors.Errorf("%s in tfstate is not a string", serviceIDParam)
 		}
 		return s, nil
 	}
@@ -40,10 +45,19 @@ var uuidRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[
 // ExternalNameConfigs contains all external name configurations for this
 // provider.
 var ExternalNameConfigs = map[string]config.ExternalName{
-	"clickhouse_organization_settings":                               config.IdentifierFromProvider,
-	"clickhouse_service":                                             withSentinelWhenNotUUID(config.IdentifierFromProvider),
-	"clickhouse_service_private_endpoints_attachment":                withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-	"clickhouse_service_transparent_data_encryption_key_association": withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_clickpipe":                                              config.IdentifierFromProvider,
+	"clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns": config.IdentifierFromProvider,
+	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
+	"clickhouse_organization_settings":                                  config.IdentifierFromProvider,
+	"clickhouse_postgres_service":                                       withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_role_assignment":                                        withSentinelWhenNotUUID(config.ParameterAsIdentifier("role_id")),
+	"clickhouse_role":                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_service_private_endpoints_attachment":                   withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_service_scheduled_scaling":                              withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_service_transparent_data_encryption_key_association":    withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_service_upgrade_window":                                 withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	clickhouseService:                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
 }
 
 // withSentinelWhenNotUUID wraps an ExternalName so GetIDFn returns sentinelUUID

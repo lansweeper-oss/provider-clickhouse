@@ -350,7 +350,7 @@ type ServiceInitParameters struct {
 	// Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
 	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
-	// only, not persisted to state).
+	// only) Password for the default user (write-only, not persisted to state).
 	// Password for the default user (write-only, not persisted to state).
 	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
@@ -617,7 +617,7 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
-	// only, not persisted to state).
+	// only) Password for the default user (write-only, not persisted to state).
 	// Password for the default user (write-only, not persisted to state).
 	// +kubebuilder:validation:Optional
 	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`

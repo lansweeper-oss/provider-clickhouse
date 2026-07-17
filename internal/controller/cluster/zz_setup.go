@@ -9,12 +9,12 @@ import (
 
 	"github.com/crossplane/upjet/v2/pkg/controller"
 
-	clickpipe "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickhouse/clickpipe"
-	role "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickhouse/role"
 	service "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickhouse/service"
 	cdcinfrastructure "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipe/cdcinfrastructure"
+	clickpipe "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipe/clickpipe"
 	reverseprivateendpoint "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipes/reverseprivateendpoint"
 	reverseprivateendpointcustomprivatedns "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipes/reverseprivateendpointcustomprivatedns"
+	role "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/iam/role"
 	settings "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/organization/settings"
 	servicepostgres "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/postgres/service"
 	providerconfig "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/providerconfig"
@@ -29,12 +29,12 @@ import (
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
-		clickpipe.Setup,
-		role.Setup,
 		service.Setup,
 		cdcinfrastructure.Setup,
+		clickpipe.Setup,
 		reverseprivateendpoint.Setup,
 		reverseprivateendpointcustomprivatedns.Setup,
+		role.Setup,
 		settings.Setup,
 		servicepostgres.Setup,
 		providerconfig.Setup,
@@ -55,12 +55,12 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 // the supplied manager gated.
 func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
-		clickpipe.SetupGated,
-		role.SetupGated,
 		service.SetupGated,
 		cdcinfrastructure.SetupGated,
+		clickpipe.SetupGated,
 		reverseprivateendpoint.SetupGated,
 		reverseprivateendpointcustomprivatedns.SetupGated,
+		role.SetupGated,
 		settings.SetupGated,
 		servicepostgres.SetupGated,
 		providerconfig.SetupGated,
@@ -80,12 +80,12 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 // SetupWebhookWithManager registers conversion webhooks for all resource kinds in the group.
 func SetupWebhookWithManager(mgr ctrl.Manager) error {
 	for _, setup := range []func(ctrl.Manager) error{
-		clickpipe.SetupWebhookWithManager,
-		role.SetupWebhookWithManager,
 		service.SetupWebhookWithManager,
 		cdcinfrastructure.SetupWebhookWithManager,
+		clickpipe.SetupWebhookWithManager,
 		reverseprivateendpoint.SetupWebhookWithManager,
 		reverseprivateendpointcustomprivatedns.SetupWebhookWithManager,
+		role.SetupWebhookWithManager,
 		settings.SetupWebhookWithManager,
 		servicepostgres.SetupWebhookWithManager,
 		providerconfig.SetupWebhookWithManager,

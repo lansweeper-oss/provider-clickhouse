@@ -21,7 +21,7 @@ import (
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
+	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1"
 	features "github.com/lansweeper-oss/provider-clickhouse/internal/features"
 )
 

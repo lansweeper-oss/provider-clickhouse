@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: roles.clickhouse.clickhouse.crossplane.io
+  name: roles.iam.clickhouse.crossplane.io
 spec:
-  group: clickhouse.clickhouse.crossplane.io
+  group: iam.clickhouse.crossplane.io
   names:
     categories:
     - crossplane

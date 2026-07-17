@@ -8,7 +8,10 @@ import (
 	"github.com/lansweeper-oss/provider-clickhouse/config/common"
 )
 
-var gkvOverrideMap = map[string]schema.GroupVersionKind{}
+var gkvOverrideMap = map[string]schema.GroupVersionKind{
+	"clickhouse_clickpipe": {Group: "clickpipe"},
+	"clickhouse_role":      {Group: "iam"},
+}
 
 func gvkOverride() config.ResourceOption {
 	return func(r *config.Resource) {
@@ -17,7 +20,9 @@ func gvkOverride() config.ResourceOption {
 		}
 		if gvk, ok := gkvOverrideMap[r.Name]; ok {
 			r.ShortGroup = gvk.Group
-			r.Kind = gvk.Kind
+			if gvk.Kind != "" {
+				r.Kind = gvk.Kind
+			}
 			if gvk.Version != "" {
 				r.Version = gvk.Version
 			}

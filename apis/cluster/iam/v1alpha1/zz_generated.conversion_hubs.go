@@ -7,7 +7,4 @@
 package v1alpha1
 
 // Hub marks this type as a conversion hub.
-func (tr *CdcInfrastructure) Hub() {}
-
-// Hub marks this type as a conversion hub.
-func (tr *Clickpipe) Hub() {}
+func (tr *Role) Hub() {}

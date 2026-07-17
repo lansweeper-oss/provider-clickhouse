@@ -16,3 +16,12 @@ func (l *CdcInfrastructureList) GetItems() []resource.Managed {
 	}
 	return items
 }
+
+// GetItems of this ClickpipeList.
+func (l *ClickpipeList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}

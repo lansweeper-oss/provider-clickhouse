@@ -85,3 +85,22 @@ jobs:
       - name: Mirror to Upbound
         run: |
           crane copy ghcr.io/${{ github.repository }}:${{ github.event.inputs.version }} xpkg.upbound.io/lansweeper/provider-clickhouse:${{ github.event.inputs.version }} --allow-nondistributable-artifacts
+
+  add-extensions:
+    needs: mirror-to-upbound
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          submodules: true
+
+      - name: Login to Upbound Marketplace
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        with:
+          registry: xpkg.upbound.io
+          username: ${{ secrets.XPKG_MIRROR_ACCESS_ID }}
+          password: ${{ secrets.XPKG_MIRROR_TOKEN }}
+
+      - name: Append extensions
+        run: make xpkg.append VERSION=${{ github.event.inputs.version }}

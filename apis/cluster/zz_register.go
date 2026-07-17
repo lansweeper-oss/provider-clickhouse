@@ -11,7 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
+	v1alpha1clickpipe "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipe/v1alpha1"
+	v1alpha1clickpipes "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipes/v1alpha1"
 	v1alpha1organization "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/organization/v1alpha1"
+	v1alpha1postgres "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1"
+	v1alpha1role "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/role/v1alpha1"
 	v1alpha1service "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/service/v1alpha1"
 	v1alpha1cluster "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/v1alpha1"
 	v1beta1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/v1beta1"
@@ -21,7 +25,11 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		v1alpha1.SchemeBuilder.AddToScheme,
+		v1alpha1clickpipe.SchemeBuilder.AddToScheme,
+		v1alpha1clickpipes.SchemeBuilder.AddToScheme,
 		v1alpha1organization.SchemeBuilder.AddToScheme,
+		v1alpha1postgres.SchemeBuilder.AddToScheme,
+		v1alpha1role.SchemeBuilder.AddToScheme,
 		v1alpha1service.SchemeBuilder.AddToScheme,
 		v1alpha1cluster.SchemeBuilder.AddToScheme,
 		v1beta1.SchemeBuilder.AddToScheme,

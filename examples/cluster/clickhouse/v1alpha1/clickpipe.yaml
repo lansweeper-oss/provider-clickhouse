@@ -1,0 +1,46 @@
+apiVersion: clickhouse.clickhouse.crossplane.io/v1alpha1
+kind: Clickpipe
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickhouse/v1alpha1/clickpipe
+  labels:
+    testing.upbound.io/example-name: kafka_clickpipe
+  name: kafka-clickpipe
+spec:
+  forProvider:
+    destination:
+    - columns:
+      - name: my_field1
+        type: String
+      - name: my_field2
+        type: UInt64
+      managedTable: true
+      table: my_table
+      tableDefinition:
+      - engine:
+        - type: MergeTree
+    fieldMappings:
+    - destinationField: my_field1
+      sourceField: my_field
+    name: My Kafka ClickPipe
+    scaling:
+    - replicaCpuMillicores: 250
+      replicaMemoryGb: 1
+      replicas: 2
+    serviceId: e9465b4b-f7e5-4937-8e21-8d508b02843d
+    source:
+    - kafka:
+      - brokers: my-kafka-broker:9092
+        consumerGroup: clickpipe-test
+        credentials:
+        - passwordSecretRef:
+            key: example-key
+            name: example-secret
+            namespace: upbound-system
+          usernameSecretRef:
+            key: example-key
+            name: example-secret
+            namespace: upbound-system
+        format: JSONEachRow
+        topics: my_topic
+        type: confluent

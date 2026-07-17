@@ -17,8 +17,26 @@ func (l *PrivateEndpointsAttachmentList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this ScheduledScalingList.
+func (l *ScheduledScalingList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this TransparentDataEncryptionKeyAssociationList.
 func (l *TransparentDataEncryptionKeyAssociationList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetItems of this UpgradeWindowList.
+func (l *UpgradeWindowList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

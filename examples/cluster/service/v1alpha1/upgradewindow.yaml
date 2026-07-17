@@ -1,0 +1,12 @@
+apiVersion: service.clickhouse.crossplane.io/v1alpha1
+kind: UpgradeWindow
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/upgradewindow
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    startHourUtc: 12
+    weekday: 3

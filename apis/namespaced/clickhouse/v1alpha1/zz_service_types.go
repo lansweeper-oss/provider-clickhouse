@@ -68,10 +68,40 @@ type EndpointsInitParameters struct {
 	HTTPS *HTTPSInitParameters `json:"https,omitempty" tf:"https,omitempty"`
 
 	// (Attributes) (see below for nested schema)
-	MySQL *MySQLInitParameters `json:"mysql,omitempty" tf:"mysql,omitempty"`
+	MySQL *EndpointsMySQLInitParameters `json:"mysql,omitempty" tf:"mysql,omitempty"`
 
 	// (Attributes) (see below for nested schema)
 	Nativesecure *NativesecureInitParameters `json:"nativesecure,omitempty" tf:"nativesecure,omitempty"`
+}
+
+type EndpointsMySQLInitParameters struct {
+
+	// (Boolean) Wether to enable the mysql endpoint or not.
+	// Wether to enable the mysql endpoint or not.
+	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
+}
+
+type EndpointsMySQLObservation struct {
+
+	// (Boolean) Wether to enable the mysql endpoint or not.
+	// Wether to enable the mysql endpoint or not.
+	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
+
+	// (String) Endpoint host.
+	// Endpoint host.
+	Host *string `json:"host,omitempty" tf:"host,omitempty"`
+
+	// (Number) Endpoint port.
+	// Endpoint port.
+	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
+}
+
+type EndpointsMySQLParameters struct {
+
+	// (Boolean) Wether to enable the mysql endpoint or not.
+	// Wether to enable the mysql endpoint or not.
+	// +kubebuilder:validation:Optional
+	Enabled *bool `json:"enabled" tf:"enabled,omitempty"`
 }
 
 type EndpointsObservation struct {
@@ -80,7 +110,7 @@ type EndpointsObservation struct {
 	HTTPS *HTTPSObservation `json:"https,omitempty" tf:"https,omitempty"`
 
 	// (Attributes) (see below for nested schema)
-	MySQL *MySQLObservation `json:"mysql,omitempty" tf:"mysql,omitempty"`
+	MySQL *EndpointsMySQLObservation `json:"mysql,omitempty" tf:"mysql,omitempty"`
 
 	// (Attributes) (see below for nested schema)
 	Nativesecure *NativesecureObservation `json:"nativesecure,omitempty" tf:"nativesecure,omitempty"`
@@ -94,7 +124,7 @@ type EndpointsParameters struct {
 
 	// (Attributes) (see below for nested schema)
 	// +kubebuilder:validation:Optional
-	MySQL *MySQLParameters `json:"mysql,omitempty" tf:"mysql,omitempty"`
+	MySQL *EndpointsMySQLParameters `json:"mysql,omitempty" tf:"mysql,omitempty"`
 
 	// (Attributes) (see below for nested schema)
 	// +kubebuilder:validation:Optional
@@ -151,36 +181,6 @@ type IPAccessParameters struct {
 	// IP address allowed to access the service. In case you want to set the ip_access to anywhere you should set source to 0.0.0.0/0
 	// +kubebuilder:validation:Optional
 	Source *string `json:"source" tf:"source,omitempty"`
-}
-
-type MySQLInitParameters struct {
-
-	// (Boolean) Wether to enable the mysql endpoint or not.
-	// Wether to enable the mysql endpoint or not.
-	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
-}
-
-type MySQLObservation struct {
-
-	// (Boolean) Wether to enable the mysql endpoint or not.
-	// Wether to enable the mysql endpoint or not.
-	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
-
-	// (String) Endpoint host.
-	// Endpoint host.
-	Host *string `json:"host,omitempty" tf:"host,omitempty"`
-
-	// (Number) Endpoint port.
-	// Endpoint port.
-	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
-}
-
-type MySQLParameters struct {
-
-	// (Boolean) Wether to enable the mysql endpoint or not.
-	// Wether to enable the mysql endpoint or not.
-	// +kubebuilder:validation:Optional
-	Enabled *bool `json:"enabled" tf:"enabled,omitempty"`
 }
 
 type NativesecureInitParameters struct {
@@ -350,7 +350,7 @@ type ServiceInitParameters struct {
 	// Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
 	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
-	// only, not persisted to state).
+	// only) Password for the default user (write-only, not persisted to state).
 	// Password for the default user (write-only, not persisted to state).
 	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
@@ -617,7 +617,7 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
-	// only, not persisted to state).
+	// only) Password for the default user (write-only, not persisted to state).
 	// Password for the default user (write-only, not persisted to state).
 	// +kubebuilder:validation:Optional
 	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`

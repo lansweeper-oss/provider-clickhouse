@@ -1,0 +1,15 @@
+apiVersion: role.clickhouse.crossplane.io/v1alpha1
+kind: Assignment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: role/v1alpha1/assignment
+  labels:
+    testing.upbound.io/example-name: member
+  name: member
+spec:
+  forProvider:
+    apiKeyIds:
+    - ${data.clickhouse_api_key_id.current.id}
+    userIds:
+    - ${data.clickhouse_user.alice.id}
+    - ${data.clickhouse_user.bob.id}

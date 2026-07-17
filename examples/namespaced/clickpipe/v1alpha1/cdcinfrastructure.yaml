@@ -1,0 +1,13 @@
+apiVersion: clickpipe.clickhouse.m.crossplane.io/v1alpha1
+kind: CdcInfrastructure
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipe/v1alpha1/cdcinfrastructure
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    replicaCpuMillicores: 2000
+    replicaMemoryGb: 8

@@ -1,5 +1,305 @@
 name: ClickHouse/clickhouse
 resources:
+    clickhouse_clickpipe:
+        subCategory: ""
+        description: 'You can use the clickhouse_clickpipe resource to create and manage ClickPipes data ingestion pipelines in ClickHouse Cloud. Supported source types: Kafka (Confluent, MSK, Azure Event Hubs, Redpanda, WarpStream), Object Storage (S3, GCS, Azure Blob), Kinesis, Postgres CDC, MySQL CDC, BigQuery, and MongoDB CDC. Known limitations: ClickPipe does not support table updates for managed tables. If you need to update the table schema, you will have to do that externally.Changing the source type of an existing ClickPipe will force replacement (destroy and recreate).'
+        name: clickhouse_clickpipe
+        title: clickhouse_clickpipe Resource - clickhouse
+        examples:
+            - name: kafka_clickpipe
+              manifest: |-
+                {
+                  "destination": [
+                    {
+                      "columns": [
+                        {
+                          "name": "my_field1",
+                          "type": "String"
+                        },
+                        {
+                          "name": "my_field2",
+                          "type": "UInt64"
+                        }
+                      ],
+                      "managed_table": true,
+                      "table": "my_table",
+                      "table_definition": [
+                        {
+                          "engine": [
+                            {
+                              "type": "MergeTree"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "field_mappings": [
+                    {
+                      "destination_field": "my_field1",
+                      "source_field": "my_field"
+                    }
+                  ],
+                  "name": "My Kafka ClickPipe",
+                  "scaling": [
+                    {
+                      "replica_cpu_millicores": 250,
+                      "replica_memory_gb": 1,
+                      "replicas": 2
+                    }
+                  ],
+                  "service_id": "e9465b4b-f7e5-4937-8e21-8d508b02843d",
+                  "source": [
+                    {
+                      "kafka": [
+                        {
+                          "brokers": "my-kafka-broker:9092",
+                          "consumer_group": "clickpipe-test",
+                          "credentials": [
+                            {
+                              "password": "***",
+                              "username": "user"
+                            }
+                          ],
+                          "format": "JSONEachRow",
+                          "topics": "my_topic",
+                          "type": "confluent"
+                        }
+                      ]
+                    }
+                  ]
+                }
+        argumentDocs:
+            access_key: (Attributes) The access key for the Kinesis source. Use with IAM_USER authentication. Can be rotated in place via an update. (see below for nested schema)
+            access_key_id: (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
+            ack_deadline: (Number) Acknowledgement deadline in seconds (10–600).
+            allow_nullable_columns: (Boolean) Allow nullable columns in the destination table.
+            authentication: (String) The authentication method for the Kafka source. (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+            azure_container_name: '(String) Container name for Azure Blob Storage. Required when type is azureblobstorage. Example: mycontainer'
+            bigquery: (Attributes) The BigQuery source configuration for the ClickPipe. (see below for nested schema)
+            brokers: (String) The list of Kafka bootstrap brokers. (comma separated)
+            ca_certificate: (String) PEM encoded CA certificates to validate the broker's certificate.
+            certificate: (String, Sensitive) PEM encoded client certificate for mTLS authentication. Use with MUTUAL_TLS authentication.
+            column_ids: (List of String) Column IDs to sum for SummingMergeTree engine. Required when engine type is SummingMergeTree.
+            columns: (Attributes List) The list of columns for the ClickHouse table. Required for all sources except Postgres CDC (where columns are determined from source tables). (see below for nested schema)
+            compression: (String) Compression algorithm used for the files.. (none, auto, gzip, brotli, br, xz, LZMA, zstd)
+            connection_string: (String, Sensitive) The connection string for the Kafka source. Use with azureeventhub Kafka source type. Use with PLAIN authentication.
+            consumer_group: (String) Consumer group of the Kafka source. If not provided clickpipes-<ID> will be used.
+            credentials: (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+            database: (String) The name of the ClickHouse database. Default is default.
+            delete_on_merge: (Boolean) Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
+            delimiter: (String) The delimiter for the S3 source. Default is ,.
+            destination: (Attributes) The destination for the ClickPipe. (see below for nested schema)
+            destination_field: (String) The name of the column in destination table.
+            disable_tls: (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
+            enable_failover_slots: (Boolean) Enable failover for created replication slot. Requires a replication slot to NOT be set.
+            enable_ordering: (Boolean) Whether to enable ordered message delivery. Immutable — changing it requires destroy+create because ordered delivery is a property of the subscription at creation time.
+            engine: (Attributes) The engine of the ClickHouse table. (see below for nested schema)
+            exactly_once: (Boolean) Enable exactly-once delivery. Guarantees every Kafka record is inserted exactly once across restarts and rebalances.
+            excluded_columns: (Set of String) Columns to exclude from replication.
+            field_mappings: (Attributes List) Field mapping between source and destination table. (see below for nested schema)
+            filter: (String) Optional Pub/Sub subscription filter expression (CEL). Max 256 characters. Immutable — changing it requires destroy+create because the underlying subscription filter cannot be edited in place.
+            format: (String) The format of the Kafka source. (JSONEachRow, Avro, AvroConfluent, Protobuf)
+            host: (String) The hostname of the MySQL instance.
+            iam_role: (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
+            id: (String) The ID of the ClickPipe. Generated by the ClickHouse Cloud.
+            initial_load_parallelism: (Number) Number of parallel workers during initial load.
+            is_continuous: (Boolean) If set to true, the pipe will continuously read new files from the source. If set to false, the pipe will read the files only once. New files have to be uploaded lexically order.
+            iterator_type: (String) The iterator type for the Kinesis source. (TRIM_HORIZON, LATEST, AT_TIMESTAMP)
+            kafka: (Attributes) The Kafka source configuration for the ClickPipe. (see below for nested schema)
+            kinesis: (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field forces resource replacement (destroy and recreate). (see below for nested schema)
+            managed_table: '(Boolean) Whether the table is managed by ClickHouse Cloud. If false, the table must exist in the database. Default is true. Not applicable to database/CDC pipes (Postgres, MySQL, BigQuery, MongoDB): for those sources destination tables are always managed per-table via table_mappings, so this field is ignored and not sent to the API.'
+            mongodb: (Attributes) The MongoDB CDC source configuration for the ClickPipe. (see below for nested schema)
+            mysql: (Attributes) The MySQL CDC source configuration for the ClickPipe. (see below for nested schema)
+            name: (String) The name of the ClickPipe.
+            object_storage: (Attributes) The compatible object storage source configuration for the ClickPipe. (see below for nested schema)
+            offset: (Attributes) The Kafka offset. (see below for nested schema)
+            partition_by: (String) The column to partition the table by.
+            partition_key: (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
+            password: (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
+            password_wo: (String, Sensitive, Write-only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
+            password_wo_version: (Number) Version trigger for password_wo. Increment to push a new password to the API.
+            path: '(String) Path to the file(s) within the Azure container. Used for Azure Blob Storage sources. You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations. Example: data/logs/*.json'
+            port: (Number) The port of the MySQL instance. Default is 3306.
+            postgres: (Attributes) The Postgres CDC source configuration for the ClickPipe. (see below for nested schema)
+            primary_key: (String) The primary key of the table.
+            private_key: (String, Sensitive) PEM encoded client private key for mTLS authentication. Use with MUTUAL_TLS authentication.
+            project_id: (String) The GCP project ID that owns the Pub/Sub topic.
+            publication_name: (String) Publication name to use for replication. If not provided, ClickPipes will create one.
+            pubsub: (Attributes) The GCP Pub/Sub source configuration for the ClickPipe. (see below for nested schema)
+            pull_batch_size: (Number) Number of rows to pull in each batch during CDC replication.
+            queue_url: '(String) Queue URL for event-based continuous ingestion. When provided, files are ingested based on event notifications rather than lexicographical order. Only applicable when is_continuous is true and authentication is provided. For S3: SQS URL in the format https://sqs.{region}.amazonaws.com/{account-id}/{queue-name}. For GCS: Pub/Sub subscription in the format projects/{project}/subscriptions/{subscription}.'
+            read_preference: (String) MongoDB read preference for replica set reads. (primary, primaryPreferred, secondary, secondaryPreferred, nearest)
+            region: (String) The AWS region of the Kinesis stream.
+            replica_cpu_millicores: (Number) The CPU allocation per replica in millicores. Must be between 125 and 2000.
+            replica_memory_gb: (Number) The memory allocation per replica in GB. Must be between 0.5 and 8.0.
+            replicas: (Number) The number of desired replicas for the ClickPipe. Default is 1. The maximum value is 10.
+            replication_mechanism: (String) Replication mechanism for the MySQL pipe. (GTID, FILE_POS). Default is GTID. Mechanisms other than GTID (e.g. FILE_POS) must be enabled for your organization; contact ClickHouse support to enable this feature.
+            replication_mode: (String) Replication mode for the BigQuery pipe. (snapshot)
+            replication_slot_name: (String) Replication slot name to use for replication. Only applicable when replication_mode is cdc_only.
+            reverse_private_endpoint_ids: (List of String) The list of reverse private endpoint IDs for the Kafka source. (comma separated)
+            roles: (List of String) ClickPipe will create a ClickHouse user with these roles. Add your custom roles here if required.
+            scaling: (Attributes) (see below for nested schema)
+            schema_registry: (Attributes) The schema registry for the Kafka source. (see below for nested schema)
+            secret_key: (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
+            seek_timestamp: (String) RFC 3339 timestamp (e.g. 2026-04-10T12:00:00Z). Required when seek_type = "timestamp"; must be omitted otherwise.
+            seek_type: (String) The starting position for consuming the subscription. (latest, earliest, timestamp)
+            service_account_file: (String, Sensitive) Google Cloud service account JSON key file content, base64 encoded.
+            service_account_key: (String, Sensitive) Base64-encoded GCP service account JSON key for GCS authentication. Required when authentication is SERVICE_ACCOUNT.
+            service_id: (String) The ID of the service to which the ClickPipe belongs.
+            settings: (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
+            skip_cert_verification: (Boolean) Skip certificate verification for the MySQL connection.
+            skip_initial_load: (Boolean) If set to true, skips the initial load and only ingests files delivered by queue notifications. Only applicable when queue_url is provided.
+            snapshot_num_rows_per_partition: (Number) Number of rows to snapshot per partition.
+            snapshot_number_of_parallel_tables: (Number) Number of parallel tables to snapshot.
+            snapshot_staging_path: (String) GCS bucket path for staging snapshot data (e.g., gs://my-bucket/staging/). Data will be automatically cleaned up after initial load.
+            sorting_key: (List of String) The list of columns for the sorting key.
+            sorting_keys: (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
+            source: (Attributes) The data source for the ClickPipe. At least one source configuration must be provided. (see below for nested schema)
+            source_collection: (String) MongoDB source collection name.
+            source_database_name: (String) MongoDB source database name.
+            source_dataset_name: (String) Source BigQuery dataset name.
+            source_field: (String) The name of the source field.
+            source_schema_name: (String) Source schema (database) name in MySQL.
+            source_table: (String) Source table name in BigQuery.
+            start_after: (String) Skip all files up to and including this object key during the initial load (e.g. events/2026-06-01/). Cannot be provided when skip_initial_load is true.
+            state: (String) The current state of the ClickPipe. This is a read-only field that reports the actual state from ClickHouse Cloud. Possible values include Running, Stopped, Paused, Provisioning, Failed, InternalError, etc.
+            stopped: (Boolean) Whether the ClickPipe should be stopped. Default is false (ClickPipe will be running). Cannot be set to true on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+            strategy: (String) The offset strategy for the Kafka source. (from_beginning, from_latest, from_timestamp)
+            stream_name: (String) The name of the Kinesis stream.
+            sync_interval_seconds: (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+            table: (String) The name of the ClickHouse table. Required for all sources except Postgres CDC (where tables are created from table_mappings).
+            table_definition: '(Attributes) Definition of the destination table. Required for ClickPipes managed tables. Not supported for database/CDC pipes (Postgres, MySQL, BigQuery, MongoDB): for those sources destination tables are defined per-table via table_mappings (each mapping''s target_table, table_engine, sorting_keys, etc.), so configuring this is rejected at plan time. (see below for nested schema)'
+            table_engine: (String) Table engine to use for the target table. (MergeTree, ReplacingMergeTree, Null)
+            table_mappings: (Attributes List) Table mappings from BigQuery source to ClickHouse destination. (see below for nested schema)
+            target_table: (String) Target table name in ClickHouse.
+            timestamp: (String) The timestamp for the Kafka offset. Use with from_timestamp offset strategy. (format 2021-01-01T00:00)
+            tls_host: (String) TLS/SSL host for secure connections.
+            topic: (String) The Pub/Sub topic name (not the fully-qualified path).
+            topics: (String) The list of Kafka topics. (comma separated)
+            trigger_resync: '(Boolean) Set to true to trigger a resync operation. Only applicable for Postgres pipes. Automatically resets to false after the resync is triggered. Note: This will always show a diff in terraform plan after setting to true since it resets to false in state.'
+            type: (String) The type of the column.
+            uri: (String) MongoDB connection URI. Supports both standard URIs (mongodb://...) and SRV URIs (mongodb+srv://...).
+            url: (String) The URL of the schema registry.
+            use_compression: (Boolean) Enable compression for the MySQL replication connection.
+            use_custom_sorting_key: (Boolean) Whether to use a custom sorting key for the target table.
+            use_enhanced_fan_out: (Boolean) Whether to use enhanced fan-out consumer.
+            use_json_native_format: (Boolean) Store JSON values in native ClickHouse JSON format. When disabled, JSON data is stored as String.
+            username: (String, Sensitive) The username for the Kafka source.
+            version_column_id: (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree.
+        importStatements:
+            - |-
+              # ClickPipes can be imported by specifying both service ID and clickpipe ID.
+              terraform import clickhouse_clickpipe.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_clickpipe_cdc_infrastructure:
+        subCategory: ""
+        description: 'You can use the clickhouse_clickpipe_cdc_infrastructure resource to manage scaling settings for CDC ClickPipes infrastructure shared across all DB ClickPipes in a service. ~> Important: Only one CDC infrastructure resource per service is supported. Creating multiple instances for the same service will cause conflicts. This endpoint becomes available once at least one DB ClickPipe has been provisioned. The resource will poll for up to 10 minutes waiting for the endpoint to become available. For billing purposes, 2 CPU cores and 8 GB of RAM correspond to one compute unit. ~> Note: CDC infrastructure is shared across all DB ClickPipes and cannot be explicitly deleted. Removing this resource only removes it from Terraform state. The infrastructure is automatically cleaned up when all DB ClickPipes are deleted.'
+        name: clickhouse_clickpipe_cdc_infrastructure
+        title: clickhouse_clickpipe_cdc_infrastructure Resource - clickhouse
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "replica_cpu_millicores": 2000,
+                  "replica_memory_gb": 8,
+                  "service_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                }
+        argumentDocs:
+            replica_cpu_millicores: (Number) CPU in millicores for DB ClickPipes. Must be a multiple of 1000, between 1000 and 24000.
+            replica_memory_gb: (Number) Memory in GiB for DB ClickPipes. Must be a multiple of 4, between 4 and 96. Must be 4× the CPU core count.
+            service_id: (String) ClickHouse Cloud service ID where the CDC infrastructure is located.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # CDC infrastructure can be imported by specifying the service ID.
+              terraform import clickhouse_clickpipe_cdc_infrastructure.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_clickpipes_reverse_private_endpoint:
+        subCategory: ""
+        description: 'You can use the clickhouse_clickpipes_reverse_private_endpoint resource to create and manage reverse private endpoints for secure ClickPipes data source connections in ClickHouse Cloud. Supported endpoint types: VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, and GCP_PSC_SERVICE_ATTACHMENT. ~> Note: All fields on this resource are immutable after creation. Any change will force replacement (destroy and recreate). Use clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns to manage custom private DNS mappings for a reverse private endpoint.'
+        name: clickhouse_clickpipes_reverse_private_endpoint
+        title: clickhouse_clickpipes_reverse_private_endpoint Resource - clickhouse
+        examples:
+            - name: vpc_endpoint_service
+              manifest: |-
+                {
+                  "description": "VPC_ENDPOINT_SERVICE reverse private endpoint for ClickPipes",
+                  "service_id": "3a10a385-ced2-452e-abb8-908c80976a8f",
+                  "type": "VPC_ENDPOINT_SERVICE",
+                  "vpc_endpoint_service_name": "com.amazonaws.vpce.eu-west-1.vpce-svc-080826a65b5b27d4e"
+                }
+            - name: vpc_resource
+              manifest: |-
+                {
+                  "description": "VPC_RESOURCE reverse private endpoint for ClickPipes",
+                  "service_id": "3a10a385-ced2-452e-abb8-908c80976a8f",
+                  "type": "VPC_RESOURCE",
+                  "vpc_resource_configuration_id": "rcfg-1a2b3c4d5e6f7g8h9",
+                  "vpc_resource_share_arn": "arn:aws:ram:us-east-1:123456789012:resource-share/1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6"
+                }
+            - name: msk_multi_vpc
+              manifest: |-
+                {
+                  "description": "MSK_MULTI_VPC reverse private endpoint for ClickPipes",
+                  "msk_authentication": "SASL_IAM",
+                  "msk_cluster_arn": "arn:aws:kafka:us-east-1:123456789012:cluster/ClickHouse-Cluster/1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6-1",
+                  "service_id": "3a10a385-ced2-452e-abb8-908c80976a8f",
+                  "type": "MSK_MULTI_VPC"
+                }
+            - name: gcp_psc_service_attachment
+              manifest: |-
+                {
+                  "description": "GCP_PSC_SERVICE_ATTACHMENT reverse private endpoint for ClickPipes",
+                  "gcp_service_attachment": "projects/my-project/regions/us-central1/serviceAttachments/my-service",
+                  "service_id": "3a10a385-ced2-452e-abb8-908c80976a8f",
+                  "type": "GCP_PSC_SERVICE_ATTACHMENT"
+                }
+        argumentDocs:
+            description: (String) Description of the reverse private endpoint
+            dns_names: (List of String) Reverse private endpoint internal DNS names
+            endpoint_id: (String) Reverse private endpoint endpoint ID
+            gcp_service_attachment: '(String) GCP PSC service attachment URI, required for GCP_PSC_SERVICE_ATTACHMENT type. Format: projects/{project}/regions/{region}/serviceAttachments/{name}'
+            id: (String) Unique identifier for the reverse private endpoint
+            msk_authentication: (String) MSK cluster authentication type (SASL_IAM or SASL_SCRAM), required for MSK_MULTI_VPC type
+            msk_cluster_arn: (String) MSK cluster ARN, required for MSK_MULTI_VPC type
+            private_dns_names: (List of String) Reverse private endpoint private DNS names
+            service_id: (String) The ID of the ClickHouse service to associate with this reverse private endpoint
+            status: (String) Status of the reverse private endpoint
+            type: (String) Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
+            vpc_endpoint_service_name: (String) VPC endpoint service name, required for VPC_ENDPOINT_SERVICE type
+            vpc_resource_configuration_id: (String) VPC resource configuration ID, required for VPC_RESOURCE type
+            vpc_resource_share_arn: (String) VPC resource share ARN, required for VPC_RESOURCE type
+        importStatements:
+            - |-
+              # ClickPipes reverse private endpoints can be imported by specifying both service ID and reverse private endpoint ID.
+              terraform import clickhouse_clickpipes_reverse_private_endpoint.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns:
+        subCategory: ""
+        description: Use the clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns resource to manage the full set of custom private DNS mappings for an existing ClickPipes reverse private endpoint. This resource updates only custom private DNS mappings. The mapping list is a full replacement list, and deleting this resource clears all custom private DNS mappings on the reverse private endpoint.
+        name: clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns
+        title: clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns Resource - clickhouse
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "mapping": [
+                    {
+                      "private_dns_name": "my-service.example.com"
+                    }
+                  ],
+                  "reverse_private_endpoint_id": "12345678-1234-1234-1234-123456789012",
+                  "service_id": "3a10a385-ced2-452e-abb8-908c80976a8f"
+                }
+        argumentDocs:
+            id: (String) Resource identifier in service_id:reverse_private_endpoint_id format.
+            mapping: (Attributes List) Full replacement list of custom private DNS mappings. Use an empty list to clear mappings. (see below for nested schema)
+            private_dns_name: (String) Custom private DNS name managed by ClickHouse Cloud.
+            reverse_private_endpoint_id: (String) The ID of the ClickPipes reverse private endpoint to manage custom private DNS mappings for.
+            service_id: (String) The ID of the ClickHouse service that owns the reverse private endpoint.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # ClickPipes reverse private endpoint custom private DNS mappings can be imported by specifying both service ID and reverse private endpoint ID.
+              terraform import clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_organization_settings:
         subCategory: ""
         description: 'You can use the clickhouse_organization_settings resource to manage organization-level settings in ClickHouse Cloud. ~> Note: This resource manages settings for the organization configured in the provider. Only one instance of this resource should exist per organization. Example Usage'
@@ -24,9 +324,114 @@ resources:
               #!/bin/bash
               # The organization settings resource can be imported using the organization ID
               terraform import clickhouse_organization_settings.this xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_postgres_service:
+        subCategory: ""
+        description: '~> Note: This resource is in alpha and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (alpha): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server''s PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won''t lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you''ll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):'
+        name: clickhouse_postgres_service
+        title: clickhouse_postgres_service Resource - clickhouse
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "cloud_provider": "aws",
+                  "ha_type": "async",
+                  "name": "my-postgres",
+                  "region": "us-east-1",
+                  "size": "m6gd.large",
+                  "tags": {
+                    "environment": "production",
+                    "team": "data"
+                  }
+                }
+        argumentDocs:
+            '"200"': ).
+            Optional + Computed: (like tags).
+            PATCH /password: ). Stored in (sensitive) state.
+            POST /config: |-
+                , so removing a key
+                from the map removes it server-side. Out-of-band changes to declared
+                parameters are reverted on the next apply.
+            Sensitive: |-
+                . The Terraform CLI renders
+                Sensitive attributes as (sensitive value) in human-readable
+                output but the underlying state file is plaintext — ensure your
+                state backend is configured for at-rest encryption.
+            cloud_provider: |-
+                , region, postgres_version (and, for a replica,
+                size) are reproduced verbatim. Omit them, or set them to match the
+                source — a mismatch is a plan-time error ("conflicts with the source
+                instance"). The provider pins these into the plan so it shows real values.
+            connection_string: '(String, Sensitive) Full connection URI embedding the username and the password. Marked sensitive; the secret-redaction layer also covers it in TF_LOG=DEBUG output. Plan stability is managed in ModifyPlan: pinned to the prior value on unrelated updates, marked unknown when a password rotation is planned (it embeds the password).'
+            created_at: (String) RFC3339 timestamp when the service was created.
+            ha_type: (String) High-availability mode. One of 'none' (single replica), 'async' (asynchronous replica), or 'sync' (synchronous replica). Mutable post-create; an HA flip triggers a transition. Omitting the attribute preserves the prior value (the server defaults to 'none' on Create); to actively downgrade, set 'ha_type = "none"' explicitly. Omit for a read replica or point-in-time restore (inherited from the source).
+            hostname: (String) Network hostname for client connections.
+            id: (String) Unique identifier for the Postgres service. Assigned by ClickHouse Cloud.
+            is_primary: |-
+                flipping true, and the plan then errors ("read replica has been promoted
+                to a primary"), directing you to remove read_replica_of from the
+                configuration. Doing so reconciles the instance in place (no destroy),
+                adopting it as a standalone primary — precisely because is_primary is true.
+                (Removing read_replica_of from a non-promoted replica instead destroys and
+                recreates it as a standalone primary.)
+            name: |-
+                and it is independent of its source. A backup must exist at or before
+                restore_target (the first automatic backup is taken ~10 minutes after the
+                source is created). The block is create-time only: changing source_id /
+                restore_target or removing it destroys and recreates the instance.
+            password: .
+            pg_config: (Map of String) Postgres server parameters (pgConfig) as a key-value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set pg_config = {} to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
+            pg_config = {}: |-
+                on an existing
+                instance clears all declared parameters (same as tags = {}). An empty
+                pg_config = {} is only valid on update — the server rejects it on create,
+                so on a create (including a read replica / restore) omit the attribute to use
+                the default / inherit, or set at least one parameter (the provider blocks an
+                empty map at plan time with a clear error).
+            pgbouncer_config: (Map of String) PgBouncer connection-pooler parameters (pgBouncerConfig) as a key-value map. Same Optional+Computed semantics as pg_config; set pgbouncer_config = {} to clear.
+            port: (Number) TCP port for client connections. Hardcoded to 5432 today; will become server-supplied once the API exposes a per-instance port field.
+            postgres_version: (String) Major Postgres version (e.g. '18'). The server picks the patch release within that major. Changing the major triggers destroy-and-recreate. Omit for a read replica or point-in-time restore (inherited from the source).
+            read_replica_of: |-
+                ), or by
+                point-in-time restore (restore_to_point_in_time)
+            region: (String) Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+            restore_target: (String) RFC3339 timestamp to restore to (e.g. '2026-06-01T12:00:00Z'). The server restores to the closest available recovery point at or before this time.
+            restore_to_point_in_time: |-
+                and with
+                password (a replica inherits the primary's superuser).
+                Changing or removing it destroys and recreates the instance as a
+                standalone primary — a live replica can't be converted in place (see
+                "Out-of-band changes" for the promotion exception).
+                A live read replica cannot be modified directly: changing size,
+                ha_type, or tags is a plan-time error ("read replica cannot be
+                modified directly"), because the server rejects any such change on a replica.
+                Resize/retag the parent instead. (Removing read_replica_of turns this
+                into a standalone primary, but — as noted above — that destroys and
+                recreates a live replica; it is not an in-place detach.) pg_config /
+                pgbouncer_config are changeable on a replica — they use a separate
+                endpoint that allows per-replica values.
+            size: |-
+                , ha_type, tags, pg_config, pgbouncer_config,
+                password rotation
+            source_id: (String) ID of the source instance whose backup to restore from.
+            state: '(String) Server-reported state. Examples: ''creating'', ''running'', ''restarting'', ''unavailable'', ''deleting''. Forward-compatible: unknown values from the server are surfaced verbatim.'
+            tags: (Map of String) Resource tags as a key-value map. Values must be non-empty (server's PATCH returns 400 on omitted value). Set tags = {} to clear all tags; omit the attribute to preserve the prior value.
+            terraform refresh: |-
+                syncs
+                the new value into state from the GET response.
+            timeouts {}: |-
+                block; the
+                provider uses fixed internal poll/retry budgets.
+            username: (String) Default superuser name.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Managed Postgres services can be imported by specifying the service ID.
+              # The password is recovered on import (the server echoes it on GET) and stored
+              # in state.
+              terraform import clickhouse_postgres_service.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_private_endpoint_registration Resource - clickhouse:
         subCategory: ""
-        description: This resource is deprecated since version 3.2.0. Please refer to the docs https://github.com/ClickHouse/terraform-provider-clickhouse?tab=readme-ov-file#breaking-changes-and-deprecations for migration steps.
+        description: 'This resource is deprecated since version 3.2.0. Please refer to the docs for migration steps: https://github.com/ClickHouse/terraform-provider-clickhouse?tab=readme-ov-file#breaking-changes-and-deprecations'
         name: clickhouse_private_endpoint_registration Resource - clickhouse
         title: clickhouse_private_endpoint_registration Resource - clickhouse
         argumentDocs:
@@ -35,6 +440,149 @@ resources:
             private_endpoint_id: (String) ID of the private endpoint (replaces deprecated attribute id)
             region: (String) Region of the private endpoint
         importStatements: []
+    clickhouse_role:
+        subCategory: ""
+        description: You can use the clickhouse_role resource to manage custom RBAC roles in ClickHouse Cloud. Example Usage
+        name: clickhouse_role
+        title: clickhouse_role Resource - clickhouse
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "name": "my-custom-role",
+                  "policies": [
+                    {
+                      "effect": "ALLOW",
+                      "permissions": [
+                        "control-plane:organization:create-api-keys"
+                      ],
+                      "resources": [
+                        "organization/\u003corg-id\u003e"
+                      ]
+                    },
+                    {
+                      "effect": "ALLOW",
+                      "permissions": [
+                        "control-plane:service:view-backups"
+                      ],
+                      "resources": [
+                        "instance/\u003cservice-id\u003e"
+                      ]
+                    },
+                    {
+                      "effect": "ALLOW",
+                      "permissions": [
+                        "sql-console:database:access"
+                      ],
+                      "resources": [
+                        "instance/\u003cservice-id\u003e"
+                      ],
+                      "tags": {
+                        "role": "sql-console-readonly"
+                      }
+                    }
+                  ]
+                }
+              dependencies:
+                clickhouse_role_assignment.example: |-
+                    {
+                      "role_id": "${clickhouse_role.example.id}",
+                      "user_ids": [
+                        "${data.clickhouse_user.alice.id}"
+                      ]
+                    }
+            - name: example
+              manifest: |-
+                {
+                  "name": "my-custom-role",
+                  "policies": [
+                    {
+                      "effect": "ALLOW",
+                      "permissions": [
+                        "control-plane:organization:create-api-keys"
+                      ],
+                      "resources": [
+                        "organization/\u003corg-id\u003e"
+                      ]
+                    },
+                    {
+                      "effect": "ALLOW",
+                      "permissions": [
+                        "control-plane:service:view-backups"
+                      ],
+                      "resources": [
+                        "instance/\u003cservice-id\u003e"
+                      ]
+                    }
+                  ]
+                }
+        argumentDocs:
+            created_at: (String) Timestamp when the role was created.
+            effect: (String) Whether this policy allows or denies the specified permissions.
+            id: (String) Unique identifier for the role.
+            name: (String) Name of the custom role.
+            owner_id: (String) Owner ID of this role.
+            permissions: (Set of String) List of permission strings granted or denied by this policy.
+            policies: (Attributes List) List of policies attached to this role. (see below for nested schema)
+            resources: '(Set of String) List of resources this policy applies to. Format: ''instance/'' or ''instance/*''.'
+            role: '(String) SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).'
+            role_id: (String) ID of the role this policy belongs to.
+            tags: (Attributes) Optional tags for additional policy metadata. (see below for nested schema)
+            tenant_id: (String) Tenant ID that owns this role.
+            type: (String) Type of the role. Always 'custom' for managed roles.
+            updated_at: (String) Timestamp when the role was last updated.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Roles can be imported by specifying the role ID.
+              terraform import clickhouse_role.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_role_assignment:
+        subCategory: ""
+        description: 'Use the clickhouse_role_assignment resource to assign actors (users and/or API keys) to a role. Works for both system roles and custom roles. One resource manages all actors for a given role. Use user_ids to assign users, api_key_ids to assign API keys, or both. Only one clickhouse_role_assignment per role is needed. ~> Note: On delete, all actors are removed from the role. To look up the ID of a system role by name, use the clickhouse_role data source. To look up a user ID by email, use the clickhouse_user data source. Example Usage'
+        name: clickhouse_role_assignment
+        title: clickhouse_role_assignment Resource - clickhouse
+        examples:
+            - name: member
+              manifest: |-
+                {
+                  "api_key_ids": [
+                    "${data.clickhouse_api_key_id.current.id}"
+                  ],
+                  "role_id": "${data.clickhouse_role.member.id}",
+                  "user_ids": [
+                    "${data.clickhouse_user.alice.id}",
+                    "${data.clickhouse_user.bob.id}"
+                  ]
+                }
+              references:
+                api_key_ids: data.clickhouse_api_key_id.current.id
+                role_id: data.clickhouse_role.member.id
+                user_ids: data.clickhouse_user.alice.id
+            - name: member
+              manifest: |-
+                {
+                  "api_key_ids": [
+                    "${data.clickhouse_api_key_id.current.id}"
+                  ],
+                  "role_id": "${data.clickhouse_role.member.id}",
+                  "user_ids": [
+                    "${data.clickhouse_user.alice.id}"
+                  ]
+                }
+              references:
+                api_key_ids: data.clickhouse_api_key_id.current.id
+                role_id: data.clickhouse_role.member.id
+                user_ids: data.clickhouse_user.alice.id
+        argumentDocs:
+            api_key_ids: (Set of String) Set of API key IDs to assign to the role.
+            id: (String) Same as role_id.
+            role_id: (String) ID of the role to assign actors to.
+            user_ids: (Set of String) Set of user IDs to assign to the role.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Role assignments can be imported by specifying the role ID.
+              terraform import clickhouse_role_assignment.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service:
         subCategory: ""
         description: 'You can use the clickhouse_service resource to deploy ClickHouse cloud instances on supported cloud providers. Known limitations: If you create a service with warehouse_id set and then remove warehouse_id attribute completely, the provider won''t detect the change. If you want to make a secondary service become primary, remove the warehouse_id and taint it before applying.If you create a service with readonly flag set to true and then remove readonly flag completely, the provider won''t detect the change. If you want to make a secondary service read write, explicitly set the readonly flag to false.'
@@ -99,7 +647,7 @@ resources:
             num_replicas: (Number) Number of replicas for the service.
             password: (String, Sensitive) Password for the default user. One of either password, password_wo, or password_hash must be specified.
             password_hash: (String, Sensitive) SHA256 hash of password for the default user. One of either password, password_wo, or password_hash must be specified.
-            password_wo: (String, Sensitive) Password for the default user (write-only, not persisted to state). Use this instead of password to avoid storing the password hash in Terraform state.
+            password_wo: (String, Sensitive, Write-only) Password for the default user (write-only, not persisted to state). Use this instead of password to avoid storing the password hash in Terraform state.
             password_wo_version: (Number) Version number for password_wo. Increment this to trigger a password update when using password_wo.
             port: (Number) Endpoint port.
             private_dns_hostname: (String) Private DNS Hostname of the VPC you created.
@@ -146,6 +694,120 @@ resources:
             - |-
               # Endpoint Attachments can be imported by specifying the clickhouse service UUID
               terraform import clickhouse_service_private_endpoints_attachment.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_service_scheduled_scaling:
+        subCategory: ""
+        description: 'You can use the clickhouse_service_scheduled_scaling resource to manage time-based scaling rules for a ClickHouse Cloud service. A schedule is a set of recurring weekly windows. The server rejects any pair of entries that overlap in time, so at most one window is active at any moment. While a window is active the service uses the replica count, memory bounds, and idle-scaling settings declared on that entry; otherwise the service falls back to its base auto-scaling configuration. ~> Note: This resource is in alpha. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling). Reach out to ClickHouse support if the API returns 403 FORBIDDEN. The server currently requires min_replicas == max_replicas per entry, and a maximum of 10 entries per schedule. Hour ranges Hour ranges are asymmetric: start_hour_utc accepts 0–23.end_hour_utc accepts 1–24.start_hour_utc and end_hour_utc must differ.Set start_hour_utc = 0 and end_hour_utc = 24 for a 24-hour window.Set end_hour_utc < start_hour_utc to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day). Example Usage'
+        name: clickhouse_service_scheduled_scaling
+        title: clickhouse_service_scheduled_scaling Resource - clickhouse
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "entries": [
+                    {
+                      "end_hour_utc": 18,
+                      "idle_scaling": false,
+                      "max_replicas": 3,
+                      "min_replicas": 3,
+                      "name": "Business hours",
+                      "start_hour_utc": 8,
+                      "weekdays": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                      ]
+                    },
+                    {
+                      "end_hour_utc": 6,
+                      "idle_scaling": true,
+                      "idle_timeout_minutes": 5,
+                      "max_replicas": 1,
+                      "min_replicas": 1,
+                      "name": "Overnight",
+                      "start_hour_utc": 22,
+                      "weekdays": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6
+                      ]
+                    }
+                  ],
+                  "service_id": "${clickhouse_service.example.id}"
+                }
+              references:
+                service_id: clickhouse_service.example.id
+            - name: example
+              manifest: |-
+                {
+                  "entries": [
+                    {
+                      "end_hour_utc": 18,
+                      "idle_scaling": false,
+                      "max_replicas": 3,
+                      "min_replicas": 3,
+                      "name": "Business hours",
+                      "start_hour_utc": 8,
+                      "weekdays": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                      ]
+                    },
+                    {
+                      "end_hour_utc": 6,
+                      "idle_scaling": true,
+                      "idle_timeout_minutes": 5,
+                      "max_replicas": 1,
+                      "min_replicas": 1,
+                      "name": "Overnight",
+                      "start_hour_utc": 22,
+                      "weekdays": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6
+                      ]
+                    }
+                  ],
+                  "service_id": "${clickhouse_service.svc.id}"
+                }
+              references:
+                service_id: clickhouse_service.svc.id
+              dependencies:
+                clickhouse_service.svc: '{}'
+        argumentDocs:
+            base_config: (Attributes) Fallback configuration applied when no entry is currently active. Server-managed. (see below for nested schema)
+            end_hour_utc: accepts 1–24.
+            end_hour_utc < start_hour_utc: to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day).
+            entries: (Attributes Set) Recurring scaling windows. The server rejects any pair of entries that overlap in time, so at most one window is active at any moment; otherwise base_config applies. (see below for nested schema)
+            id: (String) Resource identifier. Equal to service_id (one schedule per service).
+            idle_scaling: (Boolean) Whether idle scaling is enabled while the window is active.
+            idle_timeout_minutes: (Number) Minutes of inactivity before the service scales to zero. Must be at least 5. Only meaningful when idle_scaling is true.
+            max_replica_memory_gb: (Number) Maximum memory per replica in GiB. Must be set together with min_replica_memory_gb.
+            max_replicas: (Number) Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+            min_replica_memory_gb: (Number) Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
+            min_replicas: (Number) Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+            name: (String) Human-readable name for the entry (e.g. "Business hours").
+            service_id: (String) ClickHouse Cloud service ID this schedule applies to.
+            start_hour_utc: accepts 0–23.
+            start_hour_utc = 0: and end_hour_utc = 24 for a 24-hour window.
+            weekdays: (Set of Number) Weekdays this entry covers. 0 = Sunday … 6 = Saturday.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Scheduled scaling can be imported by specifying the service ID.
+              terraform import clickhouse_service_scheduled_scaling.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service_transparent_data_encryption_key_association:
         subCategory: ""
         description: You can use the clickhouse_service_transparent_data_encryption_key_association resource to associate your own Encryption Key with a Clickhouse Service with the Transparent Data Encryption (TDE) feature enabled. Please note that this feature requires an organization with the Enterprise plan.
@@ -171,3 +833,40 @@ resources:
             - |-
               # Endpoint Attachments can be imported by specifying the clickhouse service UUID
               terraform import clickhouse_service_transparent_data_encryption_key_association.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_service_upgrade_window:
+        subCategory: ""
+        description: 'You can use the clickhouse_service_upgrade_window resource to pin the weekly upgrade window for a ClickHouse Cloud service. When configured, the data plane only attempts service upgrades during the declared window. The window is a single weekly recurrence: a weekday plus a start_hour_utc. The window currently lasts 6 hours from start_hour_utc; duration is returned by the API and exposed as a read-only attribute. ~> Note: This resource is in alpha. Setting or updating an upgrade window requires the canUseScheduledUpgrades entitlement — reach out to ClickHouse support if the API returns 403 FORBIDDEN. Deleting an upgrade window is allowed even after the entitlement is lost, so existing windows can always be cleared. Primary services only The upgrade window can only be set on primary services. Secondary services inherit the window from their primary. Applying this resource against a secondary service returns a 400 with the message cannot set upgrade window on a secondary service, surfaced by the provider as Upgrade windows can only be set on primary services. Allowed values weekday: 0 (Sunday) – 6 (Saturday)start_hour_utc: one of 0, 6, 12, 18 Best-effort overwrite protection Create performs a GET before issuing the PUT so that an existing window (e.g. one configured out-of-band) surfaces a "please import" diagnostic instead of being silently overwritten. The check is best-effort: a window created between this resource''s GET and PUT (e.g. by another tool, or another Terraform apply) will still be overwritten by PUT. Import'
+        name: clickhouse_service_upgrade_window
+        title: clickhouse_service_upgrade_window Resource - clickhouse
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "service_id": "${clickhouse_service.example.id}",
+                  "start_hour_utc": 12,
+                  "weekday": 3
+                }
+              references:
+                service_id: clickhouse_service.example.id
+            - name: example
+              manifest: |-
+                {
+                  "service_id": "${clickhouse_service.svc.id}",
+                  "start_hour_utc": 12,
+                  "weekday": 3
+                }
+              references:
+                service_id: clickhouse_service.svc.id
+              dependencies:
+                clickhouse_service.svc: '{}'
+        argumentDocs:
+            duration: (Number) Length of the upgrade window in hours. Server-controlled; currently always 6.
+            id: (String) Resource identifier. Equal to service_id (one window per service).
+            service_id: (String) ClickHouse Cloud service ID this upgrade window applies to.
+            start_hour_utc: ': one of 0, 6, 12, 18'
+            weekday: ': 0 (Sunday) – 6 (Saturday)'
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Upgrade window can be imported by specifying the service ID.
+              terraform import clickhouse_service_upgrade_window.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

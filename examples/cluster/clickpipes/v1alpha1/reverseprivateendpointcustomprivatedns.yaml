@@ -1,0 +1,14 @@
+apiVersion: clickpipes.clickhouse.crossplane.io/v1alpha1
+kind: ReversePrivateEndpointCustomPrivateDNS
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipes/v1alpha1/reverseprivateendpointcustomprivatedns
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    mapping:
+    - privateDnsName: my-service.example.com
+    reversePrivateEndpointId: 12345678-1234-1234-1234-123456789012
+    serviceId: 3a10a385-ced2-452e-abb8-908c80976a8f

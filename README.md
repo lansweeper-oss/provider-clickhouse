@@ -1,4 +1,4 @@
-# Provider ClickHouse
+# Provider ClickHouse <img src="icon.svg" alt="Provider ClickHouse Icon" style="height: 1em; vertical-align: middle; margin-left: 1em">
 
 `provider-clickhouse` is a [Crossplane](https://crossplane.io/) provider for
 [ClickHouse Cloud](https://clickhouse.com/cloud) built with

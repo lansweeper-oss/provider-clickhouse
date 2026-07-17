@@ -319,6 +319,8 @@ help-special: crossplane.help
 vendor: modules.download
 vendor.check: modules.check
 
+go.modules.download: provider-source
+
 # Copy examples-generated to examples
 copy-examples:
 	@$(INFO) copying generated examples to examples

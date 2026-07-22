@@ -24,7 +24,8 @@ var providerMetadata string
 // GetProvider returns provider configuration
 func GetProvider() *ujconfig.Provider {
 	pc := ujconfig.NewProvider([]byte(providerSchema), resourcePrefix, modulePath, []byte(providerMetadata),
-		ujconfig.WithIncludeList(ExternalNameConfigured()),
+		ujconfig.WithIncludeList(nil),
+		ujconfig.WithTerraformPluginFrameworkIncludeList(ExternalNameConfigured()),
 		ujconfig.WithFeaturesPackage("internal/features"),
 		ujconfig.WithRootGroup(resourcePrefix+".crossplane.io"),
 		ujconfig.WithTerraformPluginFrameworkProvider(provider.NewBuilder(resource.GetResourceFactories())()),
@@ -42,7 +43,8 @@ func GetProvider() *ujconfig.Provider {
 // GetProviderNamespaced returns the namespaced provider configuration
 func GetProviderNamespaced() *ujconfig.Provider {
 	pc := ujconfig.NewProvider([]byte(providerSchema), resourcePrefix, modulePath, []byte(providerMetadata),
-		ujconfig.WithIncludeList(ExternalNameConfigured()),
+		ujconfig.WithIncludeList(nil),
+		ujconfig.WithTerraformPluginFrameworkIncludeList(ExternalNameConfigured()),
 		ujconfig.WithShortName(resourcePrefix),
 		ujconfig.WithFeaturesPackage("internal/features"),
 		ujconfig.WithRootGroup(resourcePrefix+".m.crossplane.io"),

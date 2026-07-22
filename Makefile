@@ -326,7 +326,8 @@ sbom: $(SYFT)
 
 xpkg.extensions: sbom
 	@$(INFO) Preparing package extensions
-	@mkdir -p $(EXTENSIONS_DIR)/{icons, readme}
+	@mkdir -p $(EXTENSIONS_DIR)/icons
+	@mkdir -p $(EXTENSIONS_DIR)/readme
 	@cp $(ROOT_DIR)/icon.svg $(EXTENSIONS_DIR)/icons/icon.svg
 	@cp $(ROOT_DIR)/README.md $(EXTENSIONS_DIR)/readme/readme.md
 	@$(OK) Package extensions prepared at $(EXTENSIONS_DIR)

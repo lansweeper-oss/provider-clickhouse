@@ -5,11 +5,11 @@ import (
 	"context"
 	"fmt"
 
-	xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/password"
 	xpresource "github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/upjet/v2/pkg/config"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"

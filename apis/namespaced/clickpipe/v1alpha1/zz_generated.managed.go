@@ -6,84 +6,84 @@
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+import xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
 // GetCondition of this CdcInfrastructure.
-func (mg *CdcInfrastructure) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *CdcInfrastructure) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetManagementPolicies of this CdcInfrastructure.
-func (mg *CdcInfrastructure) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *CdcInfrastructure) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this CdcInfrastructure.
-func (mg *CdcInfrastructure) GetProviderConfigReference() *xpv1.ProviderConfigReference {
+func (mg *CdcInfrastructure) GetProviderConfigReference() *xpv2.ProviderConfigReference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this CdcInfrastructure.
-func (mg *CdcInfrastructure) GetWriteConnectionSecretToReference() *xpv1.LocalSecretReference {
+func (mg *CdcInfrastructure) GetWriteConnectionSecretToReference() *xpv2.LocalSecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this CdcInfrastructure.
-func (mg *CdcInfrastructure) SetConditions(c ...xpv1.Condition) {
+func (mg *CdcInfrastructure) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetManagementPolicies of this CdcInfrastructure.
-func (mg *CdcInfrastructure) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *CdcInfrastructure) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this CdcInfrastructure.
-func (mg *CdcInfrastructure) SetProviderConfigReference(r *xpv1.ProviderConfigReference) {
+func (mg *CdcInfrastructure) SetProviderConfigReference(r *xpv2.ProviderConfigReference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this CdcInfrastructure.
-func (mg *CdcInfrastructure) SetWriteConnectionSecretToReference(r *xpv1.LocalSecretReference) {
+func (mg *CdcInfrastructure) SetWriteConnectionSecretToReference(r *xpv2.LocalSecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this Clickpipe.
-func (mg *Clickpipe) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *Clickpipe) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetManagementPolicies of this Clickpipe.
-func (mg *Clickpipe) GetManagementPolicies() xpv1.ManagementPolicies {
+func (mg *Clickpipe) GetManagementPolicies() xpv2.ManagementPolicies {
 	return mg.Spec.ManagementPolicies
 }
 
 // GetProviderConfigReference of this Clickpipe.
-func (mg *Clickpipe) GetProviderConfigReference() *xpv1.ProviderConfigReference {
+func (mg *Clickpipe) GetProviderConfigReference() *xpv2.ProviderConfigReference {
 	return mg.Spec.ProviderConfigReference
 }
 
 // GetWriteConnectionSecretToReference of this Clickpipe.
-func (mg *Clickpipe) GetWriteConnectionSecretToReference() *xpv1.LocalSecretReference {
+func (mg *Clickpipe) GetWriteConnectionSecretToReference() *xpv2.LocalSecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Clickpipe.
-func (mg *Clickpipe) SetConditions(c ...xpv1.Condition) {
+func (mg *Clickpipe) SetConditions(c ...xpv2.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetManagementPolicies of this Clickpipe.
-func (mg *Clickpipe) SetManagementPolicies(r xpv1.ManagementPolicies) {
+func (mg *Clickpipe) SetManagementPolicies(r xpv2.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = r
 }
 
 // SetProviderConfigReference of this Clickpipe.
-func (mg *Clickpipe) SetProviderConfigReference(r *xpv1.ProviderConfigReference) {
+func (mg *Clickpipe) SetProviderConfigReference(r *xpv2.ProviderConfigReference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Clickpipe.
-func (mg *Clickpipe) SetWriteConnectionSecretToReference(r *xpv1.LocalSecretReference) {
+func (mg *Clickpipe) SetWriteConnectionSecretToReference(r *xpv2.LocalSecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

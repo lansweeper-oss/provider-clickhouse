@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	v2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 type MappingInitParameters struct {
@@ -47,11 +47,11 @@ type ReversePrivateEndpointCustomPrivateDNSInitParameters struct {
 
 	// Reference to a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
 	// +kubebuilder:validation:Optional
-	ReversePrivateEndpointIDRef *v1.Reference `json:"reversePrivateEndpointIdRef,omitempty" tf:"-"`
+	ReversePrivateEndpointIDRef *v2.Reference `json:"reversePrivateEndpointIdRef,omitempty" tf:"-"`
 
 	// Selector for a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
 	// +kubebuilder:validation:Optional
-	ReversePrivateEndpointIDSelector *v1.Selector `json:"reversePrivateEndpointIdSelector,omitempty" tf:"-"`
+	ReversePrivateEndpointIDSelector *v2.Selector `json:"reversePrivateEndpointIdSelector,omitempty" tf:"-"`
 
 	// (String) The ID of the ClickHouse service that owns the reverse private endpoint.
 	// The ID of the ClickHouse service that owns the reverse private endpoint.
@@ -60,11 +60,11 @@ type ReversePrivateEndpointCustomPrivateDNSInitParameters struct {
 
 	// Reference to a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDRef *v1.Reference `json:"serviceIdRef,omitempty" tf:"-"`
+	ServiceIDRef *v2.Reference `json:"serviceIdRef,omitempty" tf:"-"`
 
 	// Selector for a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDSelector *v1.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
+	ServiceIDSelector *v2.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
 }
 
 type ReversePrivateEndpointCustomPrivateDNSObservation struct {
@@ -98,11 +98,11 @@ type ReversePrivateEndpointCustomPrivateDNSParameters struct {
 
 	// Reference to a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
 	// +kubebuilder:validation:Optional
-	ReversePrivateEndpointIDRef *v1.Reference `json:"reversePrivateEndpointIdRef,omitempty" tf:"-"`
+	ReversePrivateEndpointIDRef *v2.Reference `json:"reversePrivateEndpointIdRef,omitempty" tf:"-"`
 
 	// Selector for a ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointId.
 	// +kubebuilder:validation:Optional
-	ReversePrivateEndpointIDSelector *v1.Selector `json:"reversePrivateEndpointIdSelector,omitempty" tf:"-"`
+	ReversePrivateEndpointIDSelector *v2.Selector `json:"reversePrivateEndpointIdSelector,omitempty" tf:"-"`
 
 	// (String) The ID of the ClickHouse service that owns the reverse private endpoint.
 	// The ID of the ClickHouse service that owns the reverse private endpoint.
@@ -112,17 +112,17 @@ type ReversePrivateEndpointCustomPrivateDNSParameters struct {
 
 	// Reference to a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDRef *v1.Reference `json:"serviceIdRef,omitempty" tf:"-"`
+	ServiceIDRef *v2.Reference `json:"serviceIdRef,omitempty" tf:"-"`
 
 	// Selector for a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDSelector *v1.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
+	ServiceIDSelector *v2.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
 }
 
 // ReversePrivateEndpointCustomPrivateDNSSpec defines the desired state of ReversePrivateEndpointCustomPrivateDNS
 type ReversePrivateEndpointCustomPrivateDNSSpec struct {
-	v1.ResourceSpec `json:",inline"`
-	ForProvider     ReversePrivateEndpointCustomPrivateDNSParameters `json:"forProvider"`
+	v2.ClusterManagedResourceSpec `json:",inline"`
+	ForProvider                   ReversePrivateEndpointCustomPrivateDNSParameters `json:"forProvider"`
 	// THIS IS A BETA FIELD. It will be honored
 	// unless the Management Policies feature flag is disabled.
 	// InitProvider holds the same fields as ForProvider, with the exception
@@ -138,8 +138,8 @@ type ReversePrivateEndpointCustomPrivateDNSSpec struct {
 
 // ReversePrivateEndpointCustomPrivateDNSStatus defines the observed state of ReversePrivateEndpointCustomPrivateDNS.
 type ReversePrivateEndpointCustomPrivateDNSStatus struct {
-	v1.ResourceStatus `json:",inline"`
-	AtProvider        ReversePrivateEndpointCustomPrivateDNSObservation `json:"atProvider,omitempty"`
+	v2.ManagedResourceStatus `json:",inline"`
+	AtProvider               ReversePrivateEndpointCustomPrivateDNSObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

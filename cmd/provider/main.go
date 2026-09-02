@@ -61,10 +61,11 @@ var cli struct {
 	PollInterval            time.Duration `default:"10m" help:"Poll interval controls how often an individual resource should be checked for drift." name:"poll"`
 	PollStateMetricInterval time.Duration `default:"5s"  name:"poll-state-metric" help:"State metric recording interval"`
 
-	MaxReconcileRate         int    `default:"10"                                  help:"The global maximum rate per second at which resources may be checked for drift from the desired state."`
-	EnableManagementPolicies bool   `default:"true"                                env:"ENABLE_MANAGEMENT_POLICIES"                                                                             help:"Enable support for Management Policies"`
-	EnableChangeLogs         bool   `default:"false"                               env:"ENABLE_CHANGE_LOGS"                                                                                     help:"Enable support for capturing change logs during reconciliation" name:"enable-changelogs"`
-	ChangelogsSocketPath     string `default:"/var/run/changelogs/changelogs.sock" env:"CHANGELOGS_SOCKET_PATH"                                                                                 help:"Path for changelogs socket (if enabled)"`
+	MaxReconcileRate         int           `default:"10"                                  help:"The global maximum rate per second at which resources may be checked for drift from the desired state."`
+	EnableManagementPolicies bool          `default:"true"                                env:"ENABLE_MANAGEMENT_POLICIES"                                                                             help:"Enable support for Management Policies"`
+	EnableChangeLogs         bool          `default:"false"                               env:"ENABLE_CHANGE_LOGS"                                                                                     help:"Enable support for capturing change logs during reconciliation" name:"enable-changelogs"`
+	ChangelogsSocketPath     string        `default:"/var/run/changelogs/changelogs.sock" env:"CHANGELOGS_SOCKET_PATH"                                                                                 help:"Path for changelogs socket (if enabled)"`
+	ClientCacheTTL           time.Duration `default:"30m"                                 env:"CLIENT_CACHE_TTL"         help:"TTL for cached provider configurations. Expired entries are evicted on next reconcile." name:"client-cache-ttl"`
 
 	WebhookPort        int      `default:"9443"               env:"WEBHOOK_PORT"             help:"The port the webhook listens on"`
 	MetricsBindAddress string   `default:":8080"              env:"METRICS_BIND_ADDRESS"     help:"The address the metrics server listens on"`
@@ -181,7 +182,7 @@ func main() {
 			},
 		},
 		Provider:              clusterProvider,
-		SetupFn:               clients.TerraformSetupBuilder(clusterProvider.TerraformPluginFrameworkProvider, log),
+		SetupFn:               clients.TerraformSetupBuilder(clusterProvider.TerraformPluginFrameworkProvider, log, cli.ClientCacheTTL),
 		OperationTrackerStore: o,
 		PollJitter:            pollJitter,
 		StartWebhooks:         cli.CertsDir != "",
@@ -201,7 +202,7 @@ func main() {
 			},
 		},
 		Provider:              namespacedProvider,
-		SetupFn:               clients.TerraformSetupBuilder(namespacedProvider.TerraformPluginFrameworkProvider, log),
+		SetupFn:               clients.TerraformSetupBuilder(namespacedProvider.TerraformPluginFrameworkProvider, log, cli.ClientCacheTTL),
 		OperationTrackerStore: o,
 		PollJitter:            pollJitter,
 		StartWebhooks:         cli.CertsDir != "",

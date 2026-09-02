@@ -1,0 +1,40 @@
+name: Update README
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.LANSWEEPER_OSS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.LANSWEEPER_OSS_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Render README
+        run: make readme
+
+      - name: Commit README if changed
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          if [ -n "$(git status --porcelain README.md)" ]; then
+            gh api graphql \
+            -F githubRepository=${{ github.repository }} \
+            -F branchName=${{ github.ref_name }} \
+            -F expectedHeadOid=$(git rev-parse HEAD) \
+            -F commitMessage="docs: update README.md" \
+            -F files[][path]="README.md" -F files[][contents]=$(base64 -w0 README.md) \
+            -F 'query=@.github/api/createCommitOnBranch.gql'
+          fi

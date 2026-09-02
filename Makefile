@@ -337,7 +337,12 @@ sbom: $(SYFT)
 	@$(SYFT) scan dir:. --source-name $(PROJECT_NAME) --source-version $(VERSION) -o spdx-json=$(EXTENSIONS_DIR)/sbom/sbom.spdx.json
 	@$(OK) SBOM generated at $(EXTENSIONS_DIR)/sbom/sbom.spdx.json
 
-xpkg.extensions: sbom
+readme: README.md.tmpl
+	@$(INFO) Rendering README.md from template
+	@envsubst '$$TERRAFORM_PROVIDER_VERSION $$TERRAFORM_PROVIDER_REPO' < $(ROOT_DIR)/README.md.tmpl > $(ROOT_DIR)/README.md
+	@$(OK) README.md rendered
+
+xpkg.extensions: sbom readme
 	@$(INFO) Preparing package extensions
 	@mkdir -p $(EXTENSIONS_DIR)/icons
 	@mkdir -p $(EXTENSIONS_DIR)/readme
@@ -350,7 +355,7 @@ xpkg.append: xpkg.extensions $(UP)
 	@$(UP) alpha xpkg append --extensions-root=$(EXTENSIONS_DIR) $(XPKG_REG_ORGS)/$(PROJECT_NAME):$(VERSION) || $(FAIL)
 	@$(OK) Appended extensions to $(XPKG_REG_ORGS)/$(PROJECT_NAME):$(VERSION)
 
-.PHONY: sbom xpkg.extensions xpkg.append
+.PHONY: readme sbom xpkg.extensions xpkg.append
 
 # ====================================================================================
 # Special Targets

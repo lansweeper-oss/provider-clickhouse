@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	authv1 "k8s.io/api/authorization/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -122,7 +123,14 @@ func main() {
 		}
 	}
 
+	scheme := runtime.NewScheme()
+	ctx.FatalIfErrorf(apisCluster.AddToScheme(scheme), "Cannot add cluster-scoped ClickHouse APIs to scheme")
+	ctx.FatalIfErrorf(apisNamespaced.AddToScheme(scheme), "Cannot add namespaced ClickHouse APIs to scheme")
+	ctx.FatalIfErrorf(apiextensionsv1.AddToScheme(scheme), "Cannot add api-extensions APIs to scheme")
+	ctx.FatalIfErrorf(authv1.AddToScheme(scheme), "Cannot add k8s authorization APIs to scheme")
+
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme:           scheme,
 		LeaderElection:   cli.LeaderElection,
 		LeaderElectionID: "crossplane-leader-election-provider-clickhouse",
 		Cache: cache.Options{
@@ -146,10 +154,6 @@ func main() {
 		RenewDeadline:              func() *time.Duration { d := 50 * time.Second; return &d }(),
 	})
 	ctx.FatalIfErrorf(err, "Cannot create controller manager")
-	ctx.FatalIfErrorf(apisCluster.AddToScheme(mgr.GetScheme()), "Cannot add cluster-scoped ClickHouse APIs to scheme")
-	ctx.FatalIfErrorf(apisNamespaced.AddToScheme(mgr.GetScheme()), "Cannot add namespaced ClickHouse APIs to scheme")
-	ctx.FatalIfErrorf(apiextensionsv1.AddToScheme(mgr.GetScheme()), "Cannot add api-extensions APIs to scheme")
-	ctx.FatalIfErrorf(authv1.AddToScheme(mgr.GetScheme()), "Cannot add k8s authorization APIs to scheme")
 
 	metricRecorder := managed.NewMRMetricRecorder()
 	stateMetrics := statemetrics.NewMRStateMetrics()
@@ -247,9 +251,6 @@ func main() {
 }
 
 func canWatchCRD(ctx context.Context, mgr manager.Manager) (bool, error) {
-	if err := authv1.AddToScheme(mgr.GetScheme()); err != nil {
-		return false, err
-	}
 	verbs := []string{"get", "list", "watch"}
 	for _, verb := range verbs {
 		sar := &authv1.SelfSubjectAccessReview{

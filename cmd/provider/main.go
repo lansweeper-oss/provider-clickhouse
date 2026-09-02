@@ -25,6 +25,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -124,6 +125,7 @@ func main() {
 	}
 
 	scheme := runtime.NewScheme()
+	ctx.FatalIfErrorf(clientgoscheme.AddToScheme(scheme), "Cannot add client-go APIs to scheme")
 	ctx.FatalIfErrorf(apisCluster.AddToScheme(scheme), "Cannot add cluster-scoped ClickHouse APIs to scheme")
 	ctx.FatalIfErrorf(apisNamespaced.AddToScheme(scheme), "Cannot add namespaced ClickHouse APIs to scheme")
 	ctx.FatalIfErrorf(apiextensionsv1.AddToScheme(scheme), "Cannot add api-extensions APIs to scheme")

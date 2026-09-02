@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	v2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 type ReversePrivateEndpointInitParameters struct {
@@ -38,11 +38,11 @@ type ReversePrivateEndpointInitParameters struct {
 
 	// Reference to a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDRef *v1.Reference `json:"serviceIdRef,omitempty" tf:"-"`
+	ServiceIDRef *v2.Reference `json:"serviceIdRef,omitempty" tf:"-"`
 
 	// Selector for a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDSelector *v1.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
+	ServiceIDSelector *v2.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
 
 	// (String) Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
 	// Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
@@ -149,11 +149,11 @@ type ReversePrivateEndpointParameters struct {
 
 	// Reference to a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDRef *v1.Reference `json:"serviceIdRef,omitempty" tf:"-"`
+	ServiceIDRef *v2.Reference `json:"serviceIdRef,omitempty" tf:"-"`
 
 	// Selector for a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDSelector *v1.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
+	ServiceIDSelector *v2.Selector `json:"serviceIdSelector,omitempty" tf:"-"`
 
 	// (String) Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
 	// Type of the reverse private endpoint (VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, or GCP_PSC_SERVICE_ATTACHMENT)
@@ -178,8 +178,8 @@ type ReversePrivateEndpointParameters struct {
 
 // ReversePrivateEndpointSpec defines the desired state of ReversePrivateEndpoint
 type ReversePrivateEndpointSpec struct {
-	v1.ResourceSpec `json:",inline"`
-	ForProvider     ReversePrivateEndpointParameters `json:"forProvider"`
+	v2.ClusterManagedResourceSpec `json:",inline"`
+	ForProvider                   ReversePrivateEndpointParameters `json:"forProvider"`
 	// THIS IS A BETA FIELD. It will be honored
 	// unless the Management Policies feature flag is disabled.
 	// InitProvider holds the same fields as ForProvider, with the exception
@@ -195,8 +195,8 @@ type ReversePrivateEndpointSpec struct {
 
 // ReversePrivateEndpointStatus defines the observed state of ReversePrivateEndpoint.
 type ReversePrivateEndpointStatus struct {
-	v1.ResourceStatus `json:",inline"`
-	AtProvider        ReversePrivateEndpointObservation `json:"atProvider,omitempty"`
+	v2.ManagedResourceStatus `json:",inline"`
+	AtProvider               ReversePrivateEndpointObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

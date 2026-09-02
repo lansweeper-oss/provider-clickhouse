@@ -23,10 +23,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	authv1 "k8s.io/api/authorization/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -58,10 +61,11 @@ var cli struct {
 	PollInterval            time.Duration `default:"10m" help:"Poll interval controls how often an individual resource should be checked for drift." name:"poll"`
 	PollStateMetricInterval time.Duration `default:"5s"  name:"poll-state-metric" help:"State metric recording interval"`
 
-	MaxReconcileRate         int    `default:"10"                                  help:"The global maximum rate per second at which resources may be checked for drift from the desired state."`
-	EnableManagementPolicies bool   `default:"true"                                env:"ENABLE_MANAGEMENT_POLICIES"                                                                             help:"Enable support for Management Policies"`
-	EnableChangeLogs         bool   `default:"false"                               env:"ENABLE_CHANGE_LOGS"                                                                                     help:"Enable support for capturing change logs during reconciliation" name:"enable-changelogs"`
-	ChangelogsSocketPath     string `default:"/var/run/changelogs/changelogs.sock" env:"CHANGELOGS_SOCKET_PATH"                                                                                 help:"Path for changelogs socket (if enabled)"`
+	MaxReconcileRate         int           `default:"10"                                  help:"The global maximum rate per second at which resources may be checked for drift from the desired state."`
+	EnableManagementPolicies bool          `default:"true"                                env:"ENABLE_MANAGEMENT_POLICIES"                                                                             help:"Enable support for Management Policies"`
+	EnableChangeLogs         bool          `default:"false"                               env:"ENABLE_CHANGE_LOGS"                                                                                     help:"Enable support for capturing change logs during reconciliation" name:"enable-changelogs"`
+	ChangelogsSocketPath     string        `default:"/var/run/changelogs/changelogs.sock" env:"CHANGELOGS_SOCKET_PATH"                                                                                 help:"Path for changelogs socket (if enabled)"`
+	ClientCacheTTL           time.Duration `default:"30m"                                 env:"CLIENT_CACHE_TTL"         help:"TTL for cached provider configurations. Expired entries are evicted on next reconcile." name:"client-cache-ttl"`
 
 	WebhookPort        int      `default:"9443"               env:"WEBHOOK_PORT"             help:"The port the webhook listens on"`
 	MetricsBindAddress string   `default:":8080"              env:"METRICS_BIND_ADDRESS"     help:"The address the metrics server listens on"`
@@ -121,11 +125,24 @@ func main() {
 		}
 	}
 
+	scheme := runtime.NewScheme()
+	ctx.FatalIfErrorf(clientgoscheme.AddToScheme(scheme), "Cannot add client-go APIs to scheme")
+	ctx.FatalIfErrorf(apisCluster.AddToScheme(scheme), "Cannot add cluster-scoped ClickHouse APIs to scheme")
+	ctx.FatalIfErrorf(apisNamespaced.AddToScheme(scheme), "Cannot add namespaced ClickHouse APIs to scheme")
+	ctx.FatalIfErrorf(apiextensionsv1.AddToScheme(scheme), "Cannot add api-extensions APIs to scheme")
+	ctx.FatalIfErrorf(authv1.AddToScheme(scheme), "Cannot add k8s authorization APIs to scheme")
+
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme:           scheme,
 		LeaderElection:   cli.LeaderElection,
 		LeaderElectionID: "crossplane-leader-election-provider-clickhouse",
 		Cache: cache.Options{
 			SyncPeriod: &cli.SyncPeriod,
+			ByObject: map[client.Object]cache.ByObject{
+				&apiextensionsv1.CustomResourceDefinition{}: {
+					Transform: customresourcesgate.TransformStripCRDSchema,
+				},
+			},
 		},
 		Metrics: metricsserver.Options{
 			BindAddress: cli.MetricsBindAddress,
@@ -140,10 +157,6 @@ func main() {
 		RenewDeadline:              func() *time.Duration { d := 50 * time.Second; return &d }(),
 	})
 	ctx.FatalIfErrorf(err, "Cannot create controller manager")
-	ctx.FatalIfErrorf(apisCluster.AddToScheme(mgr.GetScheme()), "Cannot add cluster-scoped ClickHouse APIs to scheme")
-	ctx.FatalIfErrorf(apisNamespaced.AddToScheme(mgr.GetScheme()), "Cannot add namespaced ClickHouse APIs to scheme")
-	ctx.FatalIfErrorf(apiextensionsv1.AddToScheme(mgr.GetScheme()), "Cannot add api-extensions APIs to scheme")
-	ctx.FatalIfErrorf(authv1.AddToScheme(mgr.GetScheme()), "Cannot add k8s authorization APIs to scheme")
 
 	metricRecorder := managed.NewMRMetricRecorder()
 	stateMetrics := statemetrics.NewMRStateMetrics()
@@ -169,7 +182,7 @@ func main() {
 			},
 		},
 		Provider:              clusterProvider,
-		SetupFn:               clients.TerraformSetupBuilder(clusterProvider.TerraformPluginFrameworkProvider),
+		SetupFn:               clients.TerraformSetupBuilder(clusterProvider.TerraformPluginFrameworkProvider, log, cli.ClientCacheTTL),
 		OperationTrackerStore: o,
 		PollJitter:            pollJitter,
 		StartWebhooks:         cli.CertsDir != "",
@@ -189,7 +202,7 @@ func main() {
 			},
 		},
 		Provider:              namespacedProvider,
-		SetupFn:               clients.TerraformSetupBuilder(namespacedProvider.TerraformPluginFrameworkProvider),
+		SetupFn:               clients.TerraformSetupBuilder(namespacedProvider.TerraformPluginFrameworkProvider, log, cli.ClientCacheTTL),
 		OperationTrackerStore: o,
 		PollJitter:            pollJitter,
 		StartWebhooks:         cli.CertsDir != "",
@@ -241,9 +254,6 @@ func main() {
 }
 
 func canWatchCRD(ctx context.Context, mgr manager.Manager) (bool, error) {
-	if err := authv1.AddToScheme(mgr.GetScheme()); err != nil {
-		return false, err
-	}
 	verbs := []string{"get", "list", "watch"}
 	for _, verb := range verbs {
 		sar := &authv1.SelfSubjectAccessReview{

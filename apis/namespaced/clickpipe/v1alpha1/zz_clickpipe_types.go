@@ -10,20 +10,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
-	v2 "github.com/crossplane/crossplane-runtime/v2/apis/common/v2"
-	v1apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	v2 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 type AccessKeyInitParameters struct {
 
 	// (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
 	// The access key ID for the Kinesis source.
-	AccessKeyIDSecretRef v1.LocalSecretKeySelector `json:"accessKeyIdSecretRef" tf:"-"`
+	AccessKeyIDSecretRef v2.LocalSecretKeySelector `json:"accessKeyIdSecretRef" tf:"-"`
 
 	// (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
 	// The secret key for the Kinesis source.
-	SecretKeySecretRef v1.LocalSecretKeySelector `json:"secretKeySecretRef" tf:"-"`
+	SecretKeySecretRef v2.LocalSecretKeySelector `json:"secretKeySecretRef" tf:"-"`
 }
 
 type AccessKeyObservation struct {
@@ -34,12 +33,12 @@ type AccessKeyParameters struct {
 	// (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
 	// The access key ID for the Kinesis source.
 	// +kubebuilder:validation:Optional
-	AccessKeyIDSecretRef v1.LocalSecretKeySelector `json:"accessKeyIdSecretRef" tf:"-"`
+	AccessKeyIDSecretRef v2.LocalSecretKeySelector `json:"accessKeyIdSecretRef" tf:"-"`
 
 	// (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
 	// The secret key for the Kinesis source.
 	// +kubebuilder:validation:Optional
-	SecretKeySecretRef v1.LocalSecretKeySelector `json:"secretKeySecretRef" tf:"-"`
+	SecretKeySecretRef v2.LocalSecretKeySelector `json:"secretKeySecretRef" tf:"-"`
 }
 
 type BigqueryInitParameters struct {
@@ -116,15 +115,15 @@ type ClickpipeInitParameters struct {
 
 	// Reference to a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDRef *v1.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
+	ServiceIDRef *v2.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
 
 	// Selector for a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDSelector *v1.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
+	ServiceIDSelector *v2.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
-	Settings *v1apiextensions.JSON `json:"settings,omitempty" tf:"settings,omitempty"`
+	Settings *v1.JSON `json:"settings,omitempty" tf:"settings,omitempty"`
 
 	// (Attributes) The data source for the ClickPipe. At least one source configuration must be provided. (see below for nested schema)
 	Source *SourceInitParameters `json:"source,omitempty" tf:"source,omitempty"`
@@ -162,7 +161,7 @@ type ClickpipeObservation struct {
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
-	Settings *v1apiextensions.JSON `json:"settings,omitempty" tf:"settings,omitempty"`
+	Settings *v1.JSON `json:"settings,omitempty" tf:"settings,omitempty"`
 
 	// (Attributes) The data source for the ClickPipe. At least one source configuration must be provided. (see below for nested schema)
 	Source *SourceObservation `json:"source,omitempty" tf:"source,omitempty"`
@@ -207,16 +206,16 @@ type ClickpipeParameters struct {
 
 	// Reference to a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDRef *v1.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
+	ServiceIDRef *v2.NamespacedReference `json:"serviceIdRef,omitempty" tf:"-"`
 
 	// Selector for a Service in clickhouse to populate serviceId.
 	// +kubebuilder:validation:Optional
-	ServiceIDSelector *v1.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
+	ServiceIDSelector *v2.NamespacedSelector `json:"serviceIdSelector,omitempty" tf:"-"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional
-	Settings *v1apiextensions.JSON `json:"settings,omitempty" tf:"settings,omitempty"`
+	Settings *v1.JSON `json:"settings,omitempty" tf:"settings,omitempty"`
 
 	// (Attributes) The data source for the ClickPipe. At least one source configuration must be provided. (see below for nested schema)
 	// +kubebuilder:validation:Optional
@@ -272,7 +271,7 @@ type CredentialsInitParameters struct {
 
 	// (String, Sensitive) Google Cloud service account JSON key file content, base64 encoded.
 	// Google Cloud service account JSON key file content, base64 encoded.
-	ServiceAccountFileSecretRef v1.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
+	ServiceAccountFileSecretRef v2.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
 }
 
 type CredentialsObservation struct {
@@ -283,7 +282,7 @@ type CredentialsParameters struct {
 	// (String, Sensitive) Google Cloud service account JSON key file content, base64 encoded.
 	// Google Cloud service account JSON key file content, base64 encoded.
 	// +kubebuilder:validation:Optional
-	ServiceAccountFileSecretRef v1.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
+	ServiceAccountFileSecretRef v2.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
 }
 
 type DestinationInitParameters struct {
@@ -454,23 +453,23 @@ type KafkaCredentialsInitParameters struct {
 
 	// (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
 	// The access key ID for the Kafka source. Use with `IAM_USER` authentication.
-	AccessKeyIDSecretRef *v1.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
+	AccessKeyIDSecretRef *v2.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) PEM encoded client certificate for mTLS authentication. Use with MUTUAL_TLS authentication.
 	// PEM encoded client certificate for mTLS authentication. Use with `MUTUAL_TLS` authentication.
-	CertificateSecretRef *v1.LocalSecretKeySelector `json:"certificateSecretRef,omitempty" tf:"-"`
+	CertificateSecretRef *v2.LocalSecretKeySelector `json:"certificateSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The connection string for the Kafka source. Use with azureeventhub Kafka source type. Use with PLAIN authentication.
 	// The connection string for the Kafka source. Use with `azureeventhub` Kafka source type. Use with `PLAIN` authentication.
-	ConnectionStringSecretRef *v1.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
+	ConnectionStringSecretRef *v2.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the Kafka source. Use `password_wo` instead to keep the value out of state.
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the Kafka source. Not persisted to state. Pair with `password_wo_version` to trigger updates.
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -478,15 +477,15 @@ type KafkaCredentialsInitParameters struct {
 
 	// (String, Sensitive) PEM encoded client private key for mTLS authentication. Use with MUTUAL_TLS authentication.
 	// PEM encoded client private key for mTLS authentication. Use with `MUTUAL_TLS` authentication.
-	PrivateKeySecretRef *v1.LocalSecretKeySelector `json:"privateKeySecretRef,omitempty" tf:"-"`
+	PrivateKeySecretRef *v2.LocalSecretKeySelector `json:"privateKeySecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
 	// The secret key for the Kafka source. Use with `IAM_USER` authentication.
-	SecretKeySecretRef *v1.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
+	SecretKeySecretRef *v2.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the Kafka source.
-	UsernameSecretRef *v1.LocalSecretKeySelector `json:"usernameSecretRef,omitempty" tf:"-"`
+	UsernameSecretRef *v2.LocalSecretKeySelector `json:"usernameSecretRef,omitempty" tf:"-"`
 }
 
 type KafkaCredentialsObservation struct {
@@ -501,27 +500,27 @@ type KafkaCredentialsParameters struct {
 	// (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
 	// The access key ID for the Kafka source. Use with `IAM_USER` authentication.
 	// +kubebuilder:validation:Optional
-	AccessKeyIDSecretRef *v1.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
+	AccessKeyIDSecretRef *v2.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) PEM encoded client certificate for mTLS authentication. Use with MUTUAL_TLS authentication.
 	// PEM encoded client certificate for mTLS authentication. Use with `MUTUAL_TLS` authentication.
 	// +kubebuilder:validation:Optional
-	CertificateSecretRef *v1.LocalSecretKeySelector `json:"certificateSecretRef,omitempty" tf:"-"`
+	CertificateSecretRef *v2.LocalSecretKeySelector `json:"certificateSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The connection string for the Kafka source. Use with azureeventhub Kafka source type. Use with PLAIN authentication.
 	// The connection string for the Kafka source. Use with `azureeventhub` Kafka source type. Use with `PLAIN` authentication.
 	// +kubebuilder:validation:Optional
-	ConnectionStringSecretRef *v1.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
+	ConnectionStringSecretRef *v2.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the Kafka source. Use `password_wo` instead to keep the value out of state.
 	// +kubebuilder:validation:Optional
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the Kafka source. Not persisted to state. Pair with `password_wo_version` to trigger updates.
 	// +kubebuilder:validation:Optional
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -531,17 +530,17 @@ type KafkaCredentialsParameters struct {
 	// (String, Sensitive) PEM encoded client private key for mTLS authentication. Use with MUTUAL_TLS authentication.
 	// PEM encoded client private key for mTLS authentication. Use with `MUTUAL_TLS` authentication.
 	// +kubebuilder:validation:Optional
-	PrivateKeySecretRef *v1.LocalSecretKeySelector `json:"privateKeySecretRef,omitempty" tf:"-"`
+	PrivateKeySecretRef *v2.LocalSecretKeySelector `json:"privateKeySecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
 	// The secret key for the Kafka source. Use with `IAM_USER` authentication.
 	// +kubebuilder:validation:Optional
-	SecretKeySecretRef *v1.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
+	SecretKeySecretRef *v2.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the Kafka source.
 	// +kubebuilder:validation:Optional
-	UsernameSecretRef *v1.LocalSecretKeySelector `json:"usernameSecretRef,omitempty" tf:"-"`
+	UsernameSecretRef *v2.LocalSecretKeySelector `json:"usernameSecretRef,omitempty" tf:"-"`
 }
 
 type KafkaInitParameters struct {
@@ -840,11 +839,11 @@ type MongodbCredentialsInitParameters struct {
 
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the MongoDB instance. Use `password_wo` instead to keep the value out of state.
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the MongoDB instance. Not persisted to state. Pair with `password_wo_version` to trigger updates.
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -871,12 +870,12 @@ type MongodbCredentialsParameters struct {
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the MongoDB instance. Use `password_wo` instead to keep the value out of state.
 	// +kubebuilder:validation:Optional
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the MongoDB instance. Not persisted to state. Pair with `password_wo_version` to trigger updates.
 	// +kubebuilder:validation:Optional
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -1158,11 +1157,11 @@ type MySQLCredentialsInitParameters struct {
 
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the MySQL instance. Use `password_wo` instead to keep the value out of state.
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the MySQL instance. Not persisted to state. Pair with `password_wo_version` to trigger updates.
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -1170,7 +1169,7 @@ type MySQLCredentialsInitParameters struct {
 
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the MySQL instance.
-	UsernameSecretRef v1.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
+	UsernameSecretRef v2.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
 }
 
 type MySQLCredentialsObservation struct {
@@ -1185,12 +1184,12 @@ type MySQLCredentialsParameters struct {
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the MySQL instance. Use `password_wo` instead to keep the value out of state.
 	// +kubebuilder:validation:Optional
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the MySQL instance. Not persisted to state. Pair with `password_wo_version` to trigger updates.
 	// +kubebuilder:validation:Optional
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -1200,7 +1199,7 @@ type MySQLCredentialsParameters struct {
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the MySQL instance.
 	// +kubebuilder:validation:Optional
-	UsernameSecretRef v1.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
+	UsernameSecretRef v2.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
 }
 
 type MySQLInitParameters struct {
@@ -1618,11 +1617,11 @@ type ObjectStorageAccessKeyInitParameters struct {
 
 	// (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
 	// The access key ID for the S3 source. Use with `IAM_USER` authentication.
-	AccessKeyIDSecretRef *v1.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
+	AccessKeyIDSecretRef *v2.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
 	// The secret key for the S3 source. Use with `IAM_USER` authentication.
-	SecretKeySecretRef *v1.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
+	SecretKeySecretRef *v2.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
 }
 
 type ObjectStorageAccessKeyObservation struct {
@@ -1633,12 +1632,12 @@ type ObjectStorageAccessKeyParameters struct {
 	// (String, Sensitive) The access key ID for the Kafka source. Use with IAM_USER authentication.
 	// The access key ID for the S3 source. Use with `IAM_USER` authentication.
 	// +kubebuilder:validation:Optional
-	AccessKeyIDSecretRef *v1.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
+	AccessKeyIDSecretRef *v2.LocalSecretKeySelector `json:"accessKeyIdSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
 	// The secret key for the S3 source. Use with `IAM_USER` authentication.
 	// +kubebuilder:validation:Optional
-	SecretKeySecretRef *v1.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
+	SecretKeySecretRef *v2.LocalSecretKeySelector `json:"secretKeySecretRef,omitempty" tf:"-"`
 }
 
 type ObjectStorageInitParameters struct {
@@ -1660,7 +1659,7 @@ type ObjectStorageInitParameters struct {
 
 	// (String, Sensitive) The connection string for the Kafka source. Use with azureeventhub Kafka source type. Use with PLAIN authentication.
 	// Connection string for Azure Blob Storage authentication. Required when authentication is CONNECTION_STRING. Example: `DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=mykey;EndpointSuffix=core.windows.net`
-	ConnectionStringSecretRef *v1.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
+	ConnectionStringSecretRef *v2.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
 
 	// (String) The delimiter for the S3 source. Default is ,.
 	// The delimiter for the S3 source. Default is `,`.
@@ -1688,7 +1687,7 @@ type ObjectStorageInitParameters struct {
 
 	// encoded GCP service account JSON key for GCS authentication. Required when authentication is SERVICE_ACCOUNT.
 	// Base64-encoded GCP service account JSON key for GCS authentication. Required when authentication is `SERVICE_ACCOUNT`.
-	ServiceAccountKeySecretRef *v1.LocalSecretKeySelector `json:"serviceAccountKeySecretRef,omitempty" tf:"-"`
+	ServiceAccountKeySecretRef *v2.LocalSecretKeySelector `json:"serviceAccountKeySecretRef,omitempty" tf:"-"`
 
 	// (Boolean) If set to true, skips the initial load and only ingests files delivered by queue notifications. Only applicable when queue_url is provided.
 	// If set to true, skips the initial load and only ingests files delivered by queue notifications. Only applicable when `queue_url` is provided.
@@ -1789,7 +1788,7 @@ type ObjectStorageParameters struct {
 	// (String, Sensitive) The connection string for the Kafka source. Use with azureeventhub Kafka source type. Use with PLAIN authentication.
 	// Connection string for Azure Blob Storage authentication. Required when authentication is CONNECTION_STRING. Example: `DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=mykey;EndpointSuffix=core.windows.net`
 	// +kubebuilder:validation:Optional
-	ConnectionStringSecretRef *v1.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
+	ConnectionStringSecretRef *v2.LocalSecretKeySelector `json:"connectionStringSecretRef,omitempty" tf:"-"`
 
 	// (String) The delimiter for the S3 source. Default is ,.
 	// The delimiter for the S3 source. Default is `,`.
@@ -1824,7 +1823,7 @@ type ObjectStorageParameters struct {
 	// encoded GCP service account JSON key for GCS authentication. Required when authentication is SERVICE_ACCOUNT.
 	// Base64-encoded GCP service account JSON key for GCS authentication. Required when authentication is `SERVICE_ACCOUNT`.
 	// +kubebuilder:validation:Optional
-	ServiceAccountKeySecretRef *v1.LocalSecretKeySelector `json:"serviceAccountKeySecretRef,omitempty" tf:"-"`
+	ServiceAccountKeySecretRef *v2.LocalSecretKeySelector `json:"serviceAccountKeySecretRef,omitempty" tf:"-"`
 
 	// (Boolean) If set to true, skips the initial load and only ingests files delivered by queue notifications. Only applicable when queue_url is provided.
 	// If set to true, skips the initial load and only ingests files delivered by queue notifications. Only applicable when `queue_url` is provided.
@@ -1886,11 +1885,11 @@ type PostgresCredentialsInitParameters struct {
 
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the Postgres instance. Use `password_wo` instead to keep the value out of state.
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the Postgres instance. Not persisted to state. Pair with `password_wo_version` to trigger updates.
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -1898,7 +1897,7 @@ type PostgresCredentialsInitParameters struct {
 
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the Postgres instance.
-	UsernameSecretRef v1.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
+	UsernameSecretRef v2.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
 }
 
 type PostgresCredentialsObservation struct {
@@ -1913,12 +1912,12 @@ type PostgresCredentialsParameters struct {
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the Postgres instance. Use `password_wo` instead to keep the value out of state.
 	// +kubebuilder:validation:Optional
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the Postgres instance. Not persisted to state. Pair with `password_wo_version` to trigger updates.
 	// +kubebuilder:validation:Optional
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -1928,7 +1927,7 @@ type PostgresCredentialsParameters struct {
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the Postgres instance.
 	// +kubebuilder:validation:Optional
-	UsernameSecretRef v1.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
+	UsernameSecretRef v2.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
 }
 
 type PostgresInitParameters struct {
@@ -2530,11 +2529,11 @@ type SchemaRegistryCredentialsInitParameters struct {
 
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the Schema Registry. Either `password` or `password_wo` must be provided.
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version` to trigger updates.
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -2542,7 +2541,7 @@ type SchemaRegistryCredentialsInitParameters struct {
 
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the Schema Registry.
-	UsernameSecretRef v1.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
+	UsernameSecretRef v2.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
 }
 
 type SchemaRegistryCredentialsObservation struct {
@@ -2557,12 +2556,12 @@ type SchemaRegistryCredentialsParameters struct {
 	// (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
 	// The password for the Schema Registry. Either `password` or `password_wo` must be provided.
 	// +kubebuilder:validation:Optional
-	PasswordSecretRef *v1.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
 	// Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version` to trigger updates.
 	// +kubebuilder:validation:Optional
-	PasswordWoSecretRef *v1.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
 	// Version trigger for `password_wo`. Increment to push a new password to the API.
@@ -2572,7 +2571,7 @@ type SchemaRegistryCredentialsParameters struct {
 	// (String, Sensitive) The username for the Kafka source.
 	// The username for the Schema Registry.
 	// +kubebuilder:validation:Optional
-	UsernameSecretRef v1.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
+	UsernameSecretRef v2.LocalSecretKeySelector `json:"usernameSecretRef" tf:"-"`
 }
 
 type SchemaRegistryInitParameters struct {
@@ -2624,7 +2623,7 @@ type ServiceAccountKeyInitParameters struct {
 
 	// (String, Sensitive) Google Cloud service account JSON key file content, base64 encoded.
 	// Base64-encoded GCP service account JSON key file contents.
-	ServiceAccountFileSecretRef v1.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
+	ServiceAccountFileSecretRef v2.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
 }
 
 type ServiceAccountKeyObservation struct {
@@ -2635,7 +2634,7 @@ type ServiceAccountKeyParameters struct {
 	// (String, Sensitive) Google Cloud service account JSON key file content, base64 encoded.
 	// Base64-encoded GCP service account JSON key file contents.
 	// +kubebuilder:validation:Optional
-	ServiceAccountFileSecretRef v1.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
+	ServiceAccountFileSecretRef v2.LocalSecretKeySelector `json:"serviceAccountFileSecretRef" tf:"-"`
 }
 
 type SettingsInitParameters struct {
@@ -2981,8 +2980,8 @@ type ClickpipeSpec struct {
 
 // ClickpipeStatus defines the observed state of Clickpipe.
 type ClickpipeStatus struct {
-	v1.ResourceStatus `json:",inline"`
-	AtProvider        ClickpipeObservation `json:"atProvider,omitempty"`
+	v2.ManagedResourceStatus `json:",inline"`
+	AtProvider               ClickpipeObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

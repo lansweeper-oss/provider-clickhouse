@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	v2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
 type BackupConfigurationInitParameters struct {
@@ -287,7 +287,7 @@ type ServiceInitParameters struct {
 
 	// (String, Sensitive) Double SHA1 hash of password for connecting with the MySQL protocol. Cannot be specified if password or password_wo is specified.
 	// Double SHA1 hash of password for connecting with the MySQL protocol. Cannot be specified if `password` or `password_wo` is specified.
-	DoubleSha1PasswordHashSecretRef *v1.SecretKeySelector `json:"doubleSha1PasswordHashSecretRef,omitempty" tf:"-"`
+	DoubleSha1PasswordHashSecretRef *v2.SecretKeySelector `json:"doubleSha1PasswordHashSecretRef,omitempty" tf:"-"`
 
 	// (Boolean) Enable core dumps for the service.
 	// Enable core dumps for the service.
@@ -341,17 +341,17 @@ type ServiceInitParameters struct {
 
 	// (String, Sensitive) SHA256 hash of password for the default user. One of either password, password_wo, or password_hash must be specified.
 	// SHA256 hash of password for the default user. One of either `password`, `password_wo`, or `password_hash` must be specified.
-	PasswordHashSecretRef *v1.SecretKeySelector `json:"passwordHashSecretRef,omitempty" tf:"-"`
+	PasswordHashSecretRef *v2.SecretKeySelector `json:"passwordHashSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) Password for the default user. One of either password, password_wo, or password_hash must be specified.
 	// Password for the default ClickHouse user.
 	// When passwordSecretRef is set, that secret is used (Bring Your Own Password).
 	// Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
-	PasswordSecretRef *v1.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Password for the default user (write-only, not persisted to state).
 	// Password for the default user (write-only, not persisted to state).
-	PasswordWoSecretRef *v1.SecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.SecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version number for password_wo. Increment this to trigger a password update when using password_wo.
 	// Version number for password_wo. Increment this to trigger a password update when using password_wo.
@@ -539,7 +539,7 @@ type ServiceParameters struct {
 	// (String, Sensitive) Double SHA1 hash of password for connecting with the MySQL protocol. Cannot be specified if password or password_wo is specified.
 	// Double SHA1 hash of password for connecting with the MySQL protocol. Cannot be specified if `password` or `password_wo` is specified.
 	// +kubebuilder:validation:Optional
-	DoubleSha1PasswordHashSecretRef *v1.SecretKeySelector `json:"doubleSha1PasswordHashSecretRef,omitempty" tf:"-"`
+	DoubleSha1PasswordHashSecretRef *v2.SecretKeySelector `json:"doubleSha1PasswordHashSecretRef,omitempty" tf:"-"`
 
 	// (Boolean) Enable core dumps for the service.
 	// Enable core dumps for the service.
@@ -607,19 +607,19 @@ type ServiceParameters struct {
 	// (String, Sensitive) SHA256 hash of password for the default user. One of either password, password_wo, or password_hash must be specified.
 	// SHA256 hash of password for the default user. One of either `password`, `password_wo`, or `password_hash` must be specified.
 	// +kubebuilder:validation:Optional
-	PasswordHashSecretRef *v1.SecretKeySelector `json:"passwordHashSecretRef,omitempty" tf:"-"`
+	PasswordHashSecretRef *v2.SecretKeySelector `json:"passwordHashSecretRef,omitempty" tf:"-"`
 
 	// (String, Sensitive) Password for the default user. One of either password, password_wo, or password_hash must be specified.
 	// Password for the default ClickHouse user.
 	// When passwordSecretRef is set, that secret is used (Bring Your Own Password).
 	// Otherwise a password is auto-generated and written to writeConnectionSecretToRef.
 	// +kubebuilder:validation:Optional
-	PasswordSecretRef *v1.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+	PasswordSecretRef *v2.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Password for the default user (write-only, not persisted to state).
 	// Password for the default user (write-only, not persisted to state).
 	// +kubebuilder:validation:Optional
-	PasswordWoSecretRef *v1.SecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+	PasswordWoSecretRef *v2.SecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version number for password_wo. Increment this to trigger a password update when using password_wo.
 	// Version number for password_wo. Increment this to trigger a password update when using password_wo.
@@ -694,8 +694,8 @@ type TransparentDataEncryptionParameters struct {
 
 // ServiceSpec defines the desired state of Service
 type ServiceSpec struct {
-	v1.ResourceSpec `json:",inline"`
-	ForProvider     ServiceParameters `json:"forProvider"`
+	v2.ClusterManagedResourceSpec `json:",inline"`
+	ForProvider                   ServiceParameters `json:"forProvider"`
 	// THIS IS A BETA FIELD. It will be honored
 	// unless the Management Policies feature flag is disabled.
 	// InitProvider holds the same fields as ForProvider, with the exception
@@ -711,8 +711,8 @@ type ServiceSpec struct {
 
 // ServiceStatus defines the observed state of Service.
 type ServiceStatus struct {
-	v1.ResourceStatus `json:",inline"`
-	AtProvider        ServiceObservation `json:"atProvider,omitempty"`
+	v2.ManagedResourceStatus `json:",inline"`
+	AtProvider               ServiceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

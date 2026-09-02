@@ -5,11 +5,11 @@ import (
 	"context"
 	"fmt"
 
-	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/password"
 	xpresource "github.com/crossplane/crossplane-runtime/v2/pkg/resource"
+	xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	"github.com/crossplane/upjet/v2/pkg/config"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -21,15 +21,15 @@ import (
 const passwordKey = "password"
 
 // ClusterPasswordSecretRefSetter is implemented by cluster-scoped managed
-// resources that expose a *v1.SecretKeySelector PasswordSecretRef.
+// resources that expose a *xpv2.SecretKeySelector PasswordSecretRef.
 type ClusterPasswordSecretRefSetter interface {
-	SetPasswordSecretRef(ref *v1.SecretKeySelector)
+	SetPasswordSecretRef(ref *xpv2.SecretKeySelector)
 }
 
 // NamespacedPasswordSecretRefSetter is implemented by namespaced managed
-// resources that expose a *v1.LocalSecretKeySelector PasswordSecretRef.
+// resources that expose a *xpv2.LocalSecretKeySelector PasswordSecretRef.
 type NamespacedPasswordSecretRefSetter interface {
-	SetPasswordSecretRef(ref *v1.LocalSecretKeySelector)
+	SetPasswordSecretRef(ref *xpv2.LocalSecretKeySelector)
 }
 
 // PasswordGenerator returns a NewInitializerFn:
@@ -123,13 +123,13 @@ func generateAndApply(ctx context.Context, cl client.Client, mg xpresource.Manag
 func setPasswordSecretRef(ctx context.Context, cl client.Client, mg xpresource.Managed, name, namespace string) error {
 	switch setter := mg.(type) {
 	case ClusterPasswordSecretRefSetter:
-		setter.SetPasswordSecretRef(&v1.SecretKeySelector{
-			SecretReference: v1.SecretReference{Name: name, Namespace: namespace},
+		setter.SetPasswordSecretRef(&xpv2.SecretKeySelector{
+			SecretReference: xpv2.SecretReference{Name: name, Namespace: namespace},
 			Key:             passwordKey,
 		})
 	case NamespacedPasswordSecretRefSetter:
-		setter.SetPasswordSecretRef(&v1.LocalSecretKeySelector{
-			LocalSecretReference: v1.LocalSecretReference{Name: name},
+		setter.SetPasswordSecretRef(&xpv2.LocalSecretKeySelector{
+			LocalSecretReference: xpv2.LocalSecretReference{Name: name},
 			Key:                  passwordKey,
 		})
 	default:

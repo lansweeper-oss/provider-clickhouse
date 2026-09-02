@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.21.0
+    controller-gen.kubebuilder.io/version: v0.22.0
   name: services.postgres.clickhouse.m.crossplane.io
 spec:
   group: postgres.clickhouse.m.crossplane.io
@@ -35,36 +35,35 @@ spec:
     schema:
       openAPIV3Schema:
         description: 'Service is the Schema for the Services API. ~> Note: This resource
-          is in alpha and its behavior may change in future provider versions. Manages
+          is in beta and its behavior may change in future provider versions. Manages
           a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres
           service. A Managed Postgres service is a fully-managed Postgres instance
           provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create
           — standard, as a read replica (read_replica_of), or by point-in-time restore
           (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config,
           password rotationDeleteImport Three companion data sources are also provided
-          (alpha): clickhouse_postgres_service, clickhouse_postgres_services, and
-          clickhouse_postgres_service_ca_certificates. Unsupported attributes The
-          following are intentionally absent from the schema: Operational commands
-          (restart / promote / switchover). See "Operational commands" below for the
-          rationale.IP allowlist, private endpoints, backup configuration, maintenance
-          windows, customer-managed encryption keys, BYOC. These depend on server-side
-          endpoint additions.Configurable lifecycle timeouts — there is no timeouts
-          {} block; the provider uses fixed internal poll/retry budgets. Tag semantics
-          Tags are a map(string → string) — same shape as clickhouse_service. Values
-          must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$);
-          the server''s PATCH endpoint returns 400 BAD_REQUEST on omitted values,
-          so the schema rejects empty values at plan time. Setting tags = {} clears
-          all user-controlled tags. Omitting the attribute entirely preserves the
-          prior state value (Optional + Computed + UseStateForUnknown). The Postgres
-          PATCH endpoint has PUT-like semantics specifically for the tags field: omitting
-          it from the request body clears all tags server-side. The provider works
-          around this by re-asserting the current state tags in every PATCH that mutates
-          size or ha_type, so users won''t lose tags when they resize or change HA
-          mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG
-          request bodies — you''ll see tags repeated on non-tag mutations. Runtime
-          configuration (pg_config / pgbouncer_config) Postgres server parameters
-          and PgBouncer pooler parameters are managed as map(string → string) (same
-          shape as tags):'
+          (beta): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates.
+          Unsupported attributes The following are intentionally absent from the schema:
+          Operational commands (restart / promote / switchover). See "Operational
+          commands" below for the rationale.IP allowlist, private endpoints, backup
+          configuration, maintenance windows, customer-managed encryption keys, BYOC.
+          These depend on server-side endpoint additions.Configurable lifecycle timeouts
+          — there is no timeouts {} block; the provider uses fixed internal poll/retry
+          budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service.
+          Values must be non-empty alphanumeric / . / - / _ strings (server regex
+          ^[a-zA-Z0-9._-]+$); the server''s PATCH endpoint returns 400 BAD_REQUEST
+          on omitted values, so the schema rejects empty values at plan time. Setting
+          tags = {} clears all user-controlled tags. Omitting the attribute entirely
+          preserves the prior state value (Optional + Computed + UseStateForUnknown).
+          The Postgres PATCH endpoint has PUT-like semantics specifically for the
+          tags field: omitting it from the request body clears all tags server-side.
+          The provider works around this by re-asserting the current state tags in
+          every PATCH that mutates size or ha_type, so users won''t lose tags when
+          they resize or change HA mode. This is invisible end-to-end but worth knowing
+          if you inspect TF_LOG=DEBUG request bodies — you''ll see tags repeated on
+          non-tag mutations. Runtime configuration (pg_config / pgbouncer_config)
+          Postgres server parameters and PgBouncer pooler parameters are managed as
+          map(string → string) (same shape as tags):'
         properties:
           apiVersion:
             description: |-
@@ -102,8 +101,9 @@ spec:
                     type: string
                   passwordSecretRef:
                     description: |-
-                      .
-                      Superuser password. Computed and refreshed from each GET (the server echoes it), so it always reflects the live password and an out-of-band rotation is reconciled on the next refresh. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state.
+                      11, and increment
+                      password_wo_version to rotate).
+                      Superuser password. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state — prefer `password_wo` to keep it out of state.
                     properties:
                       key:
                         type: string
@@ -114,6 +114,27 @@ spec:
                     - key
                     - name
                     type: object
+                  passwordWoSecretRef:
+                    description: 11). Preferred over password. Requires password_wo_version;
+                      increment the version to rotate to the current password_wo value.
+                      Same complexity rules as password. Forbidden for a read replica.11).
+                      Preferred over `password`. Requires `password_wo_version`; increment
+                      the version to rotate to the current `password_wo` value. Same
+                      complexity rules as `password`. Forbidden for a read replica.
+                    properties:
+                      key:
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                  passwordWoVersion:
+                    description: |-
+                      Version number for `password_wo`. Increment to trigger a password rotation using the current `password_wo` value.
+                    type: number
                   pgConfig:
                     additionalProperties:
                       type: string
@@ -134,7 +155,7 @@ spec:
                     type: string
                   readReplicaOf:
                     description: |-
-                      ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password (a replica inherits the primary's superuser).
+                      ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
                     type: string
                   region:
                     description: |-
@@ -202,8 +223,9 @@ spec:
                     type: string
                   passwordSecretRef:
                     description: |-
-                      .
-                      Superuser password. Computed and refreshed from each GET (the server echoes it), so it always reflects the live password and an out-of-band rotation is reconciled on the next refresh. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state.
+                      11, and increment
+                      password_wo_version to rotate).
+                      Superuser password. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state — prefer `password_wo` to keep it out of state.
                     properties:
                       key:
                         type: string
@@ -214,6 +236,27 @@ spec:
                     - key
                     - name
                     type: object
+                  passwordWoSecretRef:
+                    description: 11). Preferred over password. Requires password_wo_version;
+                      increment the version to rotate to the current password_wo value.
+                      Same complexity rules as password. Forbidden for a read replica.11).
+                      Preferred over `password`. Requires `password_wo_version`; increment
+                      the version to rotate to the current `password_wo` value. Same
+                      complexity rules as `password`. Forbidden for a read replica.
+                    properties:
+                      key:
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                  passwordWoVersion:
+                    description: |-
+                      Version number for `password_wo`. Increment to trigger a password rotation using the current `password_wo` value.
+                    type: number
                   pgConfig:
                     additionalProperties:
                       type: string
@@ -234,7 +277,7 @@ spec:
                     type: string
                   readReplicaOf:
                     description: |-
-                      ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password (a replica inherits the primary's superuser).
+                      ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
                     type: string
                   region:
                     description: |-
@@ -357,6 +400,9 @@ spec:
                     type: string
                   hostname:
                     description: |-
+                      , port, username,
+                      and your declared password, e.g.
+                      postgres://${username}:${password}@${hostname}:${port}/postgres?sslmode=require.
                       Network hostname for client connections.
                     type: string
                   id:
@@ -371,6 +417,10 @@ spec:
                     description: |-
                       Human-readable name. Immutable post-create; changes force destroy-and-recreate. Differs from clickhouse_service, which allows in-place rename.
                     type: string
+                  passwordWoVersion:
+                    description: |-
+                      Version number for `password_wo`. Increment to trigger a password rotation using the current `password_wo` value.
+                    type: number
                   pgConfig:
                     additionalProperties:
                       type: string
@@ -395,7 +445,7 @@ spec:
                     type: string
                   readReplicaOf:
                     description: |-
-                      ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password (a replica inherits the primary's superuser).
+                      ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
                     type: string
                   region:
                     description: |-

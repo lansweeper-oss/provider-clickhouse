@@ -1,0 +1,16 @@
+apiVersion: clickstack.clickhouse.crossplane.io/v1alpha1
+kind: Webhook
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/webhook
+  labels:
+    testing.upbound.io/example-name: slack
+  name: slack
+spec:
+  forProvider:
+    name: alerts-slack
+    service: slack
+    urlSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system

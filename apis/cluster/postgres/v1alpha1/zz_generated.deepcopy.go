@@ -138,6 +138,16 @@ func (in *ServiceInitParameters) DeepCopyInto(out *ServiceInitParameters) {
 		*out = new(v2.SecretKeySelector)
 		**out = **in
 	}
+	if in.PasswordWoSecretRef != nil {
+		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
+		*out = new(v2.SecretKeySelector)
+		**out = **in
+	}
+	if in.PasswordWoVersion != nil {
+		in, out := &in.PasswordWoVersion, &out.PasswordWoVersion
+		*out = new(float64)
+		**out = **in
+	}
 	if in.PgConfig != nil {
 		in, out := &in.PgConfig, &out.PgConfig
 		*out = make(map[string]*string, len(*in))
@@ -293,6 +303,11 @@ func (in *ServiceObservation) DeepCopyInto(out *ServiceObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.PasswordWoVersion != nil {
+		in, out := &in.PasswordWoVersion, &out.PasswordWoVersion
+		*out = new(float64)
+		**out = **in
+	}
 	if in.PgConfig != nil {
 		in, out := &in.PgConfig, &out.PgConfig
 		*out = make(map[string]*string, len(*in))
@@ -414,6 +429,16 @@ func (in *ServiceParameters) DeepCopyInto(out *ServiceParameters) {
 	if in.PasswordSecretRef != nil {
 		in, out := &in.PasswordSecretRef, &out.PasswordSecretRef
 		*out = new(v2.SecretKeySelector)
+		**out = **in
+	}
+	if in.PasswordWoSecretRef != nil {
+		in, out := &in.PasswordWoSecretRef, &out.PasswordWoSecretRef
+		*out = new(v2.SecretKeySelector)
+		**out = **in
+	}
+	if in.PasswordWoVersion != nil {
+		in, out := &in.PasswordWoVersion, &out.PasswordWoVersion
+		*out = new(float64)
 		**out = **in
 	}
 	if in.PgConfig != nil {

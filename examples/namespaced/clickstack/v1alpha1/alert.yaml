@@ -1,0 +1,24 @@
+apiVersion: clickstack.clickhouse.m.crossplane.io/v1alpha1
+kind: Alert
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/alert
+  labels:
+    testing.upbound.io/example-name: too_many_errors
+  name: too-many-errors
+  namespace: crossplane-system
+spec:
+  forProvider:
+    channel:
+      type: webhook
+      webhookIdSelector:
+        matchLabels:
+          testing.upbound.io/example-name: slack
+    interval: 5m
+    message: Error volume exceeded threshold
+    name: Too many production errors
+    savedSearchIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: errors
+    threshold: 100
+    thresholdType: above

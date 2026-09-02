@@ -40,24 +40,91 @@ const sentinelUUID = "00000000-0000-1000-8000-000000000000"
 
 // uuidRe matches a canonical UUID. Used to detect a real ClickHouse Cloud
 // resource id versus a pre-create placeholder (k8s name or empty).
-var uuidRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+var uuidRe = regexp.MustCompile(`^[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}$`)
 
 // ExternalNameConfigs contains all external name configurations for this
 // provider.
 var ExternalNameConfigs = map[string]config.ExternalName{
+	// ClickHouse Cloud resources
 	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
 	"clickhouse_clickpipe":                                              config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns": config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
 	"clickhouse_organization_settings":                                  config.IdentifierFromProvider,
-	"clickhouse_postgres_service":                                       withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_role_assignment":                                        withSentinelWhenNotUUID(config.ParameterAsIdentifier("role_id")),
 	"clickhouse_role":                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_service_private_endpoints_attachment":                   withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
 	"clickhouse_service_scheduled_scaling":                              withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
 	"clickhouse_service_transparent_data_encryption_key_association":    withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
 	"clickhouse_service_upgrade_window":                                 withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_udf_attachment":                                         withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_udf":                                                    identifierFromParameter("function_name"),
 	clickhouseService:                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	// Postgres resources
+	"clickhouse_postgres_service": withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	// ClickStack resources
+	"clickhouse_clickstack_alert":        config.IdentifierFromProvider,
+	"clickhouse_clickstack_connection":   config.IdentifierFromProvider,
+	"clickhouse_clickstack_dashboard":    config.IdentifierFromProvider,
+	"clickhouse_clickstack_role":         config.IdentifierFromProvider,
+	"clickhouse_clickstack_saved_search": config.IdentifierFromProvider,
+	"clickhouse_clickstack_source":       config.IdentifierFromProvider,
+	"clickhouse_clickstack_team":         config.IdentifierFromProvider,
+	"clickhouse_clickstack_team_member":  withOptionalPrefix(identifierFromParameterOrAnnotation("email"), "team"),
+	"clickhouse_clickstack_webhook":      config.IdentifierFromProvider,
+}
+
+// identifierFromParameter returns an ExternalName config that keeps "param" in spec.forProvider
+// and mirrors it to the external-name annotation after observe.
+// Based on IdentifierFromProvider, but reads "param" from the tfstate.
+func identifierFromParameter(param string) config.ExternalName {
+	e := config.IdentifierFromProvider
+	e.GetExternalNameFn = func(tfstate map[string]any) (string, error) {
+		v, ok := tfstate[param]
+		if !ok {
+			return "", errors.Errorf("cannot find %s in tfstate", param)
+		}
+		s, ok := v.(string)
+		if !ok {
+			return "", errors.Errorf("%s in tfstate is not a string", param)
+		}
+		return s, nil
+	}
+	return e
+}
+
+// withOptionalPrefix wraps an ExternalName so GetIDFn prepends "prefix/" when the given parameter
+// is non-empty. Covers resources whose TF import accepts both "value" and "prefix/value" forms.
+func withOptionalPrefix(base config.ExternalName, prefixParam string) config.ExternalName {
+	parentGetID := base.GetIDFn
+	base.GetIDFn = func(ctx context.Context, externalName string, parameters map[string]any, setup map[string]any) (string, error) {
+		id, err := parentGetID(ctx, externalName, parameters, setup)
+		if err != nil {
+			return "", err
+		}
+		if prefix, _ := parameters[prefixParam].(string); prefix != "" {
+			return prefix + "/" + id, nil
+		}
+		return id, nil
+	}
+	return base
+}
+
+// identifierFromParameterOrAnnotation builds an ExternalName whose GetIDFn
+// prefers the named parameter from spec.forProvider, falling back to the
+// external-name annotation when the parameter is empty (import scenario).
+func identifierFromParameterOrAnnotation(param string) config.ExternalName {
+	e := identifierFromParameter(param)
+	e.GetIDFn = func(_ context.Context, externalName string, parameters map[string]any, _ map[string]any) (string, error) {
+		if v, _ := parameters[param].(string); v != "" {
+			return v, nil
+		}
+		if externalName != "" {
+			return externalName, nil
+		}
+		return "", errors.Errorf("cannot determine ID: neither %s parameter nor external-name annotation is set", param)
+	}
+	return e
 }
 
 // withSentinelWhenNotUUID wraps an ExternalName so GetIDFn returns sentinelUUID

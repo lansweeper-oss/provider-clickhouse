@@ -11,6 +11,10 @@ spec:
     cloudProvider: aws
     haType: async
     name: my-postgres
+    passwordSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
     region: us-east-1
     size: m6gd.large
     tags:

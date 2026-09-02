@@ -21,7 +21,7 @@ func (mg *Service) GetTerraformResourceType() string {
 
 // GetConnectionDetailsMapping for this Service
 func (tr *Service) GetConnectionDetailsMapping() map[string]string {
-	return map[string]string{"connection_string": "status.atProvider.connectionString", "password": "passwordSecretRef"}
+	return map[string]string{"password": "passwordSecretRef", "password_wo": "passwordWoSecretRef"}
 }
 
 // GetObservation of this Service
@@ -125,5 +125,5 @@ func (tr *Service) LateInitialize(attrs []byte) (bool, error) {
 
 // GetTerraformSchemaVersion returns the associated Terraform schema version
 func (tr *Service) GetTerraformSchemaVersion() int {
-	return 0
+	return 1
 }

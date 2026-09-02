@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.21.0
+    controller-gen.kubebuilder.io/version: v0.22.0
   name: services.clickhouse.clickhouse.m.crossplane.io
 spec:
   group: clickhouse.clickhouse.m.crossplane.io
@@ -66,6 +66,10 @@ spec:
             properties:
               forProvider:
                 properties:
+                  autoscalingMode:
+                    description: |-
+                      Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+                    type: string
                   backupConfiguration:
                     description: Configuration of service backup settings.
                       (see below for nested schema)
@@ -89,7 +93,7 @@ spec:
                     type: string
                   byocId:
                     description: |-
-                      BYOC ID related to the cloud provider account you want to create this service into.
+                      BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
                     type: string
                   cloudProvider:
                     description: |-
@@ -137,7 +141,7 @@ spec:
                         properties:
                           enabled:
                             description: |-
-                              Wether to enable the mysql endpoint or not.
+                              Whether to enable the mysql endpoint or not.
                             type: boolean
                         type: object
                       nativesecure:
@@ -169,7 +173,11 @@ spec:
                     type: array
                   maxReplicaMemoryGb:
                     description: |-
-                      Maximum memory of a single replica during auto-scaling in GiB.
+                      Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
+                    type: number
+                  maxReplicas:
+                    description: |-
+                      Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
                     type: number
                   maxTotalMemoryGb:
                     description: |-
@@ -177,7 +185,11 @@ spec:
                     type: number
                   minReplicaMemoryGb:
                     description: |-
-                      Minimum memory of a single replica during auto-scaling in GiB.
+                      Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
+                    type: number
+                  minReplicas:
+                    description: |-
+                      Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
                     type: number
                   minTotalMemoryGb:
                     description: |-
@@ -189,7 +201,7 @@ spec:
                     type: string
                   numReplicas:
                     description: |-
-                      Number of replicas for the service.
+                      Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
                     type: number
                   passwordHashSecretRef:
                     description: |-
@@ -308,6 +320,10 @@ spec:
                   for example because of an external controller is managing them, like an
                   autoscaler.
                 properties:
+                  autoscalingMode:
+                    description: |-
+                      Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+                    type: string
                   backupConfiguration:
                     description: Configuration of service backup settings.
                       (see below for nested schema)
@@ -331,7 +347,7 @@ spec:
                     type: string
                   byocId:
                     description: |-
-                      BYOC ID related to the cloud provider account you want to create this service into.
+                      BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
                     type: string
                   cloudProvider:
                     description: |-
@@ -379,7 +395,7 @@ spec:
                         properties:
                           enabled:
                             description: |-
-                              Wether to enable the mysql endpoint or not.
+                              Whether to enable the mysql endpoint or not.
                             type: boolean
                         type: object
                       nativesecure:
@@ -411,7 +427,11 @@ spec:
                     type: array
                   maxReplicaMemoryGb:
                     description: |-
-                      Maximum memory of a single replica during auto-scaling in GiB.
+                      Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
+                    type: number
+                  maxReplicas:
+                    description: |-
+                      Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
                     type: number
                   maxTotalMemoryGb:
                     description: |-
@@ -419,7 +439,11 @@ spec:
                     type: number
                   minReplicaMemoryGb:
                     description: |-
-                      Minimum memory of a single replica during auto-scaling in GiB.
+                      Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
+                    type: number
+                  minReplicas:
+                    description: |-
+                      Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
                     type: number
                   minTotalMemoryGb:
                     description: |-
@@ -431,7 +455,7 @@ spec:
                     type: string
                   numReplicas:
                     description: |-
-                      Number of replicas for the service.
+                      Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
                     type: number
                   passwordHashSecretRef:
                     description: |-
@@ -617,6 +641,10 @@ spec:
             properties:
               atProvider:
                 properties:
+                  autoscalingMode:
+                    description: |-
+                      Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+                    type: string
                   backupConfiguration:
                     description: Configuration of service backup settings.
                       (see below for nested schema)
@@ -640,7 +668,7 @@ spec:
                     type: string
                   byocId:
                     description: |-
-                      BYOC ID related to the cloud provider account you want to create this service into.
+                      BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
                     type: string
                   cloudProvider:
                     description: |-
@@ -684,7 +712,7 @@ spec:
                         properties:
                           enabled:
                             description: |-
-                              Wether to enable the mysql endpoint or not.
+                              Whether to enable the mysql endpoint or not.
                             type: boolean
                           host:
                             description: |-
@@ -745,7 +773,11 @@ spec:
                     type: boolean
                   maxReplicaMemoryGb:
                     description: |-
-                      Maximum memory of a single replica during auto-scaling in GiB.
+                      Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
+                    type: number
+                  maxReplicas:
+                    description: |-
+                      Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
                     type: number
                   maxTotalMemoryGb:
                     description: |-
@@ -753,7 +785,11 @@ spec:
                     type: number
                   minReplicaMemoryGb:
                     description: |-
-                      Minimum memory of a single replica during auto-scaling in GiB.
+                      Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
+                    type: number
+                  minReplicas:
+                    description: |-
+                      Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
                     type: number
                   minTotalMemoryGb:
                     description: |-
@@ -765,7 +801,7 @@ spec:
                     type: string
                   numReplicas:
                     description: |-
-                      Number of replicas for the service.
+                      Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
                     type: number
                   passwordWoVersion:
                     description: |-

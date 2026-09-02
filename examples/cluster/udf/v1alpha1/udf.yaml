@@ -1,0 +1,23 @@
+apiVersion: udf.clickhouse.crossplane.io/v1alpha1
+kind: Udf
+metadata:
+  annotations:
+    meta.upbound.io/example-id: udf/v1alpha1/udf
+  labels:
+    testing.upbound.io/example-name: echo_string
+  name: echo-string
+spec:
+  forProvider:
+    arguments:
+    - name: input
+      type: String
+    commandReadTimeout: 10000
+    commandWriteTimeout: 10000
+    functionName: echo_string
+    maxCommandExecutionTime: 10
+    poolSize: 5
+    returnType: String
+    runtime: python3.11
+    sourceArchiveHash: ${filebase64sha256("${path.module}/echo_string.zip")}
+    sourceArchivePath: ${path.module}/echo_string.zip
+    type: executable_pool

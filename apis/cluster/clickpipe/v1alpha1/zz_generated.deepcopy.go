@@ -3867,6 +3867,11 @@ func (in *PostgresTableMappingsInitParameters) DeepCopyInto(out *PostgresTableMa
 			}
 		}
 	}
+	if in.PartitionByExpr != nil {
+		in, out := &in.PartitionByExpr, &out.PartitionByExpr
+		*out = new(string)
+		**out = **in
+	}
 	if in.PartitionKey != nil {
 		in, out := &in.PartitionKey, &out.PartitionKey
 		*out = new(string)
@@ -3934,6 +3939,11 @@ func (in *PostgresTableMappingsObservation) DeepCopyInto(out *PostgresTableMappi
 			}
 		}
 	}
+	if in.PartitionByExpr != nil {
+		in, out := &in.PartitionByExpr, &out.PartitionByExpr
+		*out = new(string)
+		**out = **in
+	}
 	if in.PartitionKey != nil {
 		in, out := &in.PartitionKey, &out.PartitionKey
 		*out = new(string)
@@ -4000,6 +4010,11 @@ func (in *PostgresTableMappingsParameters) DeepCopyInto(out *PostgresTableMappin
 				**out = **in
 			}
 		}
+	}
+	if in.PartitionByExpr != nil {
+		in, out := &in.PartitionByExpr, &out.PartitionByExpr
+		*out = new(string)
+		**out = **in
 	}
 	if in.PartitionKey != nil {
 		in, out := &in.PartitionKey, &out.PartitionKey

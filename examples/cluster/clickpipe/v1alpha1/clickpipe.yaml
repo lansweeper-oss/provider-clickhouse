@@ -30,6 +30,8 @@ spec:
     serviceIdSelector:
       matchLabels:
         testing.upbound.io/example-name: example
+    settings:
+      kafka_read_committed: true
     source:
     - kafka:
       - brokers: my-kafka-broker:9092

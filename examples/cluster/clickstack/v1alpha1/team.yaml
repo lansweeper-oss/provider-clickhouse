@@ -1,0 +1,13 @@
+apiVersion: clickstack.clickhouse.crossplane.io/v1alpha1
+kind: Team
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/team
+  labels:
+    testing.upbound.io/example-name: main
+  name: main
+spec:
+  forProvider:
+    defaultUserRoleIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: clickhouse_clickstack_role

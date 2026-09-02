@@ -13,11 +13,13 @@ import (
 	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
 	v1alpha1clickpipe "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipe/v1alpha1"
 	v1alpha1clickpipes "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipes/v1alpha1"
+	v1alpha1clickstack "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1"
 	v1alpha1iam "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1"
 	v1alpha1organization "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/organization/v1alpha1"
 	v1alpha1postgres "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1"
 	v1alpha1role "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/role/v1alpha1"
 	v1alpha1service "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/service/v1alpha1"
+	v1alpha1udf "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/udf/v1alpha1"
 	v1alpha1cluster "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/v1alpha1"
 	v1beta1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/v1beta1"
 )
@@ -28,11 +30,13 @@ func init() {
 		v1alpha1.SchemeBuilder.AddToScheme,
 		v1alpha1clickpipe.SchemeBuilder.AddToScheme,
 		v1alpha1clickpipes.SchemeBuilder.AddToScheme,
+		v1alpha1clickstack.SchemeBuilder.AddToScheme,
 		v1alpha1iam.SchemeBuilder.AddToScheme,
 		v1alpha1organization.SchemeBuilder.AddToScheme,
 		v1alpha1postgres.SchemeBuilder.AddToScheme,
 		v1alpha1role.SchemeBuilder.AddToScheme,
 		v1alpha1service.SchemeBuilder.AddToScheme,
+		v1alpha1udf.SchemeBuilder.AddToScheme,
 		v1alpha1cluster.SchemeBuilder.AddToScheme,
 		v1beta1.SchemeBuilder.AddToScheme,
 	)

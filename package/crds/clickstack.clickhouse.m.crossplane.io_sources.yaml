@@ -1,0 +1,2069 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.22.0
+  name: sources.clickstack.clickhouse.m.crossplane.io
+spec:
+  group: clickstack.clickhouse.m.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - clickhouse
+    kind: Source
+    listKind: SourceList
+    plural: sources
+    singular: source
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Source is the Schema for the Sources API. Manages a ClickStack
+          source (v2 sources API). A source ties a ClickHouse connection to a table
+          and describes how to read one kind of data (log, trace, metric, session,
+          or promql). The set of applicable fields depends on kind; the API validates
+          per-kind requirements and returns an error at apply time if a required field
+          for the chosen kind is missing.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SourceSpec defines the desired state of Source
+            properties:
+              forProvider:
+                properties:
+                  bodyExpression:
+                    description: |-
+                      Expression to extract the log message body (log).
+                    type: string
+                  connectionId:
+                    description: |-
+                      ID of the ClickHouse connection used by this source.
+                    type: string
+                  connectionIdRef:
+                    description: Reference to a Connection in clickstack to populate
+                      connectionId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  connectionIdSelector:
+                    description: Selector for a Connection in clickstack to populate
+                      connectionId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  defaultTableSelectExpression:
+                    description: |-
+                      Default columns selected in search results. Required for `log` and `trace`.
+                    type: string
+                  disabled:
+                    description: |-
+                      When true, the source is hidden from source selectors in the UI. Defaults to false.
+                    type: boolean
+                  displayedTimestampValueExpression:
+                    description: |-
+                      DateTime column used to display and order search results.
+                    type: string
+                  durationExpression:
+                    description: |-
+                      Expression to extract span duration. Required for `trace`.
+                    type: string
+                  durationPrecision:
+                    description: |-
+                      Number of decimal digits in the duration value (3=ms, 6=us, 9=ns). Defaults to 3. Applies to `trace`.
+                    type: number
+                  eventAttributesExpression:
+                    description: |-
+                      Expression to extract event-level attributes.
+                    type: string
+                  from:
+                    description: Database and table location of the source
+                      data. (see below for nested schema)
+                    properties:
+                      databaseName:
+                        description: |-
+                          ClickHouse database name.
+                        type: string
+                      tableName:
+                        description: |-
+                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+                        type: string
+                    type: object
+                  highlightedRowAttributeExpressions:
+                    description: Attributes displayed in the row
+                      side panel for the selected row. (see below for nested schema)
+                    items:
+                      properties:
+                        alias:
+                          description: |-
+                            Optional alias for the attribute.
+                          type: string
+                        luceneExpression:
+                          description: |-
+                            Optional Lucene version of the SQL expression.
+                          type: string
+                        sqlExpression:
+                          description: |-
+                            SQL expression for the attribute.
+                          type: string
+                      type: object
+                    type: array
+                  highlightedTraceAttributeExpressions:
+                    description: Attributes displayed in the trace
+                      view for the selected trace. (see below for nested schema)
+                    items:
+                      properties:
+                        alias:
+                          description: |-
+                            Optional alias for the attribute.
+                          type: string
+                        luceneExpression:
+                          description: |-
+                            Optional Lucene version of the SQL expression.
+                          type: string
+                        sqlExpression:
+                          description: |-
+                            SQL expression for the attribute.
+                          type: string
+                      type: object
+                    type: array
+                  implicitColumnExpression:
+                    description: |-
+                      Column used for full-text search when no property is specified in a Lucene search.
+                    type: string
+                  kind:
+                    description: |-
+                      Source kind: one of `log`, `trace`, `metric`, `session`, `promql`.
+                    type: string
+                  knownColumnsListExpression:
+                    description: |-
+                      For distributed tables with non-matching column sets: columns supported across all target tables.
+                    type: string
+                  logSourceId:
+                    description: |-
+                      Correlated log source ID.
+                    type: string
+                  logSourceIdRef:
+                    description: Reference to a Source in clickstack to populate logSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  logSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate logSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  materializedViews:
+                    description: Materialized views for query optimization
+                      (log, trace). (see below for nested schema)
+                    items:
+                      properties:
+                        aggregatedColumns:
+                          description: aggregated by the materialized view. (see below
+                            for nested schema)
+                          items:
+                            properties:
+                              aggFn:
+                                description: |-
+                                  Aggregation function (e.g. count, sum, avg).
+                                type: string
+                              mvColumn:
+                                description: |-
+                                  Materialized view column name.
+                                type: string
+                              sourceColumn:
+                                description: |-
+                                  Source column name (required unless agg_fn is `count`).
+                                type: string
+                            type: object
+                          type: array
+                        databaseName:
+                          description: |-
+                            Materialized view database name.
+                          type: string
+                        dimensionColumns:
+                          description: |-
+                            Non-aggregated columns usable for filtering and grouping.
+                          type: string
+                        minDate:
+                          description: |-
+                            Earliest date/time (RFC3339) for which the view contains data.
+                          type: string
+                        minGranularity:
+                          description: |-
+                            Timestamp granularity in short form (e.g. `5m`, `15s`, `1h`, `1d`).
+                          type: string
+                        tableName:
+                          description: |-
+                            Materialized view table name.
+                          type: string
+                        timestampColumn:
+                          description: |-
+                            Timestamp column name.
+                          type: string
+                      type: object
+                    type: array
+                  metadataMaterializedViews:
+                    description: Materialized views for fast field discovery
+                      and value autocomplete (log, trace). (see below for nested schema)
+                    properties:
+                      granularity:
+                        description: |-
+                          Granularity of the rollup tables in short form (e.g. `15m`).
+                        type: string
+                      keyRollupTable:
+                        description: |-
+                          Table name for the key rollup (field discovery).
+                        type: string
+                      kvRollupTable:
+                        description: |-
+                          Table name for the key-value rollup (value autocomplete).
+                        type: string
+                    type: object
+                  metricSourceId:
+                    description: |-
+                      Correlated metric source ID.
+                    type: string
+                  metricSourceIdRef:
+                    description: Reference to a Source in clickstack to populate metricSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metricSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate metricSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  metricTables:
+                    description: Mapping of metric data types to table
+                      names (metric). At least one must be set. (see below for nested
+                      schema)
+                    properties:
+                      exponentialHistogram:
+                        description: |-
+                          Table containing exponential histogram metrics data.
+                        type: string
+                      gauge:
+                        description: |-
+                          Table containing gauge metrics data.
+                        type: string
+                      histogram:
+                        description: |-
+                          Table containing histogram metrics data.
+                        type: string
+                      sum:
+                        description: |-
+                          Table containing sum metrics data.
+                        type: string
+                      summary:
+                        description: |-
+                          Table containing summary metrics data.
+                        type: string
+                    type: object
+                  name:
+                    description: |-
+                      Display name for the source.
+                    type: string
+                  orderByExpression:
+                    description: |-
+                      Expression used to order rows.
+                    type: string
+                  parentSpanIdExpression:
+                    description: |-
+                      Expression to extract the parent span ID. Required for `trace`.
+                    type: string
+                  querySettings:
+                    description: Optional ClickHouse query settings
+                      applied when querying this source. (see below for nested schema)
+                    items:
+                      properties:
+                        setting:
+                          description: |-
+                            ClickHouse setting name.
+                          type: string
+                        value:
+                          description: |-
+                            Setting value.
+                          type: string
+                      type: object
+                    type: array
+                  resourceAttributesExpression:
+                    description: |-
+                      Expression to extract resource-level attributes. Required for `metric`.
+                    type: string
+                  sampleRateExpression:
+                    description: |-
+                      Expression to extract the trace sample rate.
+                    type: string
+                  section:
+                    description: |-
+                      Optional grouping label used to organize sources in the source selector.
+                    type: string
+                  serviceNameExpression:
+                    description: |-
+                      Expression to extract the service name.
+                    type: string
+                  sessionSourceId:
+                    description: |-
+                      Correlated session source ID (trace).
+                    type: string
+                  sessionSourceIdRef:
+                    description: Reference to a Source in clickstack to populate sessionSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  sessionSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate sessionSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  severityTextExpression:
+                    description: |-
+                      Expression to extract the severity/log level text (log).
+                    type: string
+                  spanEventsValueExpression:
+                    description: |-
+                      Expression to extract span events.
+                    type: string
+                  spanIdExpression:
+                    description: |-
+                      Expression to extract the span ID.
+                    type: string
+                  spanKindExpression:
+                    description: |-
+                      Expression to extract the span kind. Required for `trace`.
+                    type: string
+                  spanNameExpression:
+                    description: |-
+                      Expression to extract the span name. Required for `trace`.
+                    type: string
+                  statusCodeExpression:
+                    description: |-
+                      Expression to extract the span status code.
+                    type: string
+                  statusMessageExpression:
+                    description: |-
+                      Expression to extract the span status message.
+                    type: string
+                  team:
+                    description: |-
+                      Team ID to manage this source under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments. Changing this forces the source to be replaced.
+                    type: string
+                  teamRef:
+                    description: Reference to a Team in clickstack to populate team.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  teamSelector:
+                    description: Selector for a Team in clickstack to populate team.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  timestampValueExpression:
+                    description: |-
+                      DateTime column or expression that is part of the table's primary key.
+                    type: string
+                  traceIdExpression:
+                    description: |-
+                      Expression to extract the trace ID.
+                    type: string
+                  traceSourceId:
+                    description: |-
+                      Correlated trace source ID. Required for `session`.
+                    type: string
+                  traceSourceIdRef:
+                    description: Reference to a Source in clickstack to populate traceSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  traceSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate traceSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  useTextIndexForImplicitColumn:
+                    description: |-
+                      Whether to use ClickHouse text indices for the implicit column: `auto`, `enabled`, or `disabled`.
+                    type: string
+                type: object
+              initProvider:
+                description: |-
+                  THIS IS A BETA FIELD. It will be honored
+                  unless the Management Policies feature flag is disabled.
+                  InitProvider holds the same fields as ForProvider, with the exception
+                  of Identifier and other resource reference fields. The fields that are
+                  in InitProvider are merged into ForProvider when the resource is created.
+                  The same fields are also added to the terraform ignore_changes hook, to
+                  avoid updating them after creation. This is useful for fields that are
+                  required on creation, but we do not desire to update them after creation,
+                  for example because of an external controller is managing them, like an
+                  autoscaler.
+                properties:
+                  bodyExpression:
+                    description: |-
+                      Expression to extract the log message body (log).
+                    type: string
+                  connectionId:
+                    description: |-
+                      ID of the ClickHouse connection used by this source.
+                    type: string
+                  connectionIdRef:
+                    description: Reference to a Connection in clickstack to populate
+                      connectionId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  connectionIdSelector:
+                    description: Selector for a Connection in clickstack to populate
+                      connectionId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  defaultTableSelectExpression:
+                    description: |-
+                      Default columns selected in search results. Required for `log` and `trace`.
+                    type: string
+                  disabled:
+                    description: |-
+                      When true, the source is hidden from source selectors in the UI. Defaults to false.
+                    type: boolean
+                  displayedTimestampValueExpression:
+                    description: |-
+                      DateTime column used to display and order search results.
+                    type: string
+                  durationExpression:
+                    description: |-
+                      Expression to extract span duration. Required for `trace`.
+                    type: string
+                  durationPrecision:
+                    description: |-
+                      Number of decimal digits in the duration value (3=ms, 6=us, 9=ns). Defaults to 3. Applies to `trace`.
+                    type: number
+                  eventAttributesExpression:
+                    description: |-
+                      Expression to extract event-level attributes.
+                    type: string
+                  from:
+                    description: Database and table location of the source
+                      data. (see below for nested schema)
+                    properties:
+                      databaseName:
+                        description: |-
+                          ClickHouse database name.
+                        type: string
+                      tableName:
+                        description: |-
+                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+                        type: string
+                    type: object
+                  highlightedRowAttributeExpressions:
+                    description: Attributes displayed in the row
+                      side panel for the selected row. (see below for nested schema)
+                    items:
+                      properties:
+                        alias:
+                          description: |-
+                            Optional alias for the attribute.
+                          type: string
+                        luceneExpression:
+                          description: |-
+                            Optional Lucene version of the SQL expression.
+                          type: string
+                        sqlExpression:
+                          description: |-
+                            SQL expression for the attribute.
+                          type: string
+                      type: object
+                    type: array
+                  highlightedTraceAttributeExpressions:
+                    description: Attributes displayed in the trace
+                      view for the selected trace. (see below for nested schema)
+                    items:
+                      properties:
+                        alias:
+                          description: |-
+                            Optional alias for the attribute.
+                          type: string
+                        luceneExpression:
+                          description: |-
+                            Optional Lucene version of the SQL expression.
+                          type: string
+                        sqlExpression:
+                          description: |-
+                            SQL expression for the attribute.
+                          type: string
+                      type: object
+                    type: array
+                  implicitColumnExpression:
+                    description: |-
+                      Column used for full-text search when no property is specified in a Lucene search.
+                    type: string
+                  kind:
+                    description: |-
+                      Source kind: one of `log`, `trace`, `metric`, `session`, `promql`.
+                    type: string
+                  knownColumnsListExpression:
+                    description: |-
+                      For distributed tables with non-matching column sets: columns supported across all target tables.
+                    type: string
+                  logSourceId:
+                    description: |-
+                      Correlated log source ID.
+                    type: string
+                  logSourceIdRef:
+                    description: Reference to a Source in clickstack to populate logSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  logSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate logSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  materializedViews:
+                    description: Materialized views for query optimization
+                      (log, trace). (see below for nested schema)
+                    items:
+                      properties:
+                        aggregatedColumns:
+                          description: aggregated by the materialized view. (see below
+                            for nested schema)
+                          items:
+                            properties:
+                              aggFn:
+                                description: |-
+                                  Aggregation function (e.g. count, sum, avg).
+                                type: string
+                              mvColumn:
+                                description: |-
+                                  Materialized view column name.
+                                type: string
+                              sourceColumn:
+                                description: |-
+                                  Source column name (required unless agg_fn is `count`).
+                                type: string
+                            type: object
+                          type: array
+                        databaseName:
+                          description: |-
+                            Materialized view database name.
+                          type: string
+                        dimensionColumns:
+                          description: |-
+                            Non-aggregated columns usable for filtering and grouping.
+                          type: string
+                        minDate:
+                          description: |-
+                            Earliest date/time (RFC3339) for which the view contains data.
+                          type: string
+                        minGranularity:
+                          description: |-
+                            Timestamp granularity in short form (e.g. `5m`, `15s`, `1h`, `1d`).
+                          type: string
+                        tableName:
+                          description: |-
+                            Materialized view table name.
+                          type: string
+                        timestampColumn:
+                          description: |-
+                            Timestamp column name.
+                          type: string
+                      type: object
+                    type: array
+                  metadataMaterializedViews:
+                    description: Materialized views for fast field discovery
+                      and value autocomplete (log, trace). (see below for nested schema)
+                    properties:
+                      granularity:
+                        description: |-
+                          Granularity of the rollup tables in short form (e.g. `15m`).
+                        type: string
+                      keyRollupTable:
+                        description: |-
+                          Table name for the key rollup (field discovery).
+                        type: string
+                      kvRollupTable:
+                        description: |-
+                          Table name for the key-value rollup (value autocomplete).
+                        type: string
+                    type: object
+                  metricSourceId:
+                    description: |-
+                      Correlated metric source ID.
+                    type: string
+                  metricSourceIdRef:
+                    description: Reference to a Source in clickstack to populate metricSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metricSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate metricSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  metricTables:
+                    description: Mapping of metric data types to table
+                      names (metric). At least one must be set. (see below for nested
+                      schema)
+                    properties:
+                      exponentialHistogram:
+                        description: |-
+                          Table containing exponential histogram metrics data.
+                        type: string
+                      gauge:
+                        description: |-
+                          Table containing gauge metrics data.
+                        type: string
+                      histogram:
+                        description: |-
+                          Table containing histogram metrics data.
+                        type: string
+                      sum:
+                        description: |-
+                          Table containing sum metrics data.
+                        type: string
+                      summary:
+                        description: |-
+                          Table containing summary metrics data.
+                        type: string
+                    type: object
+                  name:
+                    description: |-
+                      Display name for the source.
+                    type: string
+                  orderByExpression:
+                    description: |-
+                      Expression used to order rows.
+                    type: string
+                  parentSpanIdExpression:
+                    description: |-
+                      Expression to extract the parent span ID. Required for `trace`.
+                    type: string
+                  querySettings:
+                    description: Optional ClickHouse query settings
+                      applied when querying this source. (see below for nested schema)
+                    items:
+                      properties:
+                        setting:
+                          description: |-
+                            ClickHouse setting name.
+                          type: string
+                        value:
+                          description: |-
+                            Setting value.
+                          type: string
+                      type: object
+                    type: array
+                  resourceAttributesExpression:
+                    description: |-
+                      Expression to extract resource-level attributes. Required for `metric`.
+                    type: string
+                  sampleRateExpression:
+                    description: |-
+                      Expression to extract the trace sample rate.
+                    type: string
+                  section:
+                    description: |-
+                      Optional grouping label used to organize sources in the source selector.
+                    type: string
+                  serviceNameExpression:
+                    description: |-
+                      Expression to extract the service name.
+                    type: string
+                  sessionSourceId:
+                    description: |-
+                      Correlated session source ID (trace).
+                    type: string
+                  sessionSourceIdRef:
+                    description: Reference to a Source in clickstack to populate sessionSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  sessionSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate sessionSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  severityTextExpression:
+                    description: |-
+                      Expression to extract the severity/log level text (log).
+                    type: string
+                  spanEventsValueExpression:
+                    description: |-
+                      Expression to extract span events.
+                    type: string
+                  spanIdExpression:
+                    description: |-
+                      Expression to extract the span ID.
+                    type: string
+                  spanKindExpression:
+                    description: |-
+                      Expression to extract the span kind. Required for `trace`.
+                    type: string
+                  spanNameExpression:
+                    description: |-
+                      Expression to extract the span name. Required for `trace`.
+                    type: string
+                  statusCodeExpression:
+                    description: |-
+                      Expression to extract the span status code.
+                    type: string
+                  statusMessageExpression:
+                    description: |-
+                      Expression to extract the span status message.
+                    type: string
+                  team:
+                    description: |-
+                      Team ID to manage this source under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments. Changing this forces the source to be replaced.
+                    type: string
+                  teamRef:
+                    description: Reference to a Team in clickstack to populate team.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  teamSelector:
+                    description: Selector for a Team in clickstack to populate team.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  timestampValueExpression:
+                    description: |-
+                      DateTime column or expression that is part of the table's primary key.
+                    type: string
+                  traceIdExpression:
+                    description: |-
+                      Expression to extract the trace ID.
+                    type: string
+                  traceSourceId:
+                    description: |-
+                      Correlated trace source ID. Required for `session`.
+                    type: string
+                  traceSourceIdRef:
+                    description: Reference to a Source in clickstack to populate traceSourceId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  traceSourceIdSelector:
+                    description: Selector for a Source in clickstack to populate traceSourceId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  useTextIndexForImplicitColumn:
+                    description: |-
+                      Whether to use ClickHouse text indices for the implicit column: `auto`, `enabled`, or `disabled`.
+                    type: string
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+            x-kubernetes-validations:
+            - message: spec.forProvider.from is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.from)
+                || (has(self.initProvider) && has(self.initProvider.from))'
+            - message: spec.forProvider.kind is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.kind)
+                || (has(self.initProvider) && has(self.initProvider.kind))'
+            - message: spec.forProvider.name is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.name)
+                || (has(self.initProvider) && has(self.initProvider.name))'
+            - message: spec.forProvider.timestampValueExpression is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.timestampValueExpression)
+                || (has(self.initProvider) && has(self.initProvider.timestampValueExpression))'
+          status:
+            description: SourceStatus defines the observed state of Source.
+            properties:
+              atProvider:
+                properties:
+                  bodyExpression:
+                    description: |-
+                      Expression to extract the log message body (log).
+                    type: string
+                  connectionId:
+                    description: |-
+                      ID of the ClickHouse connection used by this source.
+                    type: string
+                  defaultTableSelectExpression:
+                    description: |-
+                      Default columns selected in search results. Required for `log` and `trace`.
+                    type: string
+                  disabled:
+                    description: |-
+                      When true, the source is hidden from source selectors in the UI. Defaults to false.
+                    type: boolean
+                  displayedTimestampValueExpression:
+                    description: |-
+                      DateTime column used to display and order search results.
+                    type: string
+                  durationExpression:
+                    description: |-
+                      Expression to extract span duration. Required for `trace`.
+                    type: string
+                  durationPrecision:
+                    description: |-
+                      Number of decimal digits in the duration value (3=ms, 6=us, 9=ns). Defaults to 3. Applies to `trace`.
+                    type: number
+                  eventAttributesExpression:
+                    description: |-
+                      Expression to extract event-level attributes.
+                    type: string
+                  from:
+                    description: Database and table location of the source
+                      data. (see below for nested schema)
+                    properties:
+                      databaseName:
+                        description: |-
+                          ClickHouse database name.
+                        type: string
+                      tableName:
+                        description: |-
+                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+                        type: string
+                    type: object
+                  highlightedRowAttributeExpressions:
+                    description: Attributes displayed in the row
+                      side panel for the selected row. (see below for nested schema)
+                    items:
+                      properties:
+                        alias:
+                          description: |-
+                            Optional alias for the attribute.
+                          type: string
+                        luceneExpression:
+                          description: |-
+                            Optional Lucene version of the SQL expression.
+                          type: string
+                        sqlExpression:
+                          description: |-
+                            SQL expression for the attribute.
+                          type: string
+                      type: object
+                    type: array
+                  highlightedTraceAttributeExpressions:
+                    description: Attributes displayed in the trace
+                      view for the selected trace. (see below for nested schema)
+                    items:
+                      properties:
+                        alias:
+                          description: |-
+                            Optional alias for the attribute.
+                          type: string
+                        luceneExpression:
+                          description: |-
+                            Optional Lucene version of the SQL expression.
+                          type: string
+                        sqlExpression:
+                          description: |-
+                            SQL expression for the attribute.
+                          type: string
+                      type: object
+                    type: array
+                  id:
+                    description: Identifier of the source.
+                    type: string
+                  implicitColumnExpression:
+                    description: |-
+                      Column used for full-text search when no property is specified in a Lucene search.
+                    type: string
+                  kind:
+                    description: |-
+                      Source kind: one of `log`, `trace`, `metric`, `session`, `promql`.
+                    type: string
+                  knownColumnsListExpression:
+                    description: |-
+                      For distributed tables with non-matching column sets: columns supported across all target tables.
+                    type: string
+                  logSourceId:
+                    description: |-
+                      Correlated log source ID.
+                    type: string
+                  materializedViews:
+                    description: Materialized views for query optimization
+                      (log, trace). (see below for nested schema)
+                    items:
+                      properties:
+                        aggregatedColumns:
+                          description: aggregated by the materialized view. (see below
+                            for nested schema)
+                          items:
+                            properties:
+                              aggFn:
+                                description: |-
+                                  Aggregation function (e.g. count, sum, avg).
+                                type: string
+                              mvColumn:
+                                description: |-
+                                  Materialized view column name.
+                                type: string
+                              sourceColumn:
+                                description: |-
+                                  Source column name (required unless agg_fn is `count`).
+                                type: string
+                            type: object
+                          type: array
+                        databaseName:
+                          description: |-
+                            Materialized view database name.
+                          type: string
+                        dimensionColumns:
+                          description: |-
+                            Non-aggregated columns usable for filtering and grouping.
+                          type: string
+                        minDate:
+                          description: |-
+                            Earliest date/time (RFC3339) for which the view contains data.
+                          type: string
+                        minGranularity:
+                          description: |-
+                            Timestamp granularity in short form (e.g. `5m`, `15s`, `1h`, `1d`).
+                          type: string
+                        tableName:
+                          description: |-
+                            Materialized view table name.
+                          type: string
+                        timestampColumn:
+                          description: |-
+                            Timestamp column name.
+                          type: string
+                      type: object
+                    type: array
+                  metadataMaterializedViews:
+                    description: Materialized views for fast field discovery
+                      and value autocomplete (log, trace). (see below for nested schema)
+                    properties:
+                      granularity:
+                        description: |-
+                          Granularity of the rollup tables in short form (e.g. `15m`).
+                        type: string
+                      keyRollupTable:
+                        description: |-
+                          Table name for the key rollup (field discovery).
+                        type: string
+                      kvRollupTable:
+                        description: |-
+                          Table name for the key-value rollup (value autocomplete).
+                        type: string
+                    type: object
+                  metricSourceId:
+                    description: |-
+                      Correlated metric source ID.
+                    type: string
+                  metricTables:
+                    description: Mapping of metric data types to table
+                      names (metric). At least one must be set. (see below for nested
+                      schema)
+                    properties:
+                      exponentialHistogram:
+                        description: |-
+                          Table containing exponential histogram metrics data.
+                        type: string
+                      gauge:
+                        description: |-
+                          Table containing gauge metrics data.
+                        type: string
+                      histogram:
+                        description: |-
+                          Table containing histogram metrics data.
+                        type: string
+                      sum:
+                        description: |-
+                          Table containing sum metrics data.
+                        type: string
+                      summary:
+                        description: |-
+                          Table containing summary metrics data.
+                        type: string
+                    type: object
+                  name:
+                    description: |-
+                      Display name for the source.
+                    type: string
+                  orderByExpression:
+                    description: |-
+                      Expression used to order rows.
+                    type: string
+                  parentSpanIdExpression:
+                    description: |-
+                      Expression to extract the parent span ID. Required for `trace`.
+                    type: string
+                  querySettings:
+                    description: Optional ClickHouse query settings
+                      applied when querying this source. (see below for nested schema)
+                    items:
+                      properties:
+                        setting:
+                          description: |-
+                            ClickHouse setting name.
+                          type: string
+                        value:
+                          description: |-
+                            Setting value.
+                          type: string
+                      type: object
+                    type: array
+                  resourceAttributesExpression:
+                    description: |-
+                      Expression to extract resource-level attributes. Required for `metric`.
+                    type: string
+                  sampleRateExpression:
+                    description: |-
+                      Expression to extract the trace sample rate.
+                    type: string
+                  section:
+                    description: |-
+                      Optional grouping label used to organize sources in the source selector.
+                    type: string
+                  serviceNameExpression:
+                    description: |-
+                      Expression to extract the service name.
+                    type: string
+                  sessionSourceId:
+                    description: |-
+                      Correlated session source ID (trace).
+                    type: string
+                  severityTextExpression:
+                    description: |-
+                      Expression to extract the severity/log level text (log).
+                    type: string
+                  spanEventsValueExpression:
+                    description: |-
+                      Expression to extract span events.
+                    type: string
+                  spanIdExpression:
+                    description: |-
+                      Expression to extract the span ID.
+                    type: string
+                  spanKindExpression:
+                    description: |-
+                      Expression to extract the span kind. Required for `trace`.
+                    type: string
+                  spanNameExpression:
+                    description: |-
+                      Expression to extract the span name. Required for `trace`.
+                    type: string
+                  statusCodeExpression:
+                    description: |-
+                      Expression to extract the span status code.
+                    type: string
+                  statusMessageExpression:
+                    description: |-
+                      Expression to extract the span status message.
+                    type: string
+                  team:
+                    description: |-
+                      Team ID to manage this source under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments. Changing this forces the source to be replaced.
+                    type: string
+                  timestampValueExpression:
+                    description: |-
+                      DateTime column or expression that is part of the table's primary key.
+                    type: string
+                  traceIdExpression:
+                    description: |-
+                      Expression to extract the trace ID.
+                    type: string
+                  traceSourceId:
+                    description: |-
+                      Correlated trace source ID. Required for `session`.
+                    type: string
+                  useTextIndexForImplicitColumn:
+                    description: |-
+                      Whether to use ClickHouse text indices for the implicit column: `auto`, `enabled`, or `disabled`.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              lastHandledReconcileAt:
+                description: |-
+                  LastHandledReconcileAt holds the value of the most recent
+                  reconcile-requested-at annotation token that the controller has
+                  processed. Users can compare this to the annotation to determine
+                  whether a reconcile request has been handled.
+                type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

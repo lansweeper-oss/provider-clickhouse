@@ -1,0 +1,16 @@
+apiVersion: clickstack.clickhouse.m.crossplane.io/v1alpha1
+kind: TeamMember
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/teammember
+  labels:
+    testing.upbound.io/example-name: alice
+  name: alice
+  namespace: crossplane-system
+spec:
+  forProvider:
+    email: alice@example.com
+    name: Alice
+    roleIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: clickhouse_clickstack_role

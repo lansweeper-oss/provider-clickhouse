@@ -64,9 +64,17 @@ type ServiceInitParameters struct {
 	// Human-readable name. Immutable post-create; changes force destroy-and-recreate. Differs from clickhouse_service, which allows in-place rename.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// .
-	// Superuser password. Computed and refreshed from each GET (the server echoes it), so it always reflects the live password and an out-of-band rotation is reconciled on the next refresh. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state.
+	// 11, and increment
+	// password_wo_version to rotate).
+	// Superuser password. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state — prefer `password_wo` to keep it out of state.
 	PasswordSecretRef *v2.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+
+	// 11). Preferred over password. Requires password_wo_version; increment the version to rotate to the current password_wo value. Same complexity rules as password. Forbidden for a read replica.11). Preferred over `password`. Requires `password_wo_version`; increment the version to rotate to the current `password_wo` value. Same complexity rules as `password`. Forbidden for a read replica.
+	PasswordWoSecretRef *v2.SecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+
+	// (Number) Version number for password_wo. Increment to trigger a password rotation using the current password_wo value.
+	// Version number for `password_wo`. Increment to trigger a password rotation using the current `password_wo` value.
+	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
 	// value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set pg_config = {} to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
 	// Postgres server parameters (pgConfig) as a key-value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set `pg_config = {}` to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
@@ -83,7 +91,7 @@ type ServiceInitParameters struct {
 	PostgresVersion *string `json:"postgresVersion,omitempty" tf:"postgres_version,omitempty"`
 
 	// in-time restore (restore_to_point_in_time)
-	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password (a replica inherits the primary's superuser).
+	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
 
 	// east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
@@ -127,7 +135,9 @@ type ServiceObservation struct {
 	// High-availability mode. One of 'none' (single replica), 'async' (asynchronous replica), or 'sync' (synchronous replica). Mutable post-create; an HA flip triggers a transition. Omitting the attribute preserves the prior value (the server defaults to 'none' on Create); to actively downgrade, set 'ha_type = "none"' explicitly. Omit for a read replica or point-in-time restore (inherited from the source).
 	HaType *string `json:"haType,omitempty" tf:"ha_type,omitempty"`
 
-	// (String) Network hostname for client connections.
+	// , port, username,
+	// and your declared password, e.g.
+	// postgres://${username}:${password}@${hostname}:${port}/postgres?sslmode=require.
 	// Network hostname for client connections.
 	Hostname *string `json:"hostname,omitempty" tf:"hostname,omitempty"`
 
@@ -143,6 +153,10 @@ type ServiceObservation struct {
 	// restore_target or removing it destroys and recreates the instance.
 	// Human-readable name. Immutable post-create; changes force destroy-and-recreate. Differs from clickhouse_service, which allows in-place rename.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+
+	// (Number) Version number for password_wo. Increment to trigger a password rotation using the current password_wo value.
+	// Version number for `password_wo`. Increment to trigger a password rotation using the current `password_wo` value.
+	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
 	// value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set pg_config = {} to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
 	// Postgres server parameters (pgConfig) as a key-value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set `pg_config = {}` to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
@@ -163,7 +177,7 @@ type ServiceObservation struct {
 	PostgresVersion *string `json:"postgresVersion,omitempty" tf:"postgres_version,omitempty"`
 
 	// in-time restore (restore_to_point_in_time)
-	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password (a replica inherits the primary's superuser).
+	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
 
 	// east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
@@ -219,10 +233,20 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// .
-	// Superuser password. Computed and refreshed from each GET (the server echoes it), so it always reflects the live password and an out-of-band rotation is reconciled on the next refresh. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state.
+	// 11, and increment
+	// password_wo_version to rotate).
+	// Superuser password. Changing this value rotates the password (PATCH /password). Must be ≥12 chars with at least one lowercase, one uppercase, and one digit. Stored in (sensitive) state — prefer `password_wo` to keep it out of state.
 	// +kubebuilder:validation:Optional
 	PasswordSecretRef *v2.SecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
+
+	// 11). Preferred over password. Requires password_wo_version; increment the version to rotate to the current password_wo value. Same complexity rules as password. Forbidden for a read replica.11). Preferred over `password`. Requires `password_wo_version`; increment the version to rotate to the current `password_wo` value. Same complexity rules as `password`. Forbidden for a read replica.
+	// +kubebuilder:validation:Optional
+	PasswordWoSecretRef *v2.SecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
+
+	// (Number) Version number for password_wo. Increment to trigger a password rotation using the current password_wo value.
+	// Version number for `password_wo`. Increment to trigger a password rotation using the current `password_wo` value.
+	// +kubebuilder:validation:Optional
+	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
 	// value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set pg_config = {} to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
 	// Postgres server parameters (pgConfig) as a key-value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set `pg_config = {}` to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
@@ -242,7 +266,7 @@ type ServiceParameters struct {
 	PostgresVersion *string `json:"postgresVersion,omitempty" tf:"postgres_version,omitempty"`
 
 	// in-time restore (restore_to_point_in_time)
-	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password (a replica inherits the primary's superuser).
+	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
 	// +kubebuilder:validation:Optional
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
 
@@ -303,7 +327,7 @@ type ServiceStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Service is the Schema for the Services API. ~> Note: This resource is in alpha and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (alpha): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server's PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won't lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you'll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):
+// Service is the Schema for the Services API. ~> Note: This resource is in beta and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (beta): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server's PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won't lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you'll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

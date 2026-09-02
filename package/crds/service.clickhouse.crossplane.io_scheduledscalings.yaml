@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.21.0
+    controller-gen.kubebuilder.io/version: v0.22.0
   name: scheduledscalings.service.clickhouse.crossplane.io
 spec:
   group: service.clickhouse.crossplane.io
@@ -42,14 +42,16 @@ spec:
           a window is active the service uses the replica count, memory bounds, and
           idle-scaling settings declared on that entry; otherwise the service falls
           back to its base auto-scaling configuration. ~> Note: This resource is in
-          alpha. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling).
-          Reach out to ClickHouse support if the API returns 403 FORBIDDEN. The server
-          currently requires min_replicas == max_replicas per entry, and a maximum
-          of 10 entries per schedule. Hour ranges Hour ranges are asymmetric: start_hour_utc
+          beta. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling).
+          Reach out to ClickHouse support if the API returns 403 FORBIDDEN. Each entry
+          is vertical by default — a fixed replica count (min_replicas == max_replicas);
+          set autoscaling_mode = "horizontal" to scale the replica count across a
+          min_replicas–max_replicas band at fixed per-replica memory. A schedule allows
+          a maximum of 10 entries. Hour ranges Hour ranges are asymmetric: start_hour_utc
           accepts 0–23.end_hour_utc accepts 1–24.start_hour_utc and end_hour_utc must
           differ.Set start_hour_utc = 0 and end_hour_utc = 24 for a 24-hour window.Set
           end_hour_utc < start_hour_utc to wrap overnight (e.g. 22 to 6 covers 22:00–06:00
-          next day). Example Usage'
+          next day).'
         properties:
           apiVersion:
             description: |-
@@ -94,6 +96,10 @@ spec:
                       (see below for nested schema)
                     items:
                       properties:
+                        autoscalingMode:
+                          description: |-
+                            Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+                          type: string
                         endHourUtc:
                           description: |-
                             End hour in UTC (1-24). Must differ from start_hour_utc. Note the asymmetric range: end_hour_utc=0 is invalid; use end_hour_utc=24 to mean midnight at end of day.
@@ -112,7 +118,7 @@ spec:
                           type: number
                         maxReplicas:
                           description: |-
-                            Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+                            Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
                           type: number
                         minReplicaMemoryGb:
                           description: |-
@@ -120,7 +126,7 @@ spec:
                           type: number
                         minReplicas:
                           description: |-
-                            Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+                            Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
                           type: number
                         name:
                           description: |-
@@ -160,6 +166,10 @@ spec:
                       (see below for nested schema)
                     items:
                       properties:
+                        autoscalingMode:
+                          description: |-
+                            Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+                          type: string
                         endHourUtc:
                           description: |-
                             End hour in UTC (1-24). Must differ from start_hour_utc. Note the asymmetric range: end_hour_utc=0 is invalid; use end_hour_utc=24 to mean midnight at end of day.
@@ -178,7 +188,7 @@ spec:
                           type: number
                         maxReplicas:
                           description: |-
-                            Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+                            Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
                           type: number
                         minReplicaMemoryGb:
                           description: |-
@@ -186,7 +196,7 @@ spec:
                           type: number
                         minReplicas:
                           description: |-
-                            Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+                            Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
                           type: number
                         name:
                           description: |-
@@ -305,6 +315,14 @@ spec:
                   baseConfig:
                     description: managed. (see below for nested schema)
                     properties:
+                      autoscalingMode:
+                        description: replica memory, min_replica_memory_gb == max_replica_memory_gb).
+                          When omitted the server defaults to vertical, so a distinct
+                          min_replicas/max_replicas band requires an explicit autoscaling_mode
+                          = "horizontal". The schedule update is a full replace and
+                          per-entry mode is not preserved across updates, so set autoscaling_mode
+                          explicitly on every entry you want to keep horizontal.
+                        type: string
                       idleScaling:
                         description: Whether idle scaling is enabled while
                           the window is active.
@@ -320,8 +338,9 @@ spec:
                         type: number
                       maxReplicas:
                         description: Maximum replica count while the window
-                          is active. Currently the server requires min_replicas ==
-                          max_replicas.
+                          is active. For a vertical entry min_replicas must equal
+                          max_replicas (fixed count); for a horizontal entry it is
+                          the high end of the replica band.
                         type: number
                       minReplicaMemoryGb:
                         description: Minimum memory per replica in GiB. Must
@@ -329,8 +348,9 @@ spec:
                         type: number
                       minReplicas:
                         description: Minimum replica count while the window
-                          is active. Currently the server requires min_replicas ==
-                          max_replicas.
+                          is active. For a vertical entry min_replicas must equal
+                          max_replicas (fixed count); for a horizontal entry it is
+                          the low end of the replica band.
                         type: number
                     type: object
                   entries:
@@ -340,6 +360,10 @@ spec:
                       (see below for nested schema)
                     items:
                       properties:
+                        autoscalingMode:
+                          description: |-
+                            Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+                          type: string
                         endHourUtc:
                           description: |-
                             End hour in UTC (1-24). Must differ from start_hour_utc. Note the asymmetric range: end_hour_utc=0 is invalid; use end_hour_utc=24 to mean midnight at end of day.
@@ -358,7 +382,7 @@ spec:
                           type: number
                         maxReplicas:
                           description: |-
-                            Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+                            Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
                           type: number
                         minReplicaMemoryGb:
                           description: |-
@@ -366,7 +390,7 @@ spec:
                           type: number
                         minReplicas:
                           description: |-
-                            Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+                            Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
                           type: number
                         name:
                           description: |-

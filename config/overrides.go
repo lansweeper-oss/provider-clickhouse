@@ -9,18 +9,9 @@ import (
 )
 
 var gkvOverrideMap = map[string]schema.GroupVersionKind{
-	"clickhouse_clickpipe":               {Group: "clickpipe"},
-	"clickhouse_role":                    {Group: "iam"},
-	"clickhouse_udf":                     {Group: "udf"},
-	"clickhouse_clickstack_alert":        {Group: "clickstack"},
-	"clickhouse_clickstack_connection":   {Group: "clickstack"},
-	"clickhouse_clickstack_dashboard":    {Group: "clickstack"},
-	"clickhouse_clickstack_role":         {Group: "clickstack"},
-	"clickhouse_clickstack_saved_search": {Group: "clickstack"},
-	"clickhouse_clickstack_source":       {Group: "clickstack"},
-	"clickhouse_clickstack_team":         {Group: "clickstack"},
-	"clickhouse_clickstack_team_member":  {Group: "clickstack"},
-	"clickhouse_clickstack_webhook":      {Group: "clickstack"},
+	"clickhouse_clickpipe": {Group: "clickpipe"},
+	"clickhouse_role":      {Group: "iam"},
+	"clickhouse_udf":       {Group: "udf"},
 }
 
 func gvkOverride() config.ResourceOption {
@@ -173,32 +164,32 @@ func Configure(p *config.Provider) {
 			"channel.webhook_id": {
 				TerraformName: "clickhouse_clickstack_webhook",
 			},
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_connection", func(r *config.Resource) {
 		r.References = config.References{
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_dashboard", func(r *config.Resource) {
 		r.References = config.References{
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_role", func(r *config.Resource) {
 		r.References = config.References{
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
@@ -206,38 +197,38 @@ func Configure(p *config.Provider) {
 	p.AddResourceConfigurator("clickhouse_clickstack_saved_search", func(r *config.Resource) {
 		r.References = config.References{
 			"source_id": {
-				TerraformName: "clickhouse_clickstack_source",
+				TerraformName: clickstackSource,
 			},
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
 
-	p.AddResourceConfigurator("clickhouse_clickstack_source", func(r *config.Resource) {
+	p.AddResourceConfigurator(clickstackSource, func(r *config.Resource) {
 		r.References = config.References{
 			"connection_id": {
 				TerraformName: "clickhouse_clickstack_connection",
 			},
 			"log_source_id": {
-				TerraformName: "clickhouse_clickstack_source",
+				TerraformName: clickstackSource,
 			},
 			"metric_source_id": {
-				TerraformName: "clickhouse_clickstack_source",
+				TerraformName: clickstackSource,
 			},
 			"session_source_id": {
-				TerraformName: "clickhouse_clickstack_source",
+				TerraformName: clickstackSource,
 			},
 			"trace_source_id": {
-				TerraformName: "clickhouse_clickstack_source",
+				TerraformName: clickstackSource,
 			},
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
 
-	p.AddResourceConfigurator("clickhouse_clickstack_team", func(r *config.Resource) {
+	p.AddResourceConfigurator(clickstackTeam, func(r *config.Resource) {
 		r.References = config.References{
 			"default_user_role_id": {
 				TerraformName: "clickhouse_clickstack_role",
@@ -250,16 +241,16 @@ func Configure(p *config.Provider) {
 			"role_id": {
 				TerraformName: "clickhouse_clickstack_role",
 			},
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_webhook", func(r *config.Resource) {
 		r.References = config.References{
-			"team": {
-				TerraformName: "clickhouse_clickstack_team",
+			teamParam: {
+				TerraformName: clickstackTeam,
 			},
 		}
 	})

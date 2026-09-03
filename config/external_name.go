@@ -10,7 +10,11 @@ import (
 
 const (
 	clickhouseService = "clickhouse_service"
+	clickstackGroup   = "clickstack"
 	serviceIDParam    = "service_id"
+	teamParam         = "team"
+	clickstackTeam    = "clickhouse_clickstack_team"
+	clickstackSource  = "clickhouse_clickstack_source"
 )
 
 // getExternalNameFromServiceID returns a GetExternalNameFn that reads
@@ -68,8 +72,8 @@ var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_clickstack_dashboard":    config.IdentifierFromProvider,
 	"clickhouse_clickstack_role":         config.IdentifierFromProvider,
 	"clickhouse_clickstack_saved_search": config.IdentifierFromProvider,
-	"clickhouse_clickstack_source":       config.IdentifierFromProvider,
-	"clickhouse_clickstack_team":         config.IdentifierFromProvider,
+	clickstackSource:                     config.IdentifierFromProvider,
+	clickstackTeam:                       config.IdentifierFromProvider,
 	"clickhouse_clickstack_team_member":  withOptionalPrefix(identifierFromParameterOrAnnotation("email"), "team"),
 	"clickhouse_clickstack_webhook":      config.IdentifierFromProvider,
 }

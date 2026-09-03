@@ -14,7 +14,16 @@ import (
 	clickpipe "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickpipe/clickpipe"
 	reverseprivateendpoint "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickpipes/reverseprivateendpoint"
 	reverseprivateendpointcustomprivatedns "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickpipes/reverseprivateendpointcustomprivatedns"
-	role "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/iam/role"
+	alert "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/alert"
+	connection "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/connection"
+	dashboard "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/dashboard"
+	role "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/role"
+	savedsearch "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/savedsearch"
+	source "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/source"
+	team "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/team"
+	teammember "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/teammember"
+	webhook "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/clickstack/webhook"
+	roleiam "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/iam/role"
 	settings "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/organization/settings"
 	servicepostgres "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/postgres/service"
 	providerconfig "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/providerconfig"
@@ -23,6 +32,8 @@ import (
 	scheduledscaling "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/service/scheduledscaling"
 	transparentdataencryptionkeyassociation "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/service/transparentdataencryptionkeyassociation"
 	upgradewindow "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/service/upgradewindow"
+	attachment "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/udf/attachment"
+	udf "github.com/lansweeper-oss/provider-clickhouse/internal/controller/namespaced/udf/udf"
 )
 
 // Setup creates all controllers with the supplied logger and adds them to
@@ -34,7 +45,16 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		clickpipe.Setup,
 		reverseprivateendpoint.Setup,
 		reverseprivateendpointcustomprivatedns.Setup,
+		alert.Setup,
+		connection.Setup,
+		dashboard.Setup,
 		role.Setup,
+		savedsearch.Setup,
+		source.Setup,
+		team.Setup,
+		teammember.Setup,
+		webhook.Setup,
+		roleiam.Setup,
 		settings.Setup,
 		servicepostgres.Setup,
 		providerconfig.Setup,
@@ -43,6 +63,8 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		scheduledscaling.Setup,
 		transparentdataencryptionkeyassociation.Setup,
 		upgradewindow.Setup,
+		attachment.Setup,
+		udf.Setup,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err
@@ -60,7 +82,16 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		clickpipe.SetupGated,
 		reverseprivateendpoint.SetupGated,
 		reverseprivateendpointcustomprivatedns.SetupGated,
+		alert.SetupGated,
+		connection.SetupGated,
+		dashboard.SetupGated,
 		role.SetupGated,
+		savedsearch.SetupGated,
+		source.SetupGated,
+		team.SetupGated,
+		teammember.SetupGated,
+		webhook.SetupGated,
+		roleiam.SetupGated,
 		settings.SetupGated,
 		servicepostgres.SetupGated,
 		providerconfig.SetupGated,
@@ -69,6 +100,8 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		scheduledscaling.SetupGated,
 		transparentdataencryptionkeyassociation.SetupGated,
 		upgradewindow.SetupGated,
+		attachment.SetupGated,
+		udf.SetupGated,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err
@@ -85,7 +118,16 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		clickpipe.SetupWebhookWithManager,
 		reverseprivateendpoint.SetupWebhookWithManager,
 		reverseprivateendpointcustomprivatedns.SetupWebhookWithManager,
+		alert.SetupWebhookWithManager,
+		connection.SetupWebhookWithManager,
+		dashboard.SetupWebhookWithManager,
 		role.SetupWebhookWithManager,
+		savedsearch.SetupWebhookWithManager,
+		source.SetupWebhookWithManager,
+		team.SetupWebhookWithManager,
+		teammember.SetupWebhookWithManager,
+		webhook.SetupWebhookWithManager,
+		roleiam.SetupWebhookWithManager,
 		settings.SetupWebhookWithManager,
 		servicepostgres.SetupWebhookWithManager,
 		providerconfig.SetupWebhookWithManager,
@@ -94,6 +136,8 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		scheduledscaling.SetupWebhookWithManager,
 		transparentdataencryptionkeyassociation.SetupWebhookWithManager,
 		upgradewindow.SetupWebhookWithManager,
+		attachment.SetupWebhookWithManager,
+		udf.SetupWebhookWithManager,
 	} {
 		if err := setup(mgr); err != nil {
 			return err

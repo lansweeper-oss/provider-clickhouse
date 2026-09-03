@@ -1,7 +1,7 @@
 name: ClickHouse/clickhouse
 resources:
     clickhouse_clickpipe:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'You can use the clickhouse_clickpipe resource to create and manage ClickPipes data ingestion pipelines in ClickHouse Cloud. Supported source types: Kafka (Confluent, MSK, Azure Event Hubs, Redpanda, WarpStream), Object Storage (S3, GCS, Azure Blob), Kinesis, Postgres CDC, MySQL CDC, BigQuery, and MongoDB CDC. Known limitations: ClickPipe does not support table updates for managed tables. If you need to update the table schema, you will have to do that externally.Changing the source type of an existing ClickPipe will force replacement (destroy and recreate).'
         name: clickhouse_clickpipe
         title: clickhouse_clickpipe Resource - clickhouse
@@ -49,6 +49,9 @@ resources:
                     }
                   ],
                   "service_id": "e9465b4b-f7e5-4937-8e21-8d508b02843d",
+                  "settings": {
+                    "kafka_read_committed": true
+                  },
                   "source": [
                     {
                       "kafka": [
@@ -115,6 +118,7 @@ resources:
             object_storage: (Attributes) The compatible object storage source configuration for the ClickPipe. (see below for nested schema)
             offset: (Attributes) The Kafka offset. (see below for nested schema)
             partition_by: (String) The column to partition the table by.
+            partition_by_expr: '(String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).'
             partition_key: (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
             password: (String, Sensitive) The password for the Kafka source. Use password_wo instead to keep the value out of state.
             password_wo: (String, Sensitive, Write-only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
@@ -140,7 +144,7 @@ resources:
             reverse_private_endpoint_ids: (List of String) The list of reverse private endpoint IDs for the Kafka source. (comma separated)
             roles: (List of String) ClickPipe will create a ClickHouse user with these roles. Add your custom roles here if required.
             scaling: (Attributes) (see below for nested schema)
-            schema_registry: (Attributes) The schema registry for the Kafka source. (see below for nested schema)
+            schema_registry: '(Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)'
             secret_key: (String, Sensitive) The secret key for the Kafka source. Use with IAM_USER authentication.
             seek_timestamp: (String) RFC 3339 timestamp (e.g. 2026-04-10T12:00:00Z). Required when seek_type = "timestamp"; must be omitted otherwise.
             seek_type: (String) The starting position for consuming the subscription. (latest, earliest, timestamp)
@@ -192,7 +196,7 @@ resources:
               # ClickPipes can be imported by specifying both service ID and clickpipe ID.
               terraform import clickhouse_clickpipe.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_clickpipe_cdc_infrastructure:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'You can use the clickhouse_clickpipe_cdc_infrastructure resource to manage scaling settings for CDC ClickPipes infrastructure shared across all DB ClickPipes in a service. ~> Important: Only one CDC infrastructure resource per service is supported. Creating multiple instances for the same service will cause conflicts. This endpoint becomes available once at least one DB ClickPipe has been provisioned. The resource will poll for up to 10 minutes waiting for the endpoint to become available. For billing purposes, 2 CPU cores and 8 GB of RAM correspond to one compute unit. ~> Note: CDC infrastructure is shared across all DB ClickPipes and cannot be explicitly deleted. Removing this resource only removes it from Terraform state. The infrastructure is automatically cleaned up when all DB ClickPipes are deleted.'
         name: clickhouse_clickpipe_cdc_infrastructure
         title: clickhouse_clickpipe_cdc_infrastructure Resource - clickhouse
@@ -214,7 +218,7 @@ resources:
               # CDC infrastructure can be imported by specifying the service ID.
               terraform import clickhouse_clickpipe_cdc_infrastructure.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_clickpipes_reverse_private_endpoint:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'You can use the clickhouse_clickpipes_reverse_private_endpoint resource to create and manage reverse private endpoints for secure ClickPipes data source connections in ClickHouse Cloud. Supported endpoint types: VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, and GCP_PSC_SERVICE_ATTACHMENT. ~> Note: All fields on this resource are immutable after creation. Any change will force replacement (destroy and recreate). Use clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns to manage custom private DNS mappings for a reverse private endpoint.'
         name: clickhouse_clickpipes_reverse_private_endpoint
         title: clickhouse_clickpipes_reverse_private_endpoint Resource - clickhouse
@@ -273,7 +277,7 @@ resources:
               # ClickPipes reverse private endpoints can be imported by specifying both service ID and reverse private endpoint ID.
               terraform import clickhouse_clickpipes_reverse_private_endpoint.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: Use the clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns resource to manage the full set of custom private DNS mappings for an existing ClickPipes reverse private endpoint. This resource updates only custom private DNS mappings. The mapping list is a full replacement list, and deleting this resource clears all custom private DNS mappings on the reverse private endpoint.
         name: clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns
         title: clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns Resource - clickhouse
@@ -300,8 +304,587 @@ resources:
               #!/bin/bash
               # ClickPipes reverse private endpoint custom private DNS mappings can be imported by specifying both service ID and reverse private endpoint ID.
               terraform import clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_clickstack_alert:
+        subCategory: ClickStack
+        description: Manages a ClickStack alert that evaluates a saved search on a schedule and notifies through a channel when a threshold is crossed. Alerts are threshold-based (there is no anomaly mode). Configuration is validated at plan time; those rules mirror the ClickStack server contract on a best-effort basis, so a server-side rule change may make the plan-time checks slightly stale until a new provider release.
+        name: clickhouse_clickstack_alert
+        title: clickhouse_clickstack_alert Resource - clickhouse
+        examples:
+            - name: too_many_errors
+              manifest: |-
+                {
+                  "channel": {
+                    "type": "webhook",
+                    "webhook_id": "${clickhouse_clickstack_webhook.slack.id}"
+                  },
+                  "interval": "5m",
+                  "message": "Error volume exceeded threshold",
+                  "name": "Too many production errors",
+                  "saved_search_id": "${clickhouse_clickstack_saved_search.errors.id}",
+                  "threshold": 100,
+                  "threshold_type": "above"
+                }
+              references:
+                saved_search_id: clickhouse_clickstack_saved_search.errors.id
+            - name: latency_band
+              manifest: |-
+                {
+                  "channel": {
+                    "type": "webhook",
+                    "webhook_id": "${clickhouse_clickstack_webhook.generic.id}"
+                  },
+                  "group_by": "ServiceName",
+                  "interval": "15m",
+                  "num_consecutive_windows": 2,
+                  "saved_search_id": "${clickhouse_clickstack_saved_search.errors.id}",
+                  "threshold": 200,
+                  "threshold_max": 800,
+                  "threshold_type": "not_between"
+                }
+              references:
+                saved_search_id: clickhouse_clickstack_saved_search.errors.id
+        argumentDocs:
+            channel: (Attributes) Notification channel for the alert. (see below for nested schema)
+            group_by: '(String) Optional expression to evaluate the alert per group. Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).'
+            id: (String) Identifier of the alert.
+            interval: '(String) Evaluation window: one of 1m, 5m, 15m, 30m, 1h, 6h, 12h, 1d.'
+            message: (String) Optional notification message template (1-4096 characters).
+            name: (String) Optional alert name (1-512 characters).
+            note: (String) Optional markdown note (1-4096 characters).
+            num_consecutive_windows: (Number) Fire only after the condition holds for this many consecutive windows (>= 1).
+            saved_search_id: (String) ID of the saved search this alert evaluates.
+            schedule_offset_minutes: (Number) Offset window boundaries by this many minutes (0-1439, and less than the interval). Mutually exclusive with schedule_start_at; setting one clears the other.
+            schedule_start_at: (String) Absolute UTC anchor (RFC3339) for window alignment. Mutually exclusive with a non-zero schedule_offset_minutes; setting one clears the other.
+            team: (String) Team ID to manage this alert under (x-hdx-team). Changing this forces the alert to be replaced.
+            threshold: (Number) Threshold value the alert compares against. For range types (between/not_between) this is the lower bound.
+            threshold_max: (Number) Upper bound, required for between/not_between and ignored otherwise. Must be >= threshold.
+            threshold_type: '(String) Comparison type: one of above, below, above_exclusive, below_or_equal, equal, not_equal, between, not_between.'
+            type: (String) Channel type. Currently only webhook is supported.
+            webhook_id: (String) ID of the webhook to notify. Required when type is webhook.
+        importStatements:
+            - |-
+              # Alerts can be imported by their ID.
+              terraform import clickhouse_clickstack_alert.too_many_errors 507f1f77bcf86cd799439011
+
+              # For an alert in a non-default team (multi-team / EE deployments), prefix the ID
+              # with the team ID:
+              terraform import clickhouse_clickstack_alert.too_many_errors 65f0c0ffeecafef00dba5e01/507f1f77bcf86cd799439011
+
+              # To find the ID, list all alerts via the API. The response is an envelope of the
+              # form {"data": [{"id": "...", "name": "...", "savedSearchId": "...", ...}]}.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/alerts" | jq -r '.data[] | "\(.id)\t\(.name)"'
+    clickhouse_clickstack_connection:
+        subCategory: ClickStack
+        description: 'Manages a ClickHouse connection in ClickStack. Connections hold the credentials and endpoint used by sources to query ClickHouse. Note: on ClickHouse Cloud, connections are managed by ClickHouse Cloud and cannot be created, changed, or deleted through this resource; this resource is for self-hosted ClickStack. Reference an existing Cloud connection by its ID from clickhouse_clickstack_source.connection_id instead.'
+        name: clickhouse_clickstack_connection
+        title: clickhouse_clickstack_connection Resource - clickhouse
+        examples:
+            - name: main
+              manifest: |-
+                {
+                  "host": "https://clickhouse.example.com:8443",
+                  "name": "Production ClickHouse",
+                  "password": "${var.clickhouse_password}",
+                  "username": "default"
+                }
+              references:
+                password: var.clickhouse_password
+              dependencies:
+                clickhouse_clickstack_source.logs: |-
+                    {
+                      "connection_id": "507f1f77bcf86cd799439012",
+                      "from": {
+                        "database_name": "otel",
+                        "table_name": "otel_logs"
+                      },
+                      "kind": "log",
+                      "name": "Logs",
+                      "timestamp_value_expression": "Timestamp"
+                    }
+            - name: by_team
+              manifest: |-
+                {
+                  "for_each": "${local.connections}",
+                  "host": "${each.value.host}",
+                  "name": "${each.value.name}",
+                  "password": "${var.clickhouse_passwords[each.key]}",
+                  "team": "${each.value.team}",
+                  "username": "${each.value.username}"
+                }
+              references:
+                for_each: local.connections
+                host: each.value.host
+                name: each.value.name
+                team: each.value.team
+                username: each.value.username
+              dependencies:
+                clickhouse_clickstack_source.logs: |-
+                    {
+                      "connection_id": "507f1f77bcf86cd799439012",
+                      "from": {
+                        "database_name": "otel",
+                        "table_name": "otel_logs"
+                      },
+                      "kind": "log",
+                      "name": "Logs",
+                      "timestamp_value_expression": "Timestamp"
+                    }
+        argumentDocs:
+            host: (String) ClickHouse HTTP endpoint URL, e.g. https://clickhouse.example.com:8443.
+            hyperdx_setting_prefix: (String) Prefix for HyperDX-specific ClickHouse settings. Must only contain alphanumeric characters and underscores.
+            id: (String) Identifier of the connection.
+            name: (String) Display name for the connection.
+            password: (String, Sensitive) ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password.
+            prometheus_endpoint: (String) Prometheus-compatible API endpoint, e.g. http://prometheus:9090. When set, PromQL queries are proxied to this endpoint.
+            team: (String) Team ID to manage this connection under, sent as the x-hdx-team header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
+            username: (String) ClickHouse username.
+        importStatements:
+            - |-
+              # Connections can be imported by their ID. Self-hosted ClickStack only: on
+              # ClickHouse Cloud, connections are managed by ClickHouse Cloud, so there is
+              # nothing for this resource to import or manage.
+              terraform import clickhouse_clickstack_connection.main 507f1f77bcf86cd799439012
+
+              # For a connection in a non-default team (multi-team / EE deployments), prefix
+              # the ID with the team ID so the import can resolve the team-scoped connection:
+              terraform import clickhouse_clickstack_connection.main 65f0c0ffeecafef00dba5e01/507f1f77bcf86cd799439012
+
+              # To find the ID, list all connections via the API. The response is an
+              # envelope of the form {"data": [{"id": "...", "name": "...", ...}]}.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/connections"
+
+              # Pipe through jq to print just the id and name for each connection.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/connections" | jq -r '.data[] | "\(.id)\t\(.name)"'
+    clickhouse_clickstack_dashboard:
+        subCategory: ClickStack
+        description: 'Manages a ClickStack dashboard from a JSON document (the v2 API dashboard body: name, tiles, tags, filters, savedQuery, containers). The JSON is validated at plan time against the ClickStack API when the validate endpoint is available. Export an existing dashboard with GET /api/v2/dashboards/{id} or terraform import. PromQL tiles are not supported by the API and cannot be managed here. The dashboard_json configuration is the sole source of truth: this resource does not detect changes made to the dashboard outside Terraform (e.g. edits in the UI). Such out-of-band changes are not reported as drift on terraform plan; they persist until the dashboard_json value itself changes, at which point the entire dashboard is replaced and any manual edits are overwritten. Manage a dashboard either entirely in Terraform or entirely in the UI, not both. Tile alerts (alerts bound to a dashboard tile) are not managed by this resource. On update, Terraform carries each tile''s server-assigned ID forward — matched by tile name — so a UI-created tile alert survives an apply. Tiles with duplicate or blank names, or renamed between applies, fall back to positional matching and may lose their alert; pin an explicit id on such tiles if you manage tile alerts in the UI.'
+        name: clickhouse_clickstack_dashboard
+        title: clickhouse_clickstack_dashboard Resource - clickhouse
+        examples:
+            - name: collectors
+              manifest: |-
+                {
+                  "dashboard_json": "${jsonencode({\n    name = \"OTel Collectors\"\n    tags = [\"otel\"]\n    tiles = [\n      {\n        name = \"Exporter sent spans\"\n        x    = 0, y = 0, w = 6, h = 3\n        config = {\n          displayType   = \"line\"\n          sourceId      = var.metrics_source_id\n          where         = \"ServiceName:clickstack\"\n          whereLanguage = \"lucene\"\n          groupBy       = \"ServiceName\"\n          select = [{\n            aggFn           = \"sum\"\n            valueExpression = \"Value\"\n            metricType      = \"sum\"\n            metricName      = \"otelcol_exporter_sent_spans_total\"\n            alias           = \"Sent spans\"\n          }]\n        }\n      },\n      {\n        name = \"Top services by log volume\"\n        x    = 6, y = 0, w = 6, h = 3\n        config = {\n          configType   = \"sql\"\n          displayType  = \"table\"\n          connectionId = var.connection_id\n          sqlTemplate  = \"SELECT ServiceName, count() AS logs FROM otel_logs GROUP BY ServiceName ORDER BY logs DESC LIMIT 20\"\n        }\n      }\n    ]\n  })}"
+                }
+        argumentDocs:
+            dashboard_json: (String) The dashboard body as a JSON string, in the v2 API format. Use jsonencode(...) or file(...).
+            id: (String) Identifier of the dashboard.
+            normalized_json: (String) Server-canonical dashboard body returned by the API (defaults applied, server-assigned tile IDs).
+            team: (String) Team ID to manage this dashboard under (x-hdx-team). Changing this forces replacement.
+        importStatements:
+            - |-
+              # Dashboards can be imported by their ID.
+              terraform import clickhouse_clickstack_dashboard.collectors 65f0c0ffeecafef00dba5e02
+
+              # For a dashboard in a non-default team (multi-team / EE deployments), prefix the
+              # ID with the team ID:
+              terraform import clickhouse_clickstack_dashboard.collectors 65f0c0ffeecafef00dba5e01/65f0c0ffeecafef00dba5e02
+
+              # `terraform plan -generate-config-out=...` writes the dashboard body with the
+              # literal ids the API returns (sourceId on every tile, for instance). Terraform
+              # generates config from state alone and cannot know those ids belong to other
+              # resources, so replace them by hand to link the dashboard to its sources:
+              # sourceId = clickhouse_clickstack_source.traces.id
+    clickhouse_clickstack_role:
+        subCategory: ClickStack
+        description: 'Manages a custom RBAC role in ClickStack. Note: on ClickHouse Cloud, roles are managed through ClickHouse Cloud (the clickhouse_role resource), not ClickStack; this resource is for self-hosted ClickStack Enterprise (multi-team) deployments. Predefined roles (Admin, Member, ReadOnly) are not managed by this resource; reference them with the clickstack_role data source instead. Note: the API always ensures a read permission on Connection is present; the provider reconciles this automatically so it does not appear as drift.'
+        name: clickhouse_clickstack_role
+        title: clickhouse_clickstack_role Resource - clickhouse
+        examples:
+            - name: analyst
+              manifest: |-
+                {
+                  "description": "Read-only access to dashboards and searches",
+                  "name": "Analyst",
+                  "permissions": [
+                    {
+                      "action": "read",
+                      "subject": "Dashboard"
+                    },
+                    {
+                      "action": "read",
+                      "subject": "SavedSearch"
+                    }
+                  ]
+                }
+            - name: restricted_editor
+              manifest: |-
+                {
+                  "name": "Restricted Editor",
+                  "permissions": [
+                    {
+                      "action": "manage",
+                      "subject": "Dashboard"
+                    },
+                    {
+                      "action": "read",
+                      "conditions": "${jsonencode({ kind = \"log\" })}",
+                      "subject": "Source"
+                    },
+                    {
+                      "action": "read",
+                      "integration": "clickhouse",
+                      "subject": "all"
+                    }
+                  ]
+                }
+        argumentDocs:
+            action: '(String) Action: one of create, read, update, delete, manage.'
+            conditions: (String) Optional JSON-encoded conditions object constraining the permission.
+            description: (String) Human-readable description of the role.
+            fields: (List of String) Optional list of fields the permission is restricted to.
+            id: (String) Identifier of the role.
+            integration: '(String) Integration the permission applies to: mongodb (API) or clickhouse (data RBAC). Defaults to mongodb.'
+            inverted: (Boolean) When true, the rule denies rather than allows the action. Defaults to false.
+            name: (String) Name of the role. Must not match a predefined role name.
+            permissions: (Attributes Set) Set of CASL permission rules granted by the role. (see below for nested schema)
+            subject: '(String) Subject (resource): e.g. Alert, Connection, Dashboard, SavedSearch, Source, Team, User, Webhook, Role, Notebook, or all.'
+            team: (String) Team ID to manage this role under, sent as the x-hdx-team header. Defaults to the API key's team. Changing this forces the role to be replaced.
+        importStatements:
+            - |-
+              # Roles can be imported by their ID.
+              terraform import clickhouse_clickstack_role.analyst 507f1f77bcf86cd799439012
+
+              # For a role in a non-default team (multi-team / EE deployments), prefix the ID
+              # with the team ID so the import can resolve the team-scoped role:
+              terraform import clickhouse_clickstack_role.analyst 65f0c0ffeecafef00dba5e01/507f1f77bcf86cd799439012
+
+              # To find the ID, list all roles via the API. The response is an envelope of
+              # the form {"data": [{"id": "...", "name": "...", ...}]}.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/roles" | jq -r '.data[] | "\(.id)\t\(.name)"'
+    clickhouse_clickstack_saved_search:
+        subCategory: ClickStack
+        description: 'Manages a ClickStack saved search: a named query over a source that alerts can target. The API PUT is a full replace, so every attribute is always sent; omitted optional fields reset to their server defaults.'
+        name: clickhouse_clickstack_saved_search
+        title: clickhouse_clickstack_saved_search Resource - clickhouse
+        examples:
+            - name: errors
+              manifest: |-
+                {
+                  "filters": "${jsonencode([\n    { type = \"sql\", condition = \"ServiceName IN ('checkout', 'payments')\" }\n  ])}",
+                  "name": "Production errors",
+                  "order_by": "Timestamp DESC",
+                  "select": "Timestamp, ServiceName, Body",
+                  "source_id": "${clickhouse_clickstack_source.logs.id}",
+                  "tags": [
+                    "production",
+                    "errors"
+                  ],
+                  "where": "SeverityText:error",
+                  "where_language": "lucene"
+                }
+              references:
+                source_id: clickhouse_clickstack_source.logs.id
+        argumentDocs:
+            filters: (String) Pinned sidebar filters as a JSON array string. Defaults to []; the authored value is kept as-is (removing the attribute resets it to []). Each filter object should include its type (sql, lucene, or sql_ast) and only the keys the API recognizes.
+            id: (String) Identifier of the saved search.
+            name: (String) Display name for the saved search.
+            order_by: (String) Order-by expression. Defaults to empty.
+            select: (String) Comma-separated column expressions to select. Defaults to empty.
+            source_id: (String) ID of the ClickStack source this saved search queries.
+            tags: (List of String) Tags applied to the saved search.
+            team: (String) Team ID to manage this saved search under (x-hdx-team). Changing this forces the saved search to be replaced.
+            where: (String) Row filter expression. Defaults to empty.
+            where_language: '(String) Language of where: lucene (default) or sql.'
+        importStatements:
+            - |-
+              # Saved searches can be imported by their ID.
+              terraform import clickhouse_clickstack_saved_search.errors 507f1f77bcf86cd799439011
+
+              # For a saved search in a non-default team (multi-team / EE deployments), prefix
+              # the ID with the team ID:
+              terraform import clickhouse_clickstack_saved_search.errors 65f0c0ffeecafef00dba5e01/507f1f77bcf86cd799439011
+
+              # To find the ID, list all saved searches via the API. The response is an
+              # envelope of the form {"data": [{"id": "...", "name": "...", ...}]}.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/saved-searches" | jq -r '.data[] | "\(.id)\t\(.name)"'
+    clickhouse_clickstack_source:
+        subCategory: ClickStack
+        description: Manages a ClickStack source (v2 sources API). A source ties a ClickHouse connection to a table and describes how to read one kind of data (log, trace, metric, session, or promql). The set of applicable fields depends on kind; the API validates per-kind requirements and returns an error at apply time if a required field for the chosen kind is missing.
+        name: clickhouse_clickstack_source
+        title: clickhouse_clickstack_source Resource - clickhouse
+        examples:
+            - name: logs
+              manifest: |-
+                {
+                  "body_expression": "Body",
+                  "connection_id": "${clickhouse_clickstack_connection.main.id}",
+                  "default_table_select_expression": "Timestamp, ServiceName, SeverityText, Body",
+                  "event_attributes_expression": "LogAttributes",
+                  "from": {
+                    "database_name": "otel",
+                    "table_name": "otel_logs"
+                  },
+                  "kind": "log",
+                  "name": "Logs",
+                  "resource_attributes_expression": "ResourceAttributes",
+                  "service_name_expression": "ServiceName",
+                  "severity_text_expression": "SeverityText",
+                  "timestamp_value_expression": "Timestamp"
+                }
+              references:
+                connection_id: clickhouse_clickstack_connection.main.id
+              dependencies:
+                clickhouse_clickstack_connection.main: |-
+                    {
+                      "host": "https://clickhouse.example.com:8443",
+                      "name": "Production ClickHouse",
+                      "password": "${var.clickhouse_password}",
+                      "username": "default"
+                    }
+            - name: traces
+              manifest: |-
+                {
+                  "connection_id": "${clickhouse_clickstack_connection.main.id}",
+                  "default_table_select_expression": "Timestamp, SpanName, ServiceName, Duration",
+                  "duration_expression": "Duration",
+                  "duration_precision": 9,
+                  "from": {
+                    "database_name": "otel",
+                    "table_name": "otel_traces"
+                  },
+                  "kind": "trace",
+                  "log_source_id": "${clickhouse_clickstack_source.logs.id}",
+                  "name": "Traces",
+                  "parent_span_id_expression": "ParentSpanId",
+                  "span_id_expression": "SpanId",
+                  "span_kind_expression": "SpanKind",
+                  "span_name_expression": "SpanName",
+                  "timestamp_value_expression": "Timestamp",
+                  "trace_id_expression": "TraceId"
+                }
+              references:
+                connection_id: clickhouse_clickstack_connection.main.id
+                log_source_id: clickhouse_clickstack_source.logs.id
+              dependencies:
+                clickhouse_clickstack_connection.main: |-
+                    {
+                      "host": "https://clickhouse.example.com:8443",
+                      "name": "Production ClickHouse",
+                      "password": "${var.clickhouse_password}",
+                      "username": "default"
+                    }
+            - name: metrics
+              manifest: |-
+                {
+                  "connection_id": "${clickhouse_clickstack_connection.main.id}",
+                  "from": {
+                    "database_name": "otel"
+                  },
+                  "kind": "metric",
+                  "metric_tables": {
+                    "gauge": "otel_metrics_gauge",
+                    "histogram": "otel_metrics_histogram",
+                    "sum": "otel_metrics_sum"
+                  },
+                  "name": "Metrics",
+                  "resource_attributes_expression": "ResourceAttributes",
+                  "timestamp_value_expression": "TimeUnix"
+                }
+              references:
+                connection_id: clickhouse_clickstack_connection.main.id
+              dependencies:
+                clickhouse_clickstack_connection.main: |-
+                    {
+                      "host": "https://clickhouse.example.com:8443",
+                      "name": "Production ClickHouse",
+                      "password": "${var.clickhouse_password}",
+                      "username": "default"
+                    }
+        argumentDocs:
+            agg_fn: (String) Aggregation function (e.g. count, sum, avg).
+            aggregated_columns: (Attributes List) Columns pre-aggregated by the materialized view. (see below for nested schema)
+            alias: (String) Optional alias for the attribute.
+            body_expression: (String) Expression to extract the log message body (log).
+            connection_id: (String) ID of the ClickHouse connection used by this source.
+            database_name: (String) ClickHouse database name.
+            default_table_select_expression: (String) Default columns selected in search results. Required for log and trace.
+            dimension_columns: (String) Non-aggregated columns usable for filtering and grouping.
+            disabled: (Boolean) When true, the source is hidden from source selectors in the UI. Defaults to false.
+            displayed_timestamp_value_expression: (String) DateTime column used to display and order search results.
+            duration_expression: (String) Expression to extract span duration. Required for trace.
+            duration_precision: (Number) Number of decimal digits in the duration value (3=ms, 6=us, 9=ns). Defaults to 3. Applies to trace.
+            event_attributes_expression: (String) Expression to extract event-level attributes.
+            exponential_histogram: (String) Table containing exponential histogram metrics data.
+            from: (Attributes) Database and table location of the source data. (see below for nested schema)
+            gauge: (String) Table containing gauge metrics data.
+            granularity: (String) Granularity of the rollup tables in short form (e.g. 15m).
+            highlighted_row_attribute_expressions: (Attributes List) Attributes displayed in the row side panel for the selected row. (see below for nested schema)
+            highlighted_trace_attribute_expressions: (Attributes List) Attributes displayed in the trace view for the selected trace. (see below for nested schema)
+            histogram: (String) Table containing histogram metrics data.
+            id: (String) Identifier of the source.
+            implicit_column_expression: (String) Column used for full-text search when no property is specified in a Lucene search.
+            key_rollup_table: (String) Table name for the key rollup (field discovery).
+            kind: '(String) Source kind: one of log, trace, metric, session, promql.'
+            known_columns_list_expression: '(String) For distributed tables with non-matching column sets: columns supported across all target tables.'
+            kv_rollup_table: (String) Table name for the key-value rollup (value autocomplete).
+            log_source_id: (String) Correlated log source ID.
+            lucene_expression: (String) Optional Lucene version of the SQL expression.
+            materialized_views: (Attributes List) Materialized views for query optimization (log, trace). (see below for nested schema)
+            metadata_materialized_views: (Attributes) Materialized views for fast field discovery and value autocomplete (log, trace). (see below for nested schema)
+            metric_source_id: (String) Correlated metric source ID.
+            metric_tables: (Attributes) Mapping of metric data types to table names (metric). At least one must be set. (see below for nested schema)
+            min_date: (String) Earliest date/time (RFC3339) for which the view contains data.
+            min_granularity: (String) Timestamp granularity in short form (e.g. 5m, 15s, 1h, 1d).
+            mv_column: (String) Materialized view column name.
+            name: (String) Display name for the source.
+            order_by_expression: (String) Expression used to order rows.
+            parent_span_id_expression: (String) Expression to extract the parent span ID. Required for trace.
+            query_settings: (Attributes List) Optional ClickHouse query settings applied when querying this source. (see below for nested schema)
+            resource_attributes_expression: (String) Expression to extract resource-level attributes. Required for metric.
+            sample_rate_expression: (String) Expression to extract the trace sample rate.
+            section: (String) Optional grouping label used to organize sources in the source selector.
+            service_name_expression: (String) Expression to extract the service name.
+            session_source_id: (String) Correlated session source ID (trace).
+            setting: (String) ClickHouse setting name.
+            severity_text_expression: (String) Expression to extract the severity/log level text (log).
+            source_column: (String) Source column name (required unless agg_fn is count).
+            span_events_value_expression: (String) Expression to extract span events.
+            span_id_expression: (String) Expression to extract the span ID.
+            span_kind_expression: (String) Expression to extract the span kind. Required for trace.
+            span_name_expression: (String) Expression to extract the span name. Required for trace.
+            sql_expression: (String) SQL expression for the attribute.
+            status_code_expression: (String) Expression to extract the span status code.
+            status_message_expression: (String) Expression to extract the span status message.
+            sum: (String) Table containing sum metrics data.
+            summary: (String) Table containing summary metrics data.
+            table_name: (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+            team: (String) Team ID to manage this source under, sent as the x-hdx-team header. Defaults to the API key's team. Only honored by multi-team (EE) deployments. Changing this forces the source to be replaced.
+            timestamp_column: (String) Timestamp column name.
+            timestamp_value_expression: (String) DateTime column or expression that is part of the table's primary key.
+            trace_id_expression: (String) Expression to extract the trace ID.
+            trace_source_id: (String) Correlated trace source ID. Required for session.
+            use_text_index_for_implicit_column: '(String) Whether to use ClickHouse text indices for the implicit column: auto, enabled, or disabled.'
+            value: (String) Setting value.
+        importStatements:
+            - |-
+              # Sources can be imported by their ID.
+              terraform import clickhouse_clickstack_source.logs 507f1f77bcf86cd799439011
+
+              # For a source in a non-default team (multi-team / EE deployments), prefix the
+              # ID with the team ID so the import can resolve the team-scoped source:
+              terraform import clickhouse_clickstack_source.logs 65f0c0ffeecafef00dba5e01/507f1f77bcf86cd799439011
+
+              # To find the ID, list all sources via the API. The response is an envelope of
+              # the form {"data": [{"id": "...", "name": "...", "kind": "...", ...}]}.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/sources" | jq -r '.data[] | "\(.id)\t\(.kind)\t\(.name)"'
+    clickhouse_clickstack_team:
+        subCategory: ClickStack
+        description: 'Manages settings for an existing ClickStack team. The team is provisioned out-of-band; this resource adopts it on create and manages its settings. Destroying this resource does not delete the team or reset its settings. Note: on ClickHouse Cloud, teams and members are managed through ClickHouse Cloud (the clickhouse_role and clickhouse_role_assignment resources), not the ClickStack API; this resource is for self-hosted ClickStack.'
+        name: clickhouse_clickstack_team
+        title: clickhouse_clickstack_team Resource - clickhouse
+        examples:
+            - name: main
+              manifest: |-
+                {
+                  "default_user_role_id": "${data.clickhouse_clickstack_role.read_only.id}"
+                }
+              references:
+                default_user_role_id: data.clickhouse_clickstack_role.read_only.id
+        argumentDocs:
+            default_user_role_id: (String) ID of the role assigned to new users who join the team.
+            id: (String) Identifier of the team.
+            team: (String) Team ID to manage, sent as the x-hdx-team header. Defaults to the API key's team. Changing this forces the resource to be replaced.
+        importStatements:
+            - |-
+              # The team settings resource can be imported by the team ID.
+              terraform import clickhouse_clickstack_team.main 65f0c0ffeecafef00dba5e01
+    clickhouse_clickstack_team_member:
+        subCategory: ClickStack
+        description: 'Manages a team member and their RBAC role. On create the member is invited: existing accounts are assigned the role immediately (status = active), otherwise a pending invitation is created (status = pending) and invite_url is populated. Note: on ClickHouse Cloud, team membership is managed through ClickHouse Cloud (the clickhouse_role_assignment resource), not the ClickStack API; this resource is for self-hosted ClickStack.'
+        name: clickhouse_clickstack_team_member
+        title: clickhouse_clickstack_team_member Resource - clickhouse
+        examples:
+            - name: alice
+              manifest: |-
+                {
+                  "email": "alice@example.com",
+                  "name": "Alice",
+                  "role_id": "${data.clickhouse_clickstack_role.member.id}"
+                }
+              references:
+                role_id: data.clickhouse_clickstack_role.member.id
+        argumentDocs:
+            email: (String) Email address of the member. Changing this forces the member to be replaced.
+            id: (String) Identifier of the member. For an active member this is their user ID; for a pending invitation this is the invitation ID.
+            invite_url: (String, Sensitive) Join URL for a pending invitation. Empty for active members.
+            name: (String) Display name used when creating a pending invitation. Changing this forces the member to be replaced.
+            role_id: (String) ID of the role to assign to the member. Use the clickstack_role resource or data source to obtain it. Omit on OSS deployments, which have no RBAC and ignore the role. When omitted, the role assigned by the server (e.g. the team's default role on RBAC deployments) is tracked in state.
+            status: '(String) Membership status: active (account assigned the role) or pending (invitation outstanding).'
+            team: (String) Team ID to manage this member under, sent as the x-hdx-team header. Defaults to the API key's team. Changing this forces the member to be replaced.
+        importStatements:
+            - |-
+              # Team members can be imported by their email address.
+              terraform import clickhouse_clickstack_team_member.alice alice@example.com
+
+              # For a member in a non-default team (multi-team / EE deployments), prefix the
+              # email with the team ID:
+              terraform import clickhouse_clickstack_team_member.alice 65f0c0ffeecafef00dba5e01/alice@example.com
+    clickhouse_clickstack_webhook:
+        subCategory: ClickStack
+        description: 'Manages a ClickStack notification webhook (Slack, generic HTTP, or incident.io), used as the notification channel for alerts. The secret-bearing headers and query_params are write-only: they are sent to the API but never stored in Terraform state. Because Terraform cannot see a write-only value, a changed secret is only re-sent when you also bump its companion trigger (headers_version / query_params_version). Write-only attributes require Terraform >= 1.11.'
+        name: clickhouse_clickstack_webhook
+        title: clickhouse_clickstack_webhook Resource - clickhouse
+        examples:
+            - name: slack
+              manifest: |-
+                {
+                  "name": "alerts-slack",
+                  "service": "slack",
+                  "url": "${var.slack_incoming_webhook_url}"
+                }
+              references:
+                url: var.slack_incoming_webhook_url
+            - name: generic
+              manifest: |-
+                {
+                  "body": "${jsonencode({ routing_key = \"REPLACE\", event_action = \"trigger\" })}",
+                  "description": "Routes alerts to PagerDuty",
+                  "headers": {
+                    "Authorization": "${var.pagerduty_token}"
+                  },
+                  "headers_version": "1",
+                  "name": "pagerduty",
+                  "service": "generic",
+                  "url": "https://events.pagerduty.com/v2/enqueue"
+                }
+        argumentDocs:
+            body: (String, Sensitive) Request body template for generic and incidentio services. Not allowed for the slack service.
+            description: (String) Optional description of the webhook.
+            headers: (Map of String, Sensitive, Write-only) Write-only HTTP headers sent with the webhook request (e.g. an Authorization token). Never stored in state or returned by the API. Not allowed for the slack service. Bump headers_version to re-send after a change. The server keeps the last-sent headers when this field is omitted, EXCEPT when url or service changes — that clears any omitted secret, so re-supply headers (and bump headers_version) whenever you change the destination.
+            headers_version: '(String) Arbitrary value that, when changed, forces the write-only headers to be re-sent to the API. Because headers is write-only, Terraform cannot see a change to its value: editing the headers block alone produces no plan diff and no update, so bump this version (any new value) to roll a rotated secret. Note: this re-sends the CURRENT headers value; it does NOT clear the secret. Omitting headers leaves the last-sent value in place server-side — clearing a secret is not supported through this resource; recreate the webhook to remove it.'
+            id: (String) Identifier of the webhook.
+            name: (String) Display name for the webhook. Must be unique per service within a team.
+            query_params: (Map of String, Sensitive, Write-only) Write-only URL query parameters sent with the webhook request. Never stored in state or returned by the API. Not allowed for the slack service. Bump query_params_version to re-send after a change.
+            query_params_version: (String) Arbitrary value that, when changed, forces the write-only query_params to be re-sent to the API. As with headers_version, it re-sends the current value and cannot clear the secret; recreate the webhook to remove it.
+            service: '(String) Webhook service: one of slack, generic, or incidentio.'
+            team: (String) Team ID to manage this webhook under, sent as the x-hdx-team header. Defaults to the API key's team. Changing this forces the webhook to be replaced.
+            url: (String, Sensitive) Destination URL the ClickStack server calls. Marked sensitive because Slack incoming-webhook URLs embed a channel token. Private-IP/SSRF validation is enforced server-side.
+        importStatements:
+            - |-
+              # Webhooks can be imported by their ID.
+              terraform import clickhouse_clickstack_webhook.slack 507f1f77bcf86cd799439011
+
+              # For a webhook in a non-default team (multi-team / EE deployments), prefix the
+              # ID with the team ID so the import can resolve the team-scoped webhook:
+              terraform import clickhouse_clickstack_webhook.slack 65f0c0ffeecafef00dba5e01/507f1f77bcf86cd799439011
+
+              # Write-only secrets (headers, query_params) are never returned by the API, so
+              # they are null after import. Set them in config and bump the matching *_version
+              # to send them on the next apply.
+
+              # To find the ID, list all webhooks via the API. The response is an envelope of
+              # the form {"data": [{"id": "...", "name": "...", "service": "...", ...}]}.
+              curl -s -H "Authorization: Bearer $CLICKSTACK_API_KEY" \
+                "$CLICKSTACK_ENDPOINT/api/v2/webhooks" | jq -r '.data[] | "\(.id)\t\(.service)\t\(.name)"'
     clickhouse_organization_settings:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'You can use the clickhouse_organization_settings resource to manage organization-level settings in ClickHouse Cloud. ~> Note: This resource manages settings for the organization configured in the provider. Only one instance of this resource should exist per organization. Example Usage'
         name: clickhouse_organization_settings
         title: clickhouse_organization_settings Resource - clickhouse
@@ -325,8 +908,8 @@ resources:
               # The organization settings resource can be imported using the organization ID
               terraform import clickhouse_organization_settings.this xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_postgres_service:
-        subCategory: ""
-        description: '~> Note: This resource is in alpha and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (alpha): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server''s PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won''t lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you''ll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):'
+        subCategory: Postgres
+        description: '~> Note: This resource is in beta and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (beta): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server''s PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won''t lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you''ll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):'
         name: clickhouse_postgres_service
         title: clickhouse_postgres_service Resource - clickhouse
         examples:
@@ -336,6 +919,7 @@ resources:
                   "cloud_provider": "aws",
                   "ha_type": "async",
                   "name": "my-postgres",
+                  "password": "Example123Secret",
                   "region": "us-east-1",
                   "size": "m6gd.large",
                   "tags": {
@@ -346,25 +930,21 @@ resources:
         argumentDocs:
             '"200"': ).
             Optional + Computed: (like tags).
-            PATCH /password: ). Stored in (sensitive) state.
             POST /config: |-
                 , so removing a key
                 from the map removes it server-side. Out-of-band changes to declared
                 parameters are reverted on the next apply.
-            Sensitive: |-
-                . The Terraform CLI renders
-                Sensitive attributes as (sensitive value) in human-readable
-                output but the underlying state file is plaintext — ensure your
-                state backend is configured for at-rest encryption.
             cloud_provider: |-
                 , region, postgres_version (and, for a replica,
                 size) are reproduced verbatim. Omit them, or set them to match the
                 source — a mismatch is a plan-time error ("conflicts with the source
                 instance"). The provider pins these into the plan so it shows real values.
-            connection_string: '(String, Sensitive) Full connection URI embedding the username and the password. Marked sensitive; the secret-redaction layer also covers it in TF_LOG=DEBUG output. Plan stability is managed in ModifyPlan: pinned to the prior value on unrelated updates, marked unknown when a password rotation is planned (it embeds the password).'
             created_at: (String) RFC3339 timestamp when the service was created.
             ha_type: (String) High-availability mode. One of 'none' (single replica), 'async' (asynchronous replica), or 'sync' (synchronous replica). Mutable post-create; an HA flip triggers a transition. Omitting the attribute preserves the prior value (the server defaults to 'none' on Create); to actively downgrade, set 'ha_type = "none"' explicitly. Omit for a read replica or point-in-time restore (inherited from the source).
-            hostname: (String) Network hostname for client connections.
+            hostname: |-
+                , port, username,
+                and your declared password, e.g.
+                postgres://${username}:${password}@${hostname}:${port}/postgres?sslmode=require.
             id: (String) Unique identifier for the Postgres service. Assigned by ClickHouse Cloud.
             is_primary: |-
                 flipping true, and the plan then errors ("read replica has been promoted
@@ -378,7 +958,12 @@ resources:
                 restore_target (the first automatic backup is taken ~10 minutes after the
                 source is created). The block is create-time only: changing source_id /
                 restore_target or removing it destroys and recreates the instance.
-            password: .
+            password: |-
+                or password_wo (write-only,
+                never stored in state — requires Terraform >= 1.11, and increment
+                password_wo_version to rotate).
+            password_wo: '(String, Sensitive, Write-only) Superuser password, write-only: applied to the service but never persisted to Terraform state (requires Terraform >= 1.11). Preferred over password. Requires password_wo_version; increment the version to rotate to the current password_wo value. Same complexity rules as password. Forbidden for a read replica.'
+            password_wo_version: (Number) Version number for password_wo. Increment to trigger a password rotation using the current password_wo value.
             pg_config: (Map of String) Postgres server parameters (pgConfig) as a key-value map. Declared parameters are the desired state — every apply sends the full map via POST /config (full replacement), so removing a key from the map removes it server-side. Set pg_config = {} to clear all parameters; omit the attribute to preserve the prior state (read replicas inherit the primary's parameters, and the server may surface values the configuration never declared — so it is Optional+Computed like tags). Out-of-band changes are reverted on the next apply. Some parameters require a database restart; the provider surfaces the server's restart-required hint as a warning (restart out-of-band).
             pg_config = {}: |-
                 on an existing
@@ -397,7 +982,7 @@ resources:
             restore_target: (String) RFC3339 timestamp to restore to (e.g. '2026-06-01T12:00:00Z'). The server restores to the closest available recovery point at or before this time.
             restore_to_point_in_time: |-
                 and with
-                password (a replica inherits the primary's superuser).
+                password/password_wo (a replica inherits the primary's superuser).
                 Changing or removing it destroys and recreates the instance as a
                 standalone primary — a live replica can't be converted in place (see
                 "Out-of-band changes" for the promotion exception).
@@ -415,9 +1000,9 @@ resources:
             source_id: (String) ID of the source instance whose backup to restore from.
             state: '(String) Server-reported state. Examples: ''creating'', ''running'', ''restarting'', ''unavailable'', ''deleting''. Forward-compatible: unknown values from the server are surfaced verbatim.'
             tags: (Map of String) Resource tags as a key-value map. Values must be non-empty (server's PATCH returns 400 on omitted value). Set tags = {} to clear all tags; omit the attribute to preserve the prior value.
-            terraform refresh: |-
-                syncs
-                the new value into state from the GET response.
+            terraform import: |-
+                , the
+                first apply rotates to the configured credential.
             timeouts {}: |-
                 block; the
                 provider uses fixed internal poll/retry budgets.
@@ -426,11 +1011,11 @@ resources:
             - |-
               #!/bin/bash
               # Managed Postgres services can be imported by specifying the service ID.
-              # The password is recovered on import (the server echoes it on GET) and stored
-              # in state.
+              # terraform import cannot recover the live password; after import, the first
+              # apply rotates to the configured password / password_wo.
               terraform import clickhouse_postgres_service.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_private_endpoint_registration Resource - clickhouse:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'This resource is deprecated since version 3.2.0. Please refer to the docs for migration steps: https://github.com/ClickHouse/terraform-provider-clickhouse?tab=readme-ov-file#breaking-changes-and-deprecations'
         name: clickhouse_private_endpoint_registration Resource - clickhouse
         title: clickhouse_private_endpoint_registration Resource - clickhouse
@@ -441,7 +1026,7 @@ resources:
             region: (String) Region of the private endpoint
         importStatements: []
     clickhouse_role:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: You can use the clickhouse_role resource to manage custom RBAC roles in ClickHouse Cloud. Example Usage
         name: clickhouse_role
         title: clickhouse_role Resource - clickhouse
@@ -537,7 +1122,7 @@ resources:
               # Roles can be imported by specifying the role ID.
               terraform import clickhouse_role.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_role_assignment:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'Use the clickhouse_role_assignment resource to assign actors (users and/or API keys) to a role. Works for both system roles and custom roles. One resource manages all actors for a given role. Use user_ids to assign users, api_key_ids to assign API keys, or both. Only one clickhouse_role_assignment per role is needed. ~> Note: On delete, all actors are removed from the role. To look up the ID of a system role by name, use the clickhouse_role data source. To look up a user ID by email, use the clickhouse_user data source. Example Usage'
         name: clickhouse_role_assignment
         title: clickhouse_role_assignment Resource - clickhouse
@@ -584,7 +1169,7 @@ resources:
               # Role assignments can be imported by specifying the role ID.
               terraform import clickhouse_role_assignment.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'You can use the clickhouse_service resource to deploy ClickHouse cloud instances on supported cloud providers. Known limitations: If you create a service with warehouse_id set and then remove warehouse_id attribute completely, the provider won''t detect the change. If you want to make a secondary service become primary, remove the warehouse_id and taint it before applying.If you create a service with readonly flag set to true and then remove readonly flag completely, the provider won''t detect the change. If you want to make a secondary service read write, explicitly set the readonly flag to false.'
         name: clickhouse_service
         title: clickhouse_service Resource - clickhouse
@@ -610,21 +1195,43 @@ resources:
                     "Environment": "Staging"
                   }
                 }
+            - name: horizontal_service
+              manifest: |-
+                {
+                  "autoscaling_mode": "horizontal",
+                  "cloud_provider": "aws",
+                  "idle_scaling": true,
+                  "idle_timeout_minutes": 5,
+                  "ip_access": [
+                    {
+                      "description": "Test IP",
+                      "source": "192.168.2.63"
+                    }
+                  ],
+                  "max_replica_memory_gb": 16,
+                  "max_replicas": 10,
+                  "min_replica_memory_gb": 16,
+                  "min_replicas": 3,
+                  "name": "My Horizontally-Scaling Service",
+                  "password_hash": "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=",
+                  "region": "us-east-1"
+                }
         argumentDocs:
             allowed_origins: (String) Comma separated list of domain names to be allowed cross-origin resource sharing (CORS) access to the query API. Leave this field empty to restrict access to backend servers only
             api_key_ids: (List of String) The UUIDs of the API Keys to grant access to the query API.
+            autoscaling_mode: '(String) Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.'
             backup_configuration: (Attributes) Configuration of service backup settings. (see below for nested schema)
             backup_id: (String) ID of the backup to restore when creating new service. If specified, the service will be created as a restore operation
             backup_period_in_hours: (Number) Interval in hours between each backup.
             backup_retention_period_in_hours: (Number) How long in hours to keep a backup before deleting it.
             backup_start_time: (String) Time of the day in UTC that indicates the start time of a 2 hours window to be used for backup. If set, backup_period_in_hours must be null and backups are created once a day.
-            byoc_id: (String) BYOC ID related to the cloud provider account you want to create this service into.
+            byoc_id: (String) BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
             cloud_provider: (String) Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
             compliance_type: '(String) Compliance type of the service. Can be ''hipaa'', ''pci''. Required for organizations that wish to deploy their services in the hipaa/pci compliant environment. NOTE: hipaa/pci compliance should be enabled for your ClickHouse organization before using this field.'
             description: (String) Description of the IP address.
             double_sha1_password_hash: (String, Sensitive) Double SHA1 hash of password for connecting with the MySQL protocol. Cannot be specified if password or password_wo is specified.
             enable_core_dumps: (Boolean) Enable core dumps for the service.
-            enabled: (Boolean) Wether to enable the mysql endpoint or not.
+            enabled: (Boolean) Whether to enable the mysql endpoint or not.
             encryption_assumed_role_identifier: (String) Custom role identifier ARN.
             encryption_key: (String) Custom encryption key ARN.
             endpoint_service_id: (String) Unique identifier of the interface endpoint you created in your VPC with the AWS(Service Name) or GCP(Target Service) resource.
@@ -637,14 +1244,16 @@ resources:
             idle_timeout_minutes: (Number) Set minimum idling timeout (in minutes). Must be greater than or equal to 5 minutes. Must be set if idle_scaling is enabled.
             ip_access: (Attributes List) List of IP addresses allowed to access the service. (see below for nested schema)
             is_primary: (Boolean) If true, it indicates this is a primary service using its own data. If false it means this service is a secondary service, thus using data from a warehouse.
-            max_replica_memory_gb: (Number) Maximum memory of a single replica during auto-scaling in GiB.
+            max_replica_memory_gb: (Number) Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
+            max_replicas: (Number) Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
             max_total_memory_gb: (Number, Deprecated) Maximum total memory of all workers during auto-scaling in GiB.
-            min_replica_memory_gb: (Number) Minimum memory of a single replica during auto-scaling in GiB.
+            min_replica_memory_gb: (Number) Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
+            min_replicas: (Number) Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
             min_total_memory_gb: (Number, Deprecated) Minimum total memory of all workers during auto-scaling in GiB.
             mysql: (Attributes) (see below for nested schema)
             name: (String) User defined identifier for the service.
             nativesecure: (Attributes) (see below for nested schema)
-            num_replicas: (Number) Number of replicas for the service.
+            num_replicas: (Number) Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
             password: (String, Sensitive) Password for the default user. One of either password, password_wo, or password_hash must be specified.
             password_hash: (String, Sensitive) SHA256 hash of password for the default user. One of either password, password_wo, or password_hash must be specified.
             password_wo: (String, Sensitive, Write-only) Password for the default user (write-only, not persisted to state). Use this instead of password to avoid storing the password hash in Terraform state.
@@ -668,7 +1277,7 @@ resources:
               # Services can be imported by specifying the UUID.
               terraform import clickhouse_service.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service_private_endpoints_attachment:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: 'Use the clickhouse_service_private_endpoints_attachment resource to attach a ClickHouse service to a Private Endpoint. Important: Please note that if you want to attach the same ClickHouse service to multiple Private Endpoints you have to specify all the Private Endpoint IDs in a single clickhouse_service_private_endpoints_attachment resource. Having multiple clickhouse_service_private_endpoints_attachment resources for the same service is unsupported and the outcome is unpredictable. See private_endpoint_registration https://registry.terraform.io/providers/ClickHouse/clickhouse/latest/docs/resources/private_endpoint_registration for how to create a private endpoint. See full example https://github.com/ClickHouse/terraform-provider-clickhouse/tree/main/examples/full/private_endpoint on GitHub.'
         name: clickhouse_service_private_endpoints_attachment
         title: clickhouse_service_private_endpoints_attachment Resource - clickhouse
@@ -695,8 +1304,8 @@ resources:
               # Endpoint Attachments can be imported by specifying the clickhouse service UUID
               terraform import clickhouse_service_private_endpoints_attachment.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service_scheduled_scaling:
-        subCategory: ""
-        description: 'You can use the clickhouse_service_scheduled_scaling resource to manage time-based scaling rules for a ClickHouse Cloud service. A schedule is a set of recurring weekly windows. The server rejects any pair of entries that overlap in time, so at most one window is active at any moment. While a window is active the service uses the replica count, memory bounds, and idle-scaling settings declared on that entry; otherwise the service falls back to its base auto-scaling configuration. ~> Note: This resource is in alpha. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling). Reach out to ClickHouse support if the API returns 403 FORBIDDEN. The server currently requires min_replicas == max_replicas per entry, and a maximum of 10 entries per schedule. Hour ranges Hour ranges are asymmetric: start_hour_utc accepts 0–23.end_hour_utc accepts 1–24.start_hour_utc and end_hour_utc must differ.Set start_hour_utc = 0 and end_hour_utc = 24 for a 24-hour window.Set end_hour_utc < start_hour_utc to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day). Example Usage'
+        subCategory: ClickHouse Cloud
+        description: 'You can use the clickhouse_service_scheduled_scaling resource to manage time-based scaling rules for a ClickHouse Cloud service. A schedule is a set of recurring weekly windows. The server rejects any pair of entries that overlap in time, so at most one window is active at any moment. While a window is active the service uses the replica count, memory bounds, and idle-scaling settings declared on that entry; otherwise the service falls back to its base auto-scaling configuration. ~> Note: This resource is in beta. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling). Reach out to ClickHouse support if the API returns 403 FORBIDDEN. Each entry is vertical by default — a fixed replica count (min_replicas == max_replicas); set autoscaling_mode = "horizontal" to scale the replica count across a min_replicas–max_replicas band at fixed per-replica memory. A schedule allows a maximum of 10 entries. Hour ranges Hour ranges are asymmetric: start_hour_utc accepts 0–23.end_hour_utc accepts 1–24.start_hour_utc and end_hour_utc must differ.Set start_hour_utc = 0 and end_hour_utc = 24 for a 24-hour window.Set end_hour_utc < start_hour_utc to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day).'
         name: clickhouse_service_scheduled_scaling
         title: clickhouse_service_scheduled_scaling Resource - clickhouse
         examples:
@@ -705,51 +1314,12 @@ resources:
                 {
                   "entries": [
                     {
+                      "autoscaling_mode": "horizontal",
                       "end_hour_utc": 18,
                       "idle_scaling": false,
-                      "max_replicas": 3,
-                      "min_replicas": 3,
-                      "name": "Business hours",
-                      "start_hour_utc": 8,
-                      "weekdays": [
-                        1,
-                        2,
-                        3,
-                        4,
-                        5
-                      ]
-                    },
-                    {
-                      "end_hour_utc": 6,
-                      "idle_scaling": true,
-                      "idle_timeout_minutes": 5,
-                      "max_replicas": 1,
-                      "min_replicas": 1,
-                      "name": "Overnight",
-                      "start_hour_utc": 22,
-                      "weekdays": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6
-                      ]
-                    }
-                  ],
-                  "service_id": "${clickhouse_service.example.id}"
-                }
-              references:
-                service_id: clickhouse_service.example.id
-            - name: example
-              manifest: |-
-                {
-                  "entries": [
-                    {
-                      "end_hour_utc": 18,
-                      "idle_scaling": false,
-                      "max_replicas": 3,
+                      "max_replica_memory_gb": 16,
+                      "max_replicas": 6,
+                      "min_replica_memory_gb": 16,
                       "min_replicas": 3,
                       "name": "Business hours",
                       "start_hour_utc": 8,
@@ -787,6 +1357,7 @@ resources:
               dependencies:
                 clickhouse_service.svc: '{}'
         argumentDocs:
+            autoscaling_mode: '(String) Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.'
             base_config: (Attributes) Fallback configuration applied when no entry is currently active. Server-managed. (see below for nested schema)
             end_hour_utc: accepts 1–24.
             end_hour_utc < start_hour_utc: to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day).
@@ -795,9 +1366,9 @@ resources:
             idle_scaling: (Boolean) Whether idle scaling is enabled while the window is active.
             idle_timeout_minutes: (Number) Minutes of inactivity before the service scales to zero. Must be at least 5. Only meaningful when idle_scaling is true.
             max_replica_memory_gb: (Number) Maximum memory per replica in GiB. Must be set together with min_replica_memory_gb.
-            max_replicas: (Number) Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+            max_replicas: (Number) Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
             min_replica_memory_gb: (Number) Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
-            min_replicas: (Number) Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+            min_replicas: (Number) Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
             name: (String) Human-readable name for the entry (e.g. "Business hours").
             service_id: (String) ClickHouse Cloud service ID this schedule applies to.
             start_hour_utc: accepts 0–23.
@@ -809,7 +1380,7 @@ resources:
               # Scheduled scaling can be imported by specifying the service ID.
               terraform import clickhouse_service_scheduled_scaling.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service_transparent_data_encryption_key_association:
-        subCategory: ""
+        subCategory: ClickHouse Cloud
         description: You can use the clickhouse_service_transparent_data_encryption_key_association resource to associate your own Encryption Key with a Clickhouse Service with the Transparent Data Encryption (TDE) feature enabled. Please note that this feature requires an organization with the Enterprise plan.
         name: clickhouse_service_transparent_data_encryption_key_association
         title: clickhouse_service_transparent_data_encryption_key_association Resource - clickhouse
@@ -834,8 +1405,8 @@ resources:
               # Endpoint Attachments can be imported by specifying the clickhouse service UUID
               terraform import clickhouse_service_transparent_data_encryption_key_association.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clickhouse_service_upgrade_window:
-        subCategory: ""
-        description: 'You can use the clickhouse_service_upgrade_window resource to pin the weekly upgrade window for a ClickHouse Cloud service. When configured, the data plane only attempts service upgrades during the declared window. The window is a single weekly recurrence: a weekday plus a start_hour_utc. The window currently lasts 6 hours from start_hour_utc; duration is returned by the API and exposed as a read-only attribute. ~> Note: This resource is in alpha. Setting or updating an upgrade window requires the canUseScheduledUpgrades entitlement — reach out to ClickHouse support if the API returns 403 FORBIDDEN. Deleting an upgrade window is allowed even after the entitlement is lost, so existing windows can always be cleared. Primary services only The upgrade window can only be set on primary services. Secondary services inherit the window from their primary. Applying this resource against a secondary service returns a 400 with the message cannot set upgrade window on a secondary service, surfaced by the provider as Upgrade windows can only be set on primary services. Allowed values weekday: 0 (Sunday) – 6 (Saturday)start_hour_utc: one of 0, 6, 12, 18 Best-effort overwrite protection Create performs a GET before issuing the PUT so that an existing window (e.g. one configured out-of-band) surfaces a "please import" diagnostic instead of being silently overwritten. The check is best-effort: a window created between this resource''s GET and PUT (e.g. by another tool, or another Terraform apply) will still be overwritten by PUT. Import'
+        subCategory: ClickHouse Cloud
+        description: 'You can use the clickhouse_service_upgrade_window resource to pin the weekly upgrade window for a ClickHouse Cloud service. When configured, the data plane only attempts service upgrades during the declared window. The window is a single weekly recurrence: a weekday plus a start_hour_utc. The window currently lasts 6 hours from start_hour_utc; duration is returned by the API and exposed as a read-only attribute. ~> Note: This resource is in beta. Setting or updating an upgrade window requires the canUseScheduledUpgrades entitlement — reach out to ClickHouse support if the API returns 403 FORBIDDEN. Deleting an upgrade window is allowed even after the entitlement is lost, so existing windows can always be cleared. Primary services only The upgrade window can only be set on primary services. Secondary services inherit the window from their primary. Applying this resource against a secondary service returns a 400 with the message cannot set upgrade window on a secondary service, surfaced by the provider as Upgrade windows can only be set on primary services. Allowed values weekday: 0 (Sunday) – 6 (Saturday)start_hour_utc: one of 0, 6, 12, 18 Best-effort overwrite protection Create performs a GET before issuing the PUT so that an existing window (e.g. one configured out-of-band) surfaces a "please import" diagnostic instead of being silently overwritten. The check is best-effort: a window created between this resource''s GET and PUT (e.g. by another tool, or another Terraform apply) will still be overwritten by PUT. Import'
         name: clickhouse_service_upgrade_window
         title: clickhouse_service_upgrade_window Resource - clickhouse
         examples:
@@ -870,3 +1441,97 @@ resources:
               #!/bin/bash
               # Upgrade window can be imported by specifying the service ID.
               terraform import clickhouse_service_upgrade_window.example xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clickhouse_udf:
+        subCategory: ClickHouse Cloud
+        description: 'You can use the clickhouse_udf resource to create and manage User Defined Functions (UDFs) in ClickHouse Cloud. ~> Note: This resource is in beta. Its behavior may change in future provider versions. Point source_archive_path at a ZIP of your function source, and set source_archive_hash to filebase64sha256(...) of that same file so Terraform knows when to publish a new version. On apply, the provider uploads the archive and waits for the build to finish. If a build fails By default, a failed build fails the apply (fail_on_build_error = true). Set it to false if you''d rather get a warning and move on. Either way, the failed version stays in state, and applying again with the same source won''t retry the build — you''ll need to fix the source and give source_archive_hash a new value first. On create, a failed build also taints the resource, so the next apply replaces it from scratch. On update, the previous, working version keeps running while you sort things out. If Terraform loses track mid-build Occasionally Terraform can''t confirm a publish went through, or polling for the build status times out. Either way, it stops rather than risk creating a duplicate version, and saves the last known status in state. A terraform plan (or refresh) will pick up the real status, so it''s worth doing that before applying again. A couple of things to know function_name can''t reuse a built-in ClickHouse function name (like sum) — the API rejects reserved names. Deleting this resource removes all versions of the UDF and detaches it from every service that uses it.'
+        name: clickhouse_udf
+        title: clickhouse_udf Resource - clickhouse
+        examples:
+            - name: echo_string
+              manifest: |-
+                {
+                  "arguments": [
+                    {
+                      "name": "input",
+                      "type": "String"
+                    }
+                  ],
+                  "command_read_timeout": 10000,
+                  "command_write_timeout": 10000,
+                  "function_name": "echo_string",
+                  "max_command_execution_time": 10,
+                  "pool_size": 5,
+                  "return_type": "String",
+                  "runtime": "python3.11",
+                  "source_archive_hash": "${filebase64sha256(\"${path.module}/echo_string.zip\")}",
+                  "source_archive_path": "${path.module}/echo_string.zip",
+                  "type": "executable_pool"
+                }
+        argumentDocs:
+            arguments: (Attributes List) Arguments passed to the UDF command. (see below for nested schema)
+            command_read_timeout: (Number) Command stdout read timeout in milliseconds.
+            command_write_timeout: (Number) Command stdin write timeout in milliseconds.
+            created_at: (String) Creation timestamp.
+            error: (String) Build error, or null when no build error is present.
+            fail_on_build_error: (Boolean) When true (the default), a failed build fails the apply. The failed version stays in state. Changing this setting does not create a new UDF version.
+            format: (String) Input and output format used by the UDF command.
+            function_name: (String) Name of the UDF. Unique within the organization.
+            max_command_execution_time: (Number) Maximum command execution time in seconds for executable_pool UDFs.
+            name: (String) Name of the argument. Required for Native and JSONEachRow formats.
+            pool_size: (Number) Command pool size for executable_pool UDFs.
+            return_name: (String) Name of the returned value, or null when unnamed.
+            return_type: (String) ClickHouse data type of the returned value.
+            runtime: (String) Runtime used to execute the UDF command.
+            sandbox_type: (String) Sandbox isolation level.
+            sandbox_version: (String) Sandbox runtime version.
+            send_chunk_header: (Boolean) Whether ClickHouse sends a row-count chunk header.
+            source_archive_hash: (String) Base64-encoded SHA-256 of the ZIP archive. A change publishes a new UDF version.
+            source_archive_path: (String) Local path to the ZIP archive uploaded by the provider.
+            status: (String) Build state of this UDF version.
+            type: (String) Executable UDF type.
+            updated_at: (String) Last-update timestamp.
+            version: (Number) Version number of the UDF.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Import by function name.
+              terraform import clickhouse_udf.echo_string echo_string
+    clickhouse_udf_attachment:
+        subCategory: ClickHouse Cloud
+        description: 'You can use the clickhouse_udf_attachment resource to attach a UDF version to a ClickHouse Cloud service. ~> Note: This resource is in beta. Its behavior may change in future provider versions. A service can only have one version of a function attached at a time. version supports two ways to pick what gets attached: Pin a version: set version to a fixed number. Terraform keeps that version attached until you change it.Track the latest version: set version = clickhouse_udf.'
+        name: clickhouse_udf_attachment
+        title: clickhouse_udf_attachment Resource - clickhouse
+        examples:
+            - name: development
+              manifest: |-
+                {
+                  "function_name": "${clickhouse_udf.echo_string.function_name}",
+                  "service_id": "${var.development_service_id}",
+                  "version": "${clickhouse_udf.echo_string.version}"
+                }
+              references:
+                function_name: clickhouse_udf.echo_string.function_name
+                service_id: var.development_service_id
+                version: clickhouse_udf.echo_string.version
+            - name: production
+              manifest: |-
+                {
+                  "function_name": "${clickhouse_udf.echo_string.function_name}",
+                  "service_id": "${var.production_service_id}",
+                  "version": "${var.echo_string_production_version}"
+                }
+              references:
+                function_name: clickhouse_udf.echo_string.function_name
+                service_id: var.production_service_id
+                version: var.echo_string_production_version
+        argumentDocs:
+            function_name: (String) Name of the UDF.
+            service_id: (String) ID of the attached service.
+            status: (String) Current attachment lifecycle state.
+            version: to a fixed number. Terraform keeps that version attached until you change it.
+            version = clickhouse_udf.<name>.version: . Each new UDF version changes this value, so Terraform attaches it on the next apply.
+        importStatements:
+            - |-
+              #!/bin/bash
+              # Import by function_name/service_id.
+              terraform import clickhouse_udf_attachment.development echo_string/11111111-1111-1111-1111-111111111111

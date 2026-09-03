@@ -154,15 +154,15 @@ type IPAccessParameters struct {
 
 type MySQLInitParameters struct {
 
-	// (Boolean) Wether to enable the mysql endpoint or not.
-	// Wether to enable the mysql endpoint or not.
+	// (Boolean) Whether to enable the mysql endpoint or not.
+	// Whether to enable the mysql endpoint or not.
 	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
 }
 
 type MySQLObservation struct {
 
-	// (Boolean) Wether to enable the mysql endpoint or not.
-	// Wether to enable the mysql endpoint or not.
+	// (Boolean) Whether to enable the mysql endpoint or not.
+	// Whether to enable the mysql endpoint or not.
 	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
 
 	// (String) Endpoint host.
@@ -176,8 +176,8 @@ type MySQLObservation struct {
 
 type MySQLParameters struct {
 
-	// (Boolean) Wether to enable the mysql endpoint or not.
-	// Wether to enable the mysql endpoint or not.
+	// (Boolean) Whether to enable the mysql endpoint or not.
+	// Whether to enable the mysql endpoint or not.
 	// +kubebuilder:validation:Optional
 	Enabled *bool `json:"enabled" tf:"enabled,omitempty"`
 }
@@ -266,6 +266,10 @@ type QueryAPIEndpointsParameters struct {
 
 type ServiceInitParameters struct {
 
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+	// Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
+
 	// (Attributes) Configuration of service backup settings. (see below for nested schema)
 	BackupConfiguration *BackupConfigurationInitParameters `json:"backupConfiguration,omitempty" tf:"backup_configuration,omitempty"`
 
@@ -273,8 +277,8 @@ type ServiceInitParameters struct {
 	// ID of the backup to restore when creating new service. If specified, the service will be created as a restore operation
 	BackupID *string `json:"backupId,omitempty" tf:"backup_id,omitempty"`
 
-	// (String) BYOC ID related to the cloud provider account you want to create this service into.
-	// BYOC ID related to the cloud provider account you want to create this service into.
+	// replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
+	// BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
 	ByocID *string `json:"byocId,omitempty" tf:"byoc_id,omitempty"`
 
 	// (String) Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
@@ -315,17 +319,25 @@ type ServiceInitParameters struct {
 	// Set minimum idling timeout (in minutes). Must be greater than or equal to 5 minutes. Must be set if idle_scaling is enabled.
 	IdleTimeoutMinutes *float64 `json:"idleTimeoutMinutes,omitempty" tf:"idle_timeout_minutes,omitempty"`
 
-	// scaling in GiB.
-	// Maximum memory of a single replica during auto-scaling in GiB.
+	// replica memory is fixed).
+	// Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
+
+	// (Number) Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
+	// Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
+	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
 	// scaling in GiB.
 	// Maximum total memory of all workers during auto-scaling in GiB.
 	MaxTotalMemoryGb *float64 `json:"maxTotalMemoryGb,omitempty" tf:"max_total_memory_gb,omitempty"`
 
-	// scaling in GiB.
-	// Minimum memory of a single replica during auto-scaling in GiB.
+	// replica memory is fixed).
+	// Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
+
+	// trip). Conflicts with num_replicas.
+	// Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
+	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 
 	// scaling in GiB.
 	// Minimum total memory of all workers during auto-scaling in GiB.
@@ -335,8 +347,8 @@ type ServiceInitParameters struct {
 	// User defined identifier for the service.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// (Number) Number of replicas for the service.
-	// Number of replicas for the service.
+	// (Number) Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
+	// Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
 	NumReplicas *float64 `json:"numReplicas,omitempty" tf:"num_replicas,omitempty"`
 
 	// (String, Sensitive) SHA256 hash of password for the default user. One of either password, password_wo, or password_hash must be specified.
@@ -391,6 +403,10 @@ type ServiceInitParameters struct {
 
 type ServiceObservation struct {
 
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+	// Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
+
 	// (Attributes) Configuration of service backup settings. (see below for nested schema)
 	BackupConfiguration *BackupConfigurationObservation `json:"backupConfiguration,omitempty" tf:"backup_configuration,omitempty"`
 
@@ -398,8 +414,8 @@ type ServiceObservation struct {
 	// ID of the backup to restore when creating new service. If specified, the service will be created as a restore operation
 	BackupID *string `json:"backupId,omitempty" tf:"backup_id,omitempty"`
 
-	// (String) BYOC ID related to the cloud provider account you want to create this service into.
-	// BYOC ID related to the cloud provider account you want to create this service into.
+	// replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
+	// BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
 	ByocID *string `json:"byocId,omitempty" tf:"byoc_id,omitempty"`
 
 	// (String) Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
@@ -447,17 +463,25 @@ type ServiceObservation struct {
 	// If true, it indicates this is a primary service using its own data. If false it means this service is a secondary service, thus using data from a warehouse.
 	IsPrimary *bool `json:"isPrimary,omitempty" tf:"is_primary,omitempty"`
 
-	// scaling in GiB.
-	// Maximum memory of a single replica during auto-scaling in GiB.
+	// replica memory is fixed).
+	// Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
+
+	// (Number) Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
+	// Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
+	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
 	// scaling in GiB.
 	// Maximum total memory of all workers during auto-scaling in GiB.
 	MaxTotalMemoryGb *float64 `json:"maxTotalMemoryGb,omitempty" tf:"max_total_memory_gb,omitempty"`
 
-	// scaling in GiB.
-	// Minimum memory of a single replica during auto-scaling in GiB.
+	// replica memory is fixed).
+	// Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
+
+	// trip). Conflicts with num_replicas.
+	// Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
+	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 
 	// scaling in GiB.
 	// Minimum total memory of all workers during auto-scaling in GiB.
@@ -467,8 +491,8 @@ type ServiceObservation struct {
 	// User defined identifier for the service.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// (Number) Number of replicas for the service.
-	// Number of replicas for the service.
+	// (Number) Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
+	// Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
 	NumReplicas *float64 `json:"numReplicas,omitempty" tf:"num_replicas,omitempty"`
 
 	// (Number) Version number for password_wo. Increment this to trigger a password update when using password_wo.
@@ -512,6 +536,11 @@ type ServiceObservation struct {
 
 type ServiceParameters struct {
 
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+	// Autoscaling mode for the service: "vertical" (fixed replica count, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
+	// +kubebuilder:validation:Optional
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
+
 	// (Attributes) Configuration of service backup settings. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	BackupConfiguration *BackupConfigurationParameters `json:"backupConfiguration,omitempty" tf:"backup_configuration,omitempty"`
@@ -521,8 +550,8 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	BackupID *string `json:"backupId,omitempty" tf:"backup_id,omitempty"`
 
-	// (String) BYOC ID related to the cloud provider account you want to create this service into.
-	// BYOC ID related to the cloud provider account you want to create this service into.
+	// replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
+	// BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
 	// +kubebuilder:validation:Optional
 	ByocID *string `json:"byocId,omitempty" tf:"byoc_id,omitempty"`
 
@@ -574,20 +603,30 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	IdleTimeoutMinutes *float64 `json:"idleTimeoutMinutes,omitempty" tf:"idle_timeout_minutes,omitempty"`
 
-	// scaling in GiB.
-	// Maximum memory of a single replica during auto-scaling in GiB.
+	// replica memory is fixed).
+	// Maximum memory of a single replica in GiB. For vertical autoscaling this is the high end of the memory range; for horizontal the API requires it to equal min_replica_memory_gb (per-replica memory is fixed).
 	// +kubebuilder:validation:Optional
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
+
+	// (Number) Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
+	// Maximum number of replicas. Horizontal autoscaling only — this is the high end of the replica band. For a vertical service set the replica count with num_replicas instead. Conflicts with num_replicas.
+	// +kubebuilder:validation:Optional
+	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
 	// scaling in GiB.
 	// Maximum total memory of all workers during auto-scaling in GiB.
 	// +kubebuilder:validation:Optional
 	MaxTotalMemoryGb *float64 `json:"maxTotalMemoryGb,omitempty" tf:"max_total_memory_gb,omitempty"`
 
-	// scaling in GiB.
-	// Minimum memory of a single replica during auto-scaling in GiB.
+	// replica memory is fixed).
+	// Minimum memory of a single replica in GiB. For vertical autoscaling this is the low end of the memory range; for horizontal the API requires it to equal max_replica_memory_gb (per-replica memory is fixed).
 	// +kubebuilder:validation:Optional
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
+
+	// trip). Conflicts with num_replicas.
+	// Minimum number of replicas. Horizontal autoscaling only — this is the low end of the replica band. For a vertical service set the replica count with num_replicas instead (the API reports a vertical count as num_replicas, so a vertical min/max band cannot round-trip). Conflicts with num_replicas.
+	// +kubebuilder:validation:Optional
+	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 
 	// scaling in GiB.
 	// Minimum total memory of all workers during auto-scaling in GiB.
@@ -599,8 +638,8 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// (Number) Number of replicas for the service.
-	// Number of replicas for the service.
+	// (Number) Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
+	// Fixed replica count for a vertical service. Conflicts with min_replicas/max_replicas. Forbidden when autoscaling_mode is "horizontal".
 	// +kubebuilder:validation:Optional
 	NumReplicas *float64 `json:"numReplicas,omitempty" tf:"num_replicas,omitempty"`
 
@@ -668,14 +707,14 @@ type ServiceParameters struct {
 
 type TransparentDataEncryptionInitParameters struct {
 
-	// (Boolean) Wether to enable the mysql endpoint or not.
+	// (Boolean) Whether to enable the mysql endpoint or not.
 	// If true, TDE is enabled for the service.
 	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
 }
 
 type TransparentDataEncryptionObservation struct {
 
-	// (Boolean) Wether to enable the mysql endpoint or not.
+	// (Boolean) Whether to enable the mysql endpoint or not.
 	// If true, TDE is enabled for the service.
 	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
 
@@ -686,7 +725,7 @@ type TransparentDataEncryptionObservation struct {
 
 type TransparentDataEncryptionParameters struct {
 
-	// (Boolean) Wether to enable the mysql endpoint or not.
+	// (Boolean) Whether to enable the mysql endpoint or not.
 	// If true, TDE is enabled for the service.
 	// +kubebuilder:validation:Optional
 	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`

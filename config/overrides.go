@@ -11,6 +11,7 @@ import (
 var gkvOverrideMap = map[string]schema.GroupVersionKind{
 	"clickhouse_clickpipe": {Group: "clickpipe"},
 	"clickhouse_role":      {Group: "iam"},
+	"clickhouse_udf":       {Group: "udf"},
 }
 
 func gvkOverride() config.ResourceOption {
@@ -131,6 +132,127 @@ func Configure(p *config.Provider) {
 			},
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
+	})
+
+	p.AddResourceConfigurator("clickhouse_udf", func(r *config.Resource) {
+		r.ServerSideApplyMergeStrategies["arguments"] = config.MergeStrategy{
+			ListMergeStrategy: config.ListMergeStrategy{
+				MergeStrategy: config.ListTypeMap,
+				ListMapKeys: config.ListMapKeys{
+					Keys: []string{"name"},
+				},
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_udf_attachment", func(r *config.Resource) {
+		r.References = config.References{
+			serviceIDParam: {
+				TerraformName: clickhouseService,
+			},
+		}
+		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
+	})
+
+	// ClickStack resources
+
+	p.AddResourceConfigurator("clickhouse_clickstack_alert", func(r *config.Resource) {
+		r.References = config.References{
+			"saved_search_id": {
+				TerraformName: "clickhouse_clickstack_saved_search",
+			},
+			"channel.webhook_id": {
+				TerraformName: "clickhouse_clickstack_webhook",
+			},
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickstack_connection", func(r *config.Resource) {
+		r.References = config.References{
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickstack_dashboard", func(r *config.Resource) {
+		r.References = config.References{
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickstack_role", func(r *config.Resource) {
+		r.References = config.References{
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickstack_saved_search", func(r *config.Resource) {
+		r.References = config.References{
+			"source_id": {
+				TerraformName: clickstackSource,
+			},
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator(clickstackSource, func(r *config.Resource) {
+		r.References = config.References{
+			"connection_id": {
+				TerraformName: "clickhouse_clickstack_connection",
+			},
+			"log_source_id": {
+				TerraformName: clickstackSource,
+			},
+			"metric_source_id": {
+				TerraformName: clickstackSource,
+			},
+			"session_source_id": {
+				TerraformName: clickstackSource,
+			},
+			"trace_source_id": {
+				TerraformName: clickstackSource,
+			},
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator(clickstackTeam, func(r *config.Resource) {
+		r.References = config.References{
+			"default_user_role_id": {
+				TerraformName: "clickhouse_clickstack_role",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickstack_team_member", func(r *config.Resource) {
+		r.References = config.References{
+			"role_id": {
+				TerraformName: "clickhouse_clickstack_role",
+			},
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickstack_webhook", func(r *config.Resource) {
+		r.References = config.References{
+			teamParam: {
+				TerraformName: clickstackTeam,
+			},
+		}
 	})
 }
 

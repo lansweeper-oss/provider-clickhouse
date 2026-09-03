@@ -583,7 +583,7 @@ type KafkaInitParameters struct {
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. (see below for nested schema)
+	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryInitParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The list of Kafka topics. (comma separated)
@@ -635,7 +635,7 @@ type KafkaObservation struct {
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. (see below for nested schema)
+	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryObservation `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The list of Kafka topics. (comma separated)
@@ -697,7 +697,7 @@ type KafkaParameters struct {
 	// +kubebuilder:validation:Optional
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. (see below for nested schema)
+	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	SchemaRegistry *SchemaRegistryParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
@@ -1933,7 +1933,7 @@ type PostgresCredentialsParameters struct {
 type PostgresInitParameters struct {
 
 	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// Authentication method for Postgres connection. Supported values: `basic`, `iam_role`. Default is `basic`.
+	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) PEM encoded CA certificates to validate the broker's certificate.
@@ -1952,7 +1952,7 @@ type PostgresInitParameters struct {
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
-	// IAM role ARN for IAM authentication. Required when authentication is set to `iam_role`.
+	// IAM role ARN for IAM authentication. Required when authentication is set to `IAM_ROLE`.
 	IAMRole *string `json:"iamRole,omitempty" tf:"iam_role,omitempty"`
 
 	// (Number) The port of the MySQL instance. Default is 3306.
@@ -1977,7 +1977,7 @@ type PostgresInitParameters struct {
 type PostgresObservation struct {
 
 	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// Authentication method for Postgres connection. Supported values: `basic`, `iam_role`. Default is `basic`.
+	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) PEM encoded CA certificates to validate the broker's certificate.
@@ -1996,7 +1996,7 @@ type PostgresObservation struct {
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
-	// IAM role ARN for IAM authentication. Required when authentication is set to `iam_role`.
+	// IAM role ARN for IAM authentication. Required when authentication is set to `IAM_ROLE`.
 	IAMRole *string `json:"iamRole,omitempty" tf:"iam_role,omitempty"`
 
 	// (Number) The port of the MySQL instance. Default is 3306.
@@ -2021,7 +2021,7 @@ type PostgresObservation struct {
 type PostgresParameters struct {
 
 	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// Authentication method for Postgres connection. Supported values: `basic`, `iam_role`. Default is `basic`.
+	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -2045,7 +2045,7 @@ type PostgresParameters struct {
 	Host *string `json:"host" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
-	// IAM role ARN for IAM authentication. Required when authentication is set to `iam_role`.
+	// IAM role ARN for IAM authentication. Required when authentication is set to `IAM_ROLE`.
 	// +kubebuilder:validation:Optional
 	IAMRole *string `json:"iamRole,omitempty" tf:"iam_role,omitempty"`
 
@@ -2232,6 +2232,10 @@ type PostgresTableMappingsInitParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
+	// add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
+
 	// (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	// Custom partitioning column used for parallel snapshotting. Only beneficial for PostgreSQL 13 (no benefit for PG14+, which supports indexed ctid scans). Must be an indexed column of type: `smallint`, `integer`, `bigint`, `timestamp without time zone`, or `timestamp with time zone`. Unrelated to ClickHouse partitioning.
 	PartitionKey *string `json:"partitionKey,omitempty" tf:"partition_key,omitempty"`
@@ -2267,6 +2271,10 @@ type PostgresTableMappingsObservation struct {
 	// Columns to exclude from replication.
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
 	// (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	// Custom partitioning column used for parallel snapshotting. Only beneficial for PostgreSQL 13 (no benefit for PG14+, which supports indexed ctid scans). Must be an indexed column of type: `smallint`, `integer`, `bigint`, `timestamp without time zone`, or `timestamp with time zone`. Unrelated to ClickHouse partitioning.
@@ -2304,6 +2312,11 @@ type PostgresTableMappingsParameters struct {
 	// +kubebuilder:validation:Optional
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// +kubebuilder:validation:Optional
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
 	// (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	// Custom partitioning column used for parallel snapshotting. Only beneficial for PostgreSQL 13 (no benefit for PG14+, which supports indexed ctid scans). Must be an indexed column of type: `smallint`, `integer`, `bigint`, `timestamp without time zone`, or `timestamp with time zone`. Unrelated to ClickHouse partitioning.
@@ -2532,11 +2545,11 @@ type SchemaRegistryCredentialsInitParameters struct {
 	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
-	// Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version` to trigger updates.
+	// Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version`; changing schema registry credentials forces pipe replacement.
 	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
-	// Version trigger for `password_wo`. Increment to push a new password to the API.
+	// Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
 	// (String, Sensitive) The username for the Kafka source.
@@ -2547,7 +2560,7 @@ type SchemaRegistryCredentialsInitParameters struct {
 type SchemaRegistryCredentialsObservation struct {
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
-	// Version trigger for `password_wo`. Increment to push a new password to the API.
+	// Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 }
 
@@ -2559,12 +2572,12 @@ type SchemaRegistryCredentialsParameters struct {
 	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
 
 	// only) Write-only password for the Kafka source. Not persisted to state. Pair with password_wo_version to trigger updates.
-	// Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version` to trigger updates.
+	// Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version`; changing schema registry credentials forces pipe replacement.
 	// +kubebuilder:validation:Optional
 	PasswordWoSecretRef *v2.LocalSecretKeySelector `json:"passwordWoSecretRef,omitempty" tf:"-"`
 
 	// (Number) Version trigger for password_wo. Increment to push a new password to the API.
-	// Version trigger for `password_wo`. Increment to push a new password to the API.
+	// Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
 	// +kubebuilder:validation:Optional
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 

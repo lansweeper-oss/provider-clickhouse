@@ -1,0 +1,518 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.22.0
+  name: udfs.udf.clickhouse.m.crossplane.io
+spec:
+  group: udf.clickhouse.m.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - clickhouse
+    kind: Udf
+    listKind: UdfList
+    plural: udfs
+    singular: udf
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: 'Udf is the Schema for the Udfs API. You can use the clickhouse_udf
+          resource to create and manage User Defined Functions (UDFs) in ClickHouse
+          Cloud. ~> Note: This resource is in beta. Its behavior may change in future
+          provider versions. Point source_archive_path at a ZIP of your function source,
+          and set source_archive_hash to filebase64sha256(... On apply, the provider
+          uploads the archive and waits for the build to finish. If a build fails
+          By default, a failed build fails the apply (fail_on_build_error = true).
+          Set it to false if you''d rather get a warning and move on. Either way,
+          the failed version stays in state, and applying again with the same source
+          won''t retry the build — you''ll need to fix the source and give source_archive_hash
+          a new value first. On create, a failed build also taints the resource, so
+          the next apply replaces it from scratch. On update, the previous, working
+          version keeps running while you sort things out. Either way, it stops rather
+          than risk creating a duplicate version, and saves the last known status
+          in state. A couple of things to know function_name can''t reuse a built-in
+          ClickHouse function name (like sum) — the API rejects reserved names. Deleting
+          this resource removes all versions of the UDF and detaches it from every
+          service that uses it.'
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: UdfSpec defines the desired state of Udf
+            properties:
+              forProvider:
+                properties:
+                  arguments:
+                    description: Arguments passed to the UDF command.
+                      (see below for nested schema)
+                    items:
+                      properties:
+                        name:
+                          description: |-
+                            Name of the argument. Required for Native and JSONEachRow formats.
+                          type: string
+                        type:
+                          description: |-
+                            ClickHouse data type of the argument.
+                          type: string
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
+                  commandReadTimeout:
+                    description: |-
+                      Command stdout read timeout in milliseconds.
+                    type: number
+                  commandWriteTimeout:
+                    description: |-
+                      Command stdin write timeout in milliseconds.
+                    type: number
+                  failOnBuildError:
+                    description: |-
+                      When true (the default), a failed build fails the apply. The failed version stays in state. Changing this setting does not create a new UDF version.
+                    type: boolean
+                  format:
+                    description: |-
+                      Input and output format used by the UDF command.
+                    type: string
+                  functionName:
+                    description: |-
+                      Name of the UDF. Unique within the organization.
+                    type: string
+                  maxCommandExecutionTime:
+                    description: |-
+                      Maximum command execution time in seconds for executable_pool UDFs.
+                    type: number
+                  poolSize:
+                    description: |-
+                      Command pool size for executable_pool UDFs.
+                    type: number
+                  returnName:
+                    description: |-
+                      Name of the returned value, or null when unnamed.
+                    type: string
+                  returnType:
+                    description: |-
+                      ClickHouse data type of the returned value.
+                    type: string
+                  runtime:
+                    description: |-
+                      Runtime used to execute the UDF command.
+                    type: string
+                  sandboxType:
+                    description: |-
+                      Sandbox isolation level.
+                    type: string
+                  sandboxVersion:
+                    description: |-
+                      Sandbox runtime version.
+                    type: string
+                  sendChunkHeader:
+                    description: |-
+                      Whether ClickHouse sends a row-count chunk header.
+                    type: boolean
+                  sourceArchiveHash:
+                    description: |-
+                      Base64-encoded SHA-256 of the ZIP archive. A change publishes a new UDF version.
+                    type: string
+                  sourceArchivePath:
+                    description: |-
+                      Local path to the ZIP archive uploaded by the provider.
+                    type: string
+                  type:
+                    description: |-
+                      Executable UDF type.
+                    type: string
+                type: object
+              initProvider:
+                description: |-
+                  THIS IS A BETA FIELD. It will be honored
+                  unless the Management Policies feature flag is disabled.
+                  InitProvider holds the same fields as ForProvider, with the exception
+                  of Identifier and other resource reference fields. The fields that are
+                  in InitProvider are merged into ForProvider when the resource is created.
+                  The same fields are also added to the terraform ignore_changes hook, to
+                  avoid updating them after creation. This is useful for fields that are
+                  required on creation, but we do not desire to update them after creation,
+                  for example because of an external controller is managing them, like an
+                  autoscaler.
+                properties:
+                  arguments:
+                    description: Arguments passed to the UDF command.
+                      (see below for nested schema)
+                    items:
+                      properties:
+                        name:
+                          description: |-
+                            Name of the argument. Required for Native and JSONEachRow formats.
+                          type: string
+                        type:
+                          description: |-
+                            ClickHouse data type of the argument.
+                          type: string
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
+                  commandReadTimeout:
+                    description: |-
+                      Command stdout read timeout in milliseconds.
+                    type: number
+                  commandWriteTimeout:
+                    description: |-
+                      Command stdin write timeout in milliseconds.
+                    type: number
+                  failOnBuildError:
+                    description: |-
+                      When true (the default), a failed build fails the apply. The failed version stays in state. Changing this setting does not create a new UDF version.
+                    type: boolean
+                  format:
+                    description: |-
+                      Input and output format used by the UDF command.
+                    type: string
+                  functionName:
+                    description: |-
+                      Name of the UDF. Unique within the organization.
+                    type: string
+                  maxCommandExecutionTime:
+                    description: |-
+                      Maximum command execution time in seconds for executable_pool UDFs.
+                    type: number
+                  poolSize:
+                    description: |-
+                      Command pool size for executable_pool UDFs.
+                    type: number
+                  returnName:
+                    description: |-
+                      Name of the returned value, or null when unnamed.
+                    type: string
+                  returnType:
+                    description: |-
+                      ClickHouse data type of the returned value.
+                    type: string
+                  runtime:
+                    description: |-
+                      Runtime used to execute the UDF command.
+                    type: string
+                  sandboxType:
+                    description: |-
+                      Sandbox isolation level.
+                    type: string
+                  sandboxVersion:
+                    description: |-
+                      Sandbox runtime version.
+                    type: string
+                  sendChunkHeader:
+                    description: |-
+                      Whether ClickHouse sends a row-count chunk header.
+                    type: boolean
+                  sourceArchiveHash:
+                    description: |-
+                      Base64-encoded SHA-256 of the ZIP archive. A change publishes a new UDF version.
+                    type: string
+                  sourceArchivePath:
+                    description: |-
+                      Local path to the ZIP archive uploaded by the provider.
+                    type: string
+                  type:
+                    description: |-
+                      Executable UDF type.
+                    type: string
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+            x-kubernetes-validations:
+            - message: spec.forProvider.arguments is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.arguments)
+                || (has(self.initProvider) && has(self.initProvider.arguments))'
+            - message: spec.forProvider.functionName is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.functionName)
+                || (has(self.initProvider) && has(self.initProvider.functionName))'
+            - message: spec.forProvider.returnType is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.returnType)
+                || (has(self.initProvider) && has(self.initProvider.returnType))'
+            - message: spec.forProvider.runtime is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.runtime)
+                || (has(self.initProvider) && has(self.initProvider.runtime))'
+            - message: spec.forProvider.sourceArchiveHash is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.sourceArchiveHash)
+                || (has(self.initProvider) && has(self.initProvider.sourceArchiveHash))'
+            - message: spec.forProvider.sourceArchivePath is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.sourceArchivePath)
+                || (has(self.initProvider) && has(self.initProvider.sourceArchivePath))'
+            - message: spec.forProvider.type is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.type)
+                || (has(self.initProvider) && has(self.initProvider.type))'
+          status:
+            description: UdfStatus defines the observed state of Udf.
+            properties:
+              atProvider:
+                properties:
+                  arguments:
+                    description: Arguments passed to the UDF command.
+                      (see below for nested schema)
+                    items:
+                      properties:
+                        name:
+                          description: |-
+                            Name of the argument. Required for Native and JSONEachRow formats.
+                          type: string
+                        type:
+                          description: |-
+                            ClickHouse data type of the argument.
+                          type: string
+                      type: object
+                    type: array
+                  commandReadTimeout:
+                    description: |-
+                      Command stdout read timeout in milliseconds.
+                    type: number
+                  commandWriteTimeout:
+                    description: |-
+                      Command stdin write timeout in milliseconds.
+                    type: number
+                  createdAt:
+                    description: |-
+                      Creation timestamp.
+                    type: string
+                  error:
+                    description: |-
+                      Build error, or null when no build error is present.
+                    type: string
+                  failOnBuildError:
+                    description: |-
+                      When true (the default), a failed build fails the apply. The failed version stays in state. Changing this setting does not create a new UDF version.
+                    type: boolean
+                  format:
+                    description: |-
+                      Input and output format used by the UDF command.
+                    type: string
+                  functionName:
+                    description: |-
+                      Name of the UDF. Unique within the organization.
+                    type: string
+                  id:
+                    type: string
+                  maxCommandExecutionTime:
+                    description: |-
+                      Maximum command execution time in seconds for executable_pool UDFs.
+                    type: number
+                  poolSize:
+                    description: |-
+                      Command pool size for executable_pool UDFs.
+                    type: number
+                  returnName:
+                    description: |-
+                      Name of the returned value, or null when unnamed.
+                    type: string
+                  returnType:
+                    description: |-
+                      ClickHouse data type of the returned value.
+                    type: string
+                  runtime:
+                    description: |-
+                      Runtime used to execute the UDF command.
+                    type: string
+                  sandboxType:
+                    description: |-
+                      Sandbox isolation level.
+                    type: string
+                  sandboxVersion:
+                    description: |-
+                      Sandbox runtime version.
+                    type: string
+                  sendChunkHeader:
+                    description: |-
+                      Whether ClickHouse sends a row-count chunk header.
+                    type: boolean
+                  sourceArchiveHash:
+                    description: |-
+                      Base64-encoded SHA-256 of the ZIP archive. A change publishes a new UDF version.
+                    type: string
+                  sourceArchivePath:
+                    description: |-
+                      Local path to the ZIP archive uploaded by the provider.
+                    type: string
+                  status:
+                    description: |-
+                      Build state of this UDF version.
+                    type: string
+                  type:
+                    description: |-
+                      Executable UDF type.
+                    type: string
+                  updatedAt:
+                    description: |-
+                      Last-update timestamp.
+                    type: string
+                  version:
+                    description: |-
+                      Version number of the UDF.
+                    type: number
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              lastHandledReconcileAt:
+                description: |-
+                  LastHandledReconcileAt holds the value of the most recent
+                  reconcile-requested-at annotation token that the controller has
+                  processed. Users can compare this to the annotation to determine
+                  whether a reconcile request has been handled.
+                type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

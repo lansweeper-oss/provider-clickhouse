@@ -9,9 +9,12 @@ metadata:
 spec:
   forProvider:
     entries:
-    - endHourUtc: 18
+    - autoscalingMode: horizontal
+      endHourUtc: 18
       idleScaling: false
-      maxReplicas: 3
+      maxReplicaMemoryGb: 16
+      maxReplicas: 6
+      minReplicaMemoryGb: 16
       minReplicas: 3
       name: Business hours
       startHourUtc: 8
@@ -36,3 +39,16 @@ spec:
       - 4
       - 5
       - 6
+
+---
+
+apiVersion: clickhouse.clickhouse.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/scheduledscaling
+  labels:
+    testing.upbound.io/example-name: svc
+  name: svc
+spec:
+  forProvider: {}

@@ -1,0 +1,25 @@
+apiVersion: clickstack.clickhouse.crossplane.io/v1alpha1
+kind: SavedSearch
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/savedsearch
+  labels:
+    testing.upbound.io/example-name: errors
+  name: errors
+spec:
+  forProvider:
+    filters: |-
+      ${jsonencode([
+          { type = "sql", condition = "ServiceName IN ('checkout', 'payments')" }
+        ])}
+    name: Production errors
+    orderBy: Timestamp DESC
+    select: Timestamp, ServiceName, Body
+    sourceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: logs
+    tags:
+    - production
+    - errors
+    where: SeverityText:error
+    whereLanguage: lucene

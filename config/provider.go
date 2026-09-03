@@ -7,7 +7,7 @@ import (
 	ujconfig "github.com/crossplane/upjet/v2/pkg/config"
 
 	"github.com/ClickHouse/terraform-provider-clickhouse/pkg/provider"
-	"github.com/ClickHouse/terraform-provider-clickhouse/pkg/resource"
+	"github.com/ClickHouse/terraform-provider-clickhouse/pkg/registry"
 )
 
 const (
@@ -28,7 +28,7 @@ func GetProvider() *ujconfig.Provider {
 		ujconfig.WithTerraformPluginFrameworkIncludeList(ExternalNameConfigured()),
 		ujconfig.WithFeaturesPackage("internal/features"),
 		ujconfig.WithRootGroup(resourcePrefix+".crossplane.io"),
-		ujconfig.WithTerraformPluginFrameworkProvider(provider.NewBuilder(resource.GetResourceFactories())()),
+		ujconfig.WithTerraformPluginFrameworkProvider(provider.NewBuilder(registry.ServicePackages())()),
 		ujconfig.WithDefaultResourceOptions(
 			ExternalNameConfigurations(),
 			gvkOverride(),
@@ -48,7 +48,7 @@ func GetProviderNamespaced() *ujconfig.Provider {
 		ujconfig.WithShortName(resourcePrefix),
 		ujconfig.WithFeaturesPackage("internal/features"),
 		ujconfig.WithRootGroup(resourcePrefix+".m.crossplane.io"),
-		ujconfig.WithTerraformPluginFrameworkProvider(provider.NewBuilder(resource.GetResourceFactories())()),
+		ujconfig.WithTerraformPluginFrameworkProvider(provider.NewBuilder(registry.ServicePackages())()),
 		ujconfig.WithDefaultResourceOptions(
 			ExternalNameConfigurations(),
 			gvkOverride(),

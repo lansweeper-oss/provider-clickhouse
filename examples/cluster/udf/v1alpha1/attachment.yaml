@@ -1,0 +1,12 @@
+apiVersion: udf.clickhouse.crossplane.io/v1alpha1
+kind: Attachment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: udf/v1alpha1/attachment
+  labels:
+    testing.upbound.io/example-name: development
+  name: development
+spec:
+  forProvider:
+    functionName: ${clickhouse_udf.echo_string.function_name}
+    version: ${clickhouse_udf.echo_string.version}

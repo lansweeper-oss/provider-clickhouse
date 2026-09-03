@@ -18,6 +18,9 @@ type BaseConfigInitParameters struct {
 
 type BaseConfigObservation struct {
 
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
+
 	// (Boolean) Whether idle scaling is enabled while the window is active.
 	IdleScaling *bool `json:"idleScaling,omitempty" tf:"idle_scaling,omitempty"`
 
@@ -27,13 +30,13 @@ type BaseConfigObservation struct {
 	// (Number) Maximum memory per replica in GiB. Must be set together with min_replica_memory_gb.
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
 
-	// (Number) Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
 	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
 	// (Number) Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
 
-	// (Number) Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
 	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 }
 
@@ -41,6 +44,10 @@ type BaseConfigParameters struct {
 }
 
 type EntriesInitParameters struct {
+
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	// Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
 
 	// accepts 1–24.
 	// End hour in UTC (1-24). Must differ from start_hour_utc. Note the asymmetric range: end_hour_utc=0 is invalid; use end_hour_utc=24 to mean midnight at end of day.
@@ -58,16 +65,16 @@ type EntriesInitParameters struct {
 	// Maximum memory per replica in GiB. Must be set together with min_replica_memory_gb.
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
 
-	// (Number) Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
-	// Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
+	// Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
 	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
 	// (Number) Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
 	// Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
 
-	// (Number) Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
-	// Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
+	// Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
 	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 
 	// readable name for the entry (e.g. "Business hours").
@@ -86,6 +93,10 @@ type EntriesInitParameters struct {
 
 type EntriesObservation struct {
 
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	// Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
+
 	// accepts 1–24.
 	// End hour in UTC (1-24). Must differ from start_hour_utc. Note the asymmetric range: end_hour_utc=0 is invalid; use end_hour_utc=24 to mean midnight at end of day.
 	EndHourUtc *float64 `json:"endHourUtc,omitempty" tf:"end_hour_utc,omitempty"`
@@ -102,16 +113,16 @@ type EntriesObservation struct {
 	// Maximum memory per replica in GiB. Must be set together with min_replica_memory_gb.
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
 
-	// (Number) Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
-	// Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
+	// Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
 	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
 	// (Number) Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
 	// Minimum memory per replica in GiB. Must be set together with max_replica_memory_gb.
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
 
-	// (Number) Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
-	// Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
+	// Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
 	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 
 	// readable name for the entry (e.g. "Business hours").
@@ -129,6 +140,11 @@ type EntriesObservation struct {
 }
 
 type EntriesParameters struct {
+
+	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	// Autoscaling mode while the window is active: "vertical" (fixed replica count via min_replicas == max_replicas, memory scales between min_replica_memory_gb and max_replica_memory_gb) or "horizontal" (replica count scales between min_replicas and max_replicas at fixed per-replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted the server defaults to vertical, so a distinct min_replicas/max_replicas band requires an explicit autoscaling_mode = "horizontal". The schedule update is a full replace and per-entry mode is not preserved across updates, so set autoscaling_mode explicitly on every entry you want to keep horizontal.
+	// +kubebuilder:validation:Optional
+	AutoscalingMode *string `json:"autoscalingMode,omitempty" tf:"autoscaling_mode,omitempty"`
 
 	// accepts 1–24.
 	// End hour in UTC (1-24). Must differ from start_hour_utc. Note the asymmetric range: end_hour_utc=0 is invalid; use end_hour_utc=24 to mean midnight at end of day.
@@ -150,8 +166,8 @@ type EntriesParameters struct {
 	// +kubebuilder:validation:Optional
 	MaxReplicaMemoryGb *float64 `json:"maxReplicaMemoryGb,omitempty" tf:"max_replica_memory_gb,omitempty"`
 
-	// (Number) Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
-	// Maximum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
+	// Maximum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the high end of the replica band.
 	// +kubebuilder:validation:Optional
 	MaxReplicas *float64 `json:"maxReplicas,omitempty" tf:"max_replicas,omitempty"`
 
@@ -160,8 +176,8 @@ type EntriesParameters struct {
 	// +kubebuilder:validation:Optional
 	MinReplicaMemoryGb *float64 `json:"minReplicaMemoryGb,omitempty" tf:"min_replica_memory_gb,omitempty"`
 
-	// (Number) Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
-	// Minimum replica count while the window is active. Currently the server requires min_replicas == max_replicas.
+	// (Number) Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
+	// Minimum replica count while the window is active. For a vertical entry min_replicas must equal max_replicas (fixed count); for a horizontal entry it is the low end of the replica band.
 	// +kubebuilder:validation:Optional
 	MinReplicas *float64 `json:"minReplicas,omitempty" tf:"min_replicas,omitempty"`
 
@@ -234,7 +250,7 @@ type ScheduledScalingStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// ScheduledScaling is the Schema for the ScheduledScalings API. You can use the clickhouse_service_scheduled_scaling resource to manage time-based scaling rules for a ClickHouse Cloud service. A schedule is a set of recurring weekly windows. The server rejects any pair of entries that overlap in time, so at most one window is active at any moment. While a window is active the service uses the replica count, memory bounds, and idle-scaling settings declared on that entry; otherwise the service falls back to its base auto-scaling configuration. ~> Note: This resource is in alpha. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling). Reach out to ClickHouse support if the API returns 403 FORBIDDEN. The server currently requires min_replicas == max_replicas per entry, and a maximum of 10 entries per schedule. Hour ranges Hour ranges are asymmetric: start_hour_utc accepts 0–23.end_hour_utc accepts 1–24.start_hour_utc and end_hour_utc must differ.Set start_hour_utc = 0 and end_hour_utc = 24 for a 24-hour window.Set end_hour_utc < start_hour_utc to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day). Example Usage
+// ScheduledScaling is the Schema for the ScheduledScalings API. You can use the clickhouse_service_scheduled_scaling resource to manage time-based scaling rules for a ClickHouse Cloud service. A schedule is a set of recurring weekly windows. The server rejects any pair of entries that overlap in time, so at most one window is active at any moment. While a window is active the service uses the replica count, memory bounds, and idle-scaling settings declared on that entry; otherwise the service falls back to its base auto-scaling configuration. ~> Note: This resource is in beta. Scheduled scaling must be enabled for your organization (canUseScheduledAutoscaling). Reach out to ClickHouse support if the API returns 403 FORBIDDEN. Each entry is vertical by default — a fixed replica count (min_replicas == max_replicas); set autoscaling_mode = "horizontal" to scale the replica count across a min_replicas–max_replicas band at fixed per-replica memory. A schedule allows a maximum of 10 entries. Hour ranges Hour ranges are asymmetric: start_hour_utc accepts 0–23.end_hour_utc accepts 1–24.start_hour_utc and end_hour_utc must differ.Set start_hour_utc = 0 and end_hour_utc = 24 for a 24-hour window.Set end_hour_utc < start_hour_utc to wrap overnight (e.g. 22 to 6 covers 22:00–06:00 next day).
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

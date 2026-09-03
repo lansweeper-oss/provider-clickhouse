@@ -1,0 +1,46 @@
+apiVersion: clickstack.clickhouse.m.crossplane.io/v1alpha1
+kind: Source
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/source
+  labels:
+    testing.upbound.io/example-name: logs
+  name: logs
+  namespace: crossplane-system
+spec:
+  forProvider:
+    bodyExpression: Body
+    connectionIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: main
+    defaultTableSelectExpression: Timestamp, ServiceName, SeverityText, Body
+    eventAttributesExpression: LogAttributes
+    from:
+      databaseName: otel
+      tableName: otel_logs
+    kind: log
+    name: Logs
+    resourceAttributesExpression: ResourceAttributes
+    serviceNameExpression: ServiceName
+    severityTextExpression: SeverityText
+    timestampValueExpression: Timestamp
+
+---
+
+apiVersion: clickstack.clickhouse.m.crossplane.io/v1alpha1
+kind: Connection
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/source
+  labels:
+    testing.upbound.io/example-name: main
+  name: main
+  namespace: crossplane-system
+spec:
+  forProvider:
+    host: https://clickhouse.example.com:8443
+    name: Production ClickHouse
+    passwordSecretRef:
+      key: example-key
+      name: example-secret
+    username: default

@@ -3,10 +3,12 @@
 `provider-clickhouse` is a [Crossplane](https://crossplane.io/) provider for
 [ClickHouse Cloud](https://clickhouse.com/cloud) built with
 [Upjet](https://github.com/crossplane/upjet) on top of the
-[ClickHouse/clickhouse](https://registry.terraform.io/providers/ClickHouse/clickhouse/latest)
+[ClickHouse/clickhouse](https://github.com/ClickHouse/terraform-provider-clickhouse)
 Terraform provider. It exposes XRM-conformant managed resources for the
 ClickHouse Cloud API (services, private endpoints, transparent data encryption,
 organization settings, ...).
+
+[![Upstream Terraform Provider](https://img.shields.io/badge/upstream_terraform_provider-v3.25.3-blue?logo=terraform)](https://github.com/ClickHouse/terraform-provider-clickhouse/tree/v3.25.3)
 
 ## Getting Started
 

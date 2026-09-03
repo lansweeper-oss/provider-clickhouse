@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.21.0
+    controller-gen.kubebuilder.io/version: v0.22.0
   name: clickpipes.clickpipe.clickhouse.crossplane.io
 spec:
   group: clickpipe.clickhouse.crossplane.io
@@ -592,8 +592,9 @@ spec:
                               type: string
                             type: array
                           schemaRegistry:
-                            description: The schema registry for the
-                              Kafka source. (see below for nested schema)
+                            description: '(Attributes) The schema registry for the
+                              Kafka source. Immutable: any change forces pipe replacement.
+                              (see below for nested schema)'
                             properties:
                               authentication:
                                 description: |-
@@ -624,7 +625,7 @@ spec:
                                     type: object
                                   passwordWoSecretRef:
                                     description: |-
-                                      Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version` to trigger updates.
+                                      Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version`; changing schema registry credentials forces pipe replacement.
                                     properties:
                                       key:
                                         description: The key to select.
@@ -642,7 +643,7 @@ spec:
                                     type: object
                                   passwordWoVersion:
                                     description: |-
-                                      Version trigger for `password_wo`. Increment to push a new password to the API.
+                                      Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
                                     type: number
                                   usernameSecretRef:
                                     description: |-
@@ -1237,7 +1238,7 @@ spec:
                           authentication:
                             description: |-
                               SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              Authentication method for Postgres connection. Supported values: `basic`, `iam_role`. Default is `basic`.
+                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -1316,7 +1317,7 @@ spec:
                             type: string
                           iamRole:
                             description: |-
-                              IAM role ARN for IAM authentication. Required when authentication is set to `iam_role`.
+                              IAM role ARN for IAM authentication. Required when authentication is set to `IAM_ROLE`.
                             type: string
                           port:
                             description: |-
@@ -1387,6 +1388,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                partitionByExpr:
+                                  description: |-
+                                    ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+                                  type: string
                                 partitionKey:
                                   description: |-
                                     Custom partitioning column used for parallel snapshotting. Only beneficial for PostgreSQL 13 (no benefit for PG14+, which supports indexed ctid scans). Must be an indexed column of type: `smallint`, `integer`, `bigint`, `timestamp without time zone`, or `timestamp with time zone`. Unrelated to ClickHouse partitioning.
@@ -2032,8 +2037,9 @@ spec:
                               type: string
                             type: array
                           schemaRegistry:
-                            description: The schema registry for the
-                              Kafka source. (see below for nested schema)
+                            description: '(Attributes) The schema registry for the
+                              Kafka source. Immutable: any change forces pipe replacement.
+                              (see below for nested schema)'
                             properties:
                               authentication:
                                 description: |-
@@ -2064,7 +2070,7 @@ spec:
                                     type: object
                                   passwordWoSecretRef:
                                     description: |-
-                                      Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version` to trigger updates.
+                                      Write-only password for the Schema Registry. Not persisted to state. Pair with `password_wo_version`; changing schema registry credentials forces pipe replacement.
                                     properties:
                                       key:
                                         description: The key to select.
@@ -2082,7 +2088,7 @@ spec:
                                     type: object
                                   passwordWoVersion:
                                     description: |-
-                                      Version trigger for `password_wo`. Increment to push a new password to the API.
+                                      Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
                                     type: number
                                   usernameSecretRef:
                                     description: |-
@@ -2684,7 +2690,7 @@ spec:
                           authentication:
                             description: |-
                               SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              Authentication method for Postgres connection. Supported values: `basic`, `iam_role`. Default is `basic`.
+                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -2765,7 +2771,7 @@ spec:
                             type: string
                           iamRole:
                             description: |-
-                              IAM role ARN for IAM authentication. Required when authentication is set to `iam_role`.
+                              IAM role ARN for IAM authentication. Required when authentication is set to `IAM_ROLE`.
                             type: string
                           port:
                             description: |-
@@ -2836,6 +2842,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                partitionByExpr:
+                                  description: |-
+                                    ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+                                  type: string
                                 partitionKey:
                                   description: |-
                                     Custom partitioning column used for parallel snapshotting. Only beneficial for PostgreSQL 13 (no benefit for PG14+, which supports indexed ctid scans). Must be an indexed column of type: `smallint`, `integer`, `bigint`, `timestamp without time zone`, or `timestamp with time zone`. Unrelated to ClickHouse partitioning.
@@ -3356,8 +3366,9 @@ spec:
                               type: string
                             type: array
                           schemaRegistry:
-                            description: The schema registry for the
-                              Kafka source. (see below for nested schema)
+                            description: '(Attributes) The schema registry for the
+                              Kafka source. Immutable: any change forces pipe replacement.
+                              (see below for nested schema)'
                             properties:
                               authentication:
                                 description: |-
@@ -3370,7 +3381,7 @@ spec:
                                 properties:
                                   passwordWoVersion:
                                     description: |-
-                                      Version trigger for `password_wo`. Increment to push a new password to the API.
+                                      Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
                                     type: number
                                 type: object
                               url:
@@ -3821,7 +3832,7 @@ spec:
                           authentication:
                             description: |-
                               SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              Authentication method for Postgres connection. Supported values: `basic`, `iam_role`. Default is `basic`.
+                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -3846,7 +3857,7 @@ spec:
                             type: string
                           iamRole:
                             description: |-
-                              IAM role ARN for IAM authentication. Required when authentication is set to `iam_role`.
+                              IAM role ARN for IAM authentication. Required when authentication is set to `IAM_ROLE`.
                             type: string
                           port:
                             description: |-
@@ -3917,6 +3928,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                partitionByExpr:
+                                  description: |-
+                                    ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+                                  type: string
                                 partitionKey:
                                   description: |-
                                     Custom partitioning column used for parallel snapshotting. Only beneficial for PostgreSQL 13 (no benefit for PG14+, which supports indexed ctid scans). Must be an indexed column of type: `smallint`, `integer`, `bigint`, `timestamp without time zone`, or `timestamp with time zone`. Unrelated to ClickHouse partitioning.

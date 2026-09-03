@@ -1,0 +1,39 @@
+apiVersion: clickstack.clickhouse.crossplane.io/v1alpha1
+kind: Connection
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/connection
+  labels:
+    testing.upbound.io/example-name: main
+  name: main
+spec:
+  forProvider:
+    host: https://clickhouse.example.com:8443
+    name: Production ClickHouse
+    passwordSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+    username: default
+
+---
+
+apiVersion: clickstack.clickhouse.crossplane.io/v1alpha1
+kind: Source
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/connection
+  labels:
+    testing.upbound.io/example-name: logs
+  name: logs
+spec:
+  forProvider:
+    connectionIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    from:
+      databaseName: otel
+      tableName: otel_logs
+    kind: log
+    name: Logs
+    timestampValueExpression: Timestamp

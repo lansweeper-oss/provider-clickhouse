@@ -12,7 +12,7 @@ TERRAFORM_VERSION_VALID := $(shell [ "$(TERRAFORM_VERSION)" = "`printf "$(TERRAF
 
 export TERRAFORM_PROVIDER_SOURCE ?= ClickHouse/clickhouse
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/ClickHouse/terraform-provider-clickhouse
-export TERRAFORM_PROVIDER_VERSION ?= 3.18.1
+export TERRAFORM_PROVIDER_VERSION ?= 3.25.3
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-clickhouse
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://github.com/ClickHouse/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/releases/download/v$(TERRAFORM_PROVIDER_VERSION)
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= $(TERRAFORM_PROVIDER_DOWNLOAD_NAME)_v$(TERRAFORM_PROVIDER_VERSION)
@@ -176,6 +176,10 @@ provider-source:
 		rm -rf "$(PROVIDER_SOURCE_DIR)"; \
 		git clone -c advice.detachedHead=false --depth 1 --branch "v$(TERRAFORM_PROVIDER_VERSION)" "$(TERRAFORM_PROVIDER_REPO)" "$(PROVIDER_SOURCE_DIR)" || $(FAIL); \
 		rm -rf "$(PROVIDER_SOURCE_DIR)/.git"; \
+		$(INFO) creating pkg/ shims for internal/ packages; \
+		mkdir -p "$(PROVIDER_SOURCE_DIR)/pkg/provider" "$(PROVIDER_SOURCE_DIR)/pkg/registry"; \
+		printf 'package provider\n\nimport (\n\tinternalprovider "github.com/ClickHouse/terraform-provider-clickhouse/internal/provider"\n\t"github.com/ClickHouse/terraform-provider-clickhouse/internal/service"\n\t"github.com/hashicorp/terraform-plugin-framework/provider"\n)\n\nfunc NewBuilder(packages []service.ServicePackage) func() provider.Provider {\n\treturn internalprovider.NewBuilder(packages)\n}\n' > "$(PROVIDER_SOURCE_DIR)/pkg/provider/provider.go"; \
+		printf 'package registry\n\nimport (\n\t"github.com/ClickHouse/terraform-provider-clickhouse/internal/service"\n\t"github.com/ClickHouse/terraform-provider-clickhouse/internal/service/registry"\n)\n\nfunc ServicePackages() []service.ServicePackage {\n\treturn registry.ServicePackages()\n}\n' > "$(PROVIDER_SOURCE_DIR)/pkg/registry/registry.go"; \
 		$(OK) extracting ClickHouse provider source v$(TERRAFORM_PROVIDER_VERSION); \
 	fi
 
@@ -307,7 +311,7 @@ schema-version-diff: $(TERRAFORM_PROVIDER_SCHEMA:.json=.generated.lst)
 # Package Extensions (README, SBOM)
 
 EXTENSIONS_DIR := $(ROOT_DIR)/extensions
-SYFT_VERSION ?= 1.48.0
+SYFT_VERSION ?= 1.51.1
 SYFT := $(TOOLS_HOST_DIR)/syft-$(SYFT_VERSION)
 UP_VERSION ?= v0.49.1
 UP_CHANNEL ?= stable
@@ -333,7 +337,12 @@ sbom: $(SYFT)
 	@$(SYFT) scan dir:. --source-name $(PROJECT_NAME) --source-version $(VERSION) -o spdx-json=$(EXTENSIONS_DIR)/sbom/sbom.spdx.json
 	@$(OK) SBOM generated at $(EXTENSIONS_DIR)/sbom/sbom.spdx.json
 
-xpkg.extensions: sbom
+readme: README.md.tmpl
+	@$(INFO) Rendering README.md from template
+	@envsubst '$$TERRAFORM_PROVIDER_VERSION $$TERRAFORM_PROVIDER_REPO' < $(ROOT_DIR)/README.md.tmpl > $(ROOT_DIR)/README.md
+	@$(OK) README.md rendered
+
+xpkg.extensions: sbom readme
 	@$(INFO) Preparing package extensions
 	@mkdir -p $(EXTENSIONS_DIR)/icons
 	@mkdir -p $(EXTENSIONS_DIR)/readme
@@ -346,7 +355,7 @@ xpkg.append: xpkg.extensions $(UP)
 	@$(UP) alpha xpkg append --extensions-root=$(EXTENSIONS_DIR) $(XPKG_REG_ORGS)/$(PROJECT_NAME):$(VERSION) || $(FAIL)
 	@$(OK) Appended extensions to $(XPKG_REG_ORGS)/$(PROJECT_NAME):$(VERSION)
 
-.PHONY: sbom xpkg.extensions xpkg.append
+.PHONY: readme sbom xpkg.extensions xpkg.append
 
 # ====================================================================================
 # Special Targets

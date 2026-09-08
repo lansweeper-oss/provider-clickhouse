@@ -104,9 +104,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                    x-kubernetes-list-map-keys:
-                    - name
-                    x-kubernetes-list-type: map
                   commandReadTimeout:
                     description: |-
                       Command stdout read timeout in milliseconds.
@@ -200,9 +197,6 @@ spec:
                           type: string
                       type: object
                     type: array
-                    x-kubernetes-list-map-keys:
-                    - name
-                    x-kubernetes-list-type: map
                   commandReadTimeout:
                     description: |-
                       Command stdout read timeout in milliseconds.

@@ -134,16 +134,11 @@ func Configure(p *config.Provider) {
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
 
-	p.AddResourceConfigurator("clickhouse_udf", func(r *config.Resource) {
-		r.ServerSideApplyMergeStrategies["arguments"] = config.MergeStrategy{
-			ListMergeStrategy: config.ListMergeStrategy{
-				MergeStrategy: config.ListTypeMap,
-				ListMapKeys: config.ListMapKeys{
-					Keys: []string{"name"},
-				},
-			},
-		}
-	})
+	// clickhouse_udf: no SSA merge strategy for "arguments". listType=map keyed
+	// on "name" is invalid here — "name" is optional in the Terraform schema
+	// (only required for Native/JSONEachRow formats), and Kubernetes rejects a
+	// CRD whose list-map key is neither required nor defaulted. The list stays
+	// atomic, which is the correct semantic for positional UDF arguments.
 
 	p.AddResourceConfigurator("clickhouse_udf_attachment", func(r *config.Resource) {
 		r.References = config.References{

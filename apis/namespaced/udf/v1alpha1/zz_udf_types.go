@@ -51,8 +51,6 @@ type ArgumentsParameters struct {
 type UdfInitParameters struct {
 
 	// (Attributes List) Arguments passed to the UDF command. (see below for nested schema)
-	// +listType=map
-	// +listMapKey=name
 	Arguments []ArgumentsInitParameters `json:"arguments,omitempty" tf:"arguments,omitempty"`
 
 	// (Number) Command stdout read timeout in milliseconds.
@@ -216,8 +214,6 @@ type UdfParameters struct {
 
 	// (Attributes List) Arguments passed to the UDF command. (see below for nested schema)
 	// +kubebuilder:validation:Optional
-	// +listType=map
-	// +listMapKey=name
 	Arguments []ArgumentsParameters `json:"arguments,omitempty" tf:"arguments,omitempty"`
 
 	// (Number) Command stdout read timeout in milliseconds.

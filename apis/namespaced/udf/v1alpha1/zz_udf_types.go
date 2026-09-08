@@ -15,6 +15,10 @@ import (
 
 type ArgumentsInitParameters struct {
 
+	// This is an injected field with a default value for being able to merge items of the parent object list.
+	// +kubebuilder:default:="0"
+	Index *string `json:"index,omitempty" tf:"-"`
+
 	// (String) Name of the argument. Required for Native and JSONEachRow formats.
 	// Name of the argument. Required for Native and JSONEachRow formats.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
@@ -26,6 +30,9 @@ type ArgumentsInitParameters struct {
 
 type ArgumentsObservation struct {
 
+	// This is an injected field with a default value for being able to merge items of the parent object list.
+	Index *string `json:"index,omitempty" tf:"-"`
+
 	// (String) Name of the argument. Required for Native and JSONEachRow formats.
 	// Name of the argument. Required for Native and JSONEachRow formats.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
@@ -36,6 +43,11 @@ type ArgumentsObservation struct {
 }
 
 type ArgumentsParameters struct {
+
+	// This is an injected field with a default value for being able to merge items of the parent object list.
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:="0"
+	Index *string `json:"index" tf:"-"`
 
 	// (String) Name of the argument. Required for Native and JSONEachRow formats.
 	// Name of the argument. Required for Native and JSONEachRow formats.
@@ -51,6 +63,8 @@ type ArgumentsParameters struct {
 type UdfInitParameters struct {
 
 	// (Attributes List) Arguments passed to the UDF command. (see below for nested schema)
+	// +listType=map
+	// +listMapKey=index
 	Arguments []ArgumentsInitParameters `json:"arguments,omitempty" tf:"arguments,omitempty"`
 
 	// (Number) Command stdout read timeout in milliseconds.
@@ -214,6 +228,8 @@ type UdfParameters struct {
 
 	// (Attributes List) Arguments passed to the UDF command. (see below for nested schema)
 	// +kubebuilder:validation:Optional
+	// +listType=map
+	// +listMapKey=index
 	Arguments []ArgumentsParameters `json:"arguments,omitempty" tf:"arguments,omitempty"`
 
 	// (Number) Command stdout read timeout in milliseconds.

@@ -134,7 +134,6 @@ func Configure(p *config.Provider) {
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
 
-
 	p.AddResourceConfigurator("clickhouse_udf_attachment", func(r *config.Resource) {
 		r.References = config.References{
 			serviceIDParam: {

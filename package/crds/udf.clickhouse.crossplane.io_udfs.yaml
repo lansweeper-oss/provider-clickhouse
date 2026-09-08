@@ -94,6 +94,11 @@ spec:
                       (see below for nested schema)
                     items:
                       properties:
+                        index:
+                          default: "0"
+                          description: This is an injected field with a default value
+                            for being able to merge items of the parent object list.
+                          type: string
                         name:
                           description: |-
                             Name of the argument. Required for Native and JSONEachRow formats.
@@ -105,7 +110,7 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-list-map-keys:
-                    - name
+                    - index
                     x-kubernetes-list-type: map
                   commandReadTimeout:
                     description: |-
@@ -190,6 +195,11 @@ spec:
                       (see below for nested schema)
                     items:
                       properties:
+                        index:
+                          default: "0"
+                          description: This is an injected field with a default value
+                            for being able to merge items of the parent object list.
+                          type: string
                         name:
                           description: |-
                             Name of the argument. Required for Native and JSONEachRow formats.
@@ -201,7 +211,7 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-list-map-keys:
-                    - name
+                    - index
                     x-kubernetes-list-type: map
                   commandReadTimeout:
                     description: |-
@@ -393,6 +403,10 @@ spec:
                       (see below for nested schema)
                     items:
                       properties:
+                        index:
+                          description: This is an injected field with a default value
+                            for being able to merge items of the parent object list.
+                          type: string
                         name:
                           description: |-
                             Name of the argument. Required for Native and JSONEachRow formats.

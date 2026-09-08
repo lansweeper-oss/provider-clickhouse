@@ -135,11 +135,18 @@ func Configure(p *config.Provider) {
 	})
 
 	p.AddResourceConfigurator("clickhouse_udf", func(r *config.Resource) {
+		// arguments cannot use "name" as the list-map key: it is optional in
+		// the generated CRD schema, and Kubernetes requires list-map keys to
+		// be required or defaulted. Inject an index key instead so SSA patches
+		// merging arguments do not atomically remove the list.
 		r.ServerSideApplyMergeStrategies["arguments"] = config.MergeStrategy{
 			ListMergeStrategy: config.ListMergeStrategy{
 				MergeStrategy: config.ListTypeMap,
 				ListMapKeys: config.ListMapKeys{
-					Keys: []string{"name"},
+					InjectedKey: config.InjectedKey{
+						Key:          "index",
+						DefaultValue: `"0"`,
+					},
 				},
 			},
 		}

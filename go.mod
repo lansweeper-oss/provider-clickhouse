@@ -1,6 +1,6 @@
 module github.com/lansweeper-oss/provider-clickhouse
 
-go 1.26.7
+go 1.26.8
 
 tool golang.org/x/tools/cmd/goimports
 
@@ -10,8 +10,8 @@ require (
 	github.com/alecthomas/kong v1.16.1
 	github.com/crossplane/crossplane-runtime/v2 v2.4.0
 	github.com/crossplane/crossplane-tools v0.0.0-20260719180100-659f1dc036c5
-	github.com/crossplane/crossplane/apis/v2 v2.4.0
-	github.com/crossplane/upjet/v2 v2.4.1-0.20260831175352-0ef654e80dff
+	github.com/crossplane/crossplane/apis/v2 v2.4.1
+	github.com/crossplane/upjet/v2 v2.5.0
 	github.com/go-logr/logr v1.4.4
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0

@@ -585,11 +585,29 @@ type KafkaInitParameters struct {
 
 	// (List of String) The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.ReversePrivateEndpoint
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
+
+	// References to ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointIds.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIdsRefs []v2.NamespacedReference `json:"reversePrivateEndpointIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointIds.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIdsSelector *v2.NamespacedSelector `json:"reversePrivateEndpointIdsSelector,omitempty" tf:"-"`
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryInitParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
@@ -719,13 +737,31 @@ type KafkaParameters struct {
 
 	// (List of String) The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.ReversePrivateEndpoint
 	// +kubebuilder:validation:Optional
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
+	// References to ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointIds.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIdsRefs []v2.NamespacedReference `json:"reversePrivateEndpointIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of ReversePrivateEndpoint in clickpipes to populate reversePrivateEndpointIds.
+	// +kubebuilder:validation:Optional
+	ReversePrivateEndpointIdsSelector *v2.NamespacedSelector `json:"reversePrivateEndpointIdsSelector,omitempty" tf:"-"`
+
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	// +kubebuilder:validation:Optional
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	// +kubebuilder:validation:Optional
@@ -1026,7 +1062,16 @@ type MongodbInitParameters struct {
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *MongodbSettingsInitParameters `json:"settings,omitempty" tf:"settings,omitempty"`
@@ -1110,8 +1155,17 @@ type MongodbParameters struct {
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	// +kubebuilder:validation:Optional
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional
@@ -1391,7 +1445,16 @@ type MySQLInitParameters struct {
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// zero unsigned 32-bit integer (1 to 4294967295).
 	// Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
@@ -1510,8 +1573,17 @@ type MySQLParameters struct {
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	// +kubebuilder:validation:Optional
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// zero unsigned 32-bit integer (1 to 4294967295).
 	// Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
@@ -2162,7 +2234,16 @@ type PostgresInitParameters struct {
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *PostgresSettingsInitParameters `json:"settings,omitempty" tf:"settings,omitempty"`
@@ -2282,8 +2363,17 @@ type PostgresParameters struct {
 
 	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickpipes/v1alpha1.SSHKey
 	// +kubebuilder:validation:Optional
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// Reference to a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDRef *v2.NamespacedReference `json:"sshKeyResourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a SSHKey in clickpipes to populate sshKeyResourceId.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional

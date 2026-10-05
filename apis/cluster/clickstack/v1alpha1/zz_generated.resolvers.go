@@ -39,6 +39,42 @@ func (mg *Alert) ResolveReferences(ctx context.Context, c client.Reader) error {
 		mg.Spec.ForProvider.Channel.WebhookIDRef = rsp.ResolvedReference
 
 	}
+	for i3 := 0; i3 < len(mg.Spec.ForProvider.Channels); i3++ {
+		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Channels[i3].WebhookID),
+			Extract:      reference.ExternalName(),
+			Namespace:    mg.GetNamespace(),
+			Reference:    mg.Spec.ForProvider.Channels[i3].WebhookIDRef,
+			Selector:     mg.Spec.ForProvider.Channels[i3].WebhookIDSelector,
+			To: reference.To{
+				List:    &WebhookList{},
+				Managed: &Webhook{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.ForProvider.Channels[i3].WebhookID")
+		}
+		mg.Spec.ForProvider.Channels[i3].WebhookID = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.ForProvider.Channels[i3].WebhookIDRef = rsp.ResolvedReference
+
+	}
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DashboardID),
+		Extract:      reference.ExternalName(),
+		Namespace:    mg.GetNamespace(),
+		Reference:    mg.Spec.ForProvider.DashboardIDRef,
+		Selector:     mg.Spec.ForProvider.DashboardIDSelector,
+		To: reference.To{
+			List:    &DashboardList{},
+			Managed: &Dashboard{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.DashboardID")
+	}
+	mg.Spec.ForProvider.DashboardID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DashboardIDRef = rsp.ResolvedReference
+
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.SavedSearchID),
 		Extract:      reference.ExternalName(),
@@ -92,6 +128,42 @@ func (mg *Alert) ResolveReferences(ctx context.Context, c client.Reader) error {
 		mg.Spec.InitProvider.Channel.WebhookIDRef = rsp.ResolvedReference
 
 	}
+	for i3 := 0; i3 < len(mg.Spec.InitProvider.Channels); i3++ {
+		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.Channels[i3].WebhookID),
+			Extract:      reference.ExternalName(),
+			Namespace:    mg.GetNamespace(),
+			Reference:    mg.Spec.InitProvider.Channels[i3].WebhookIDRef,
+			Selector:     mg.Spec.InitProvider.Channels[i3].WebhookIDSelector,
+			To: reference.To{
+				List:    &WebhookList{},
+				Managed: &Webhook{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.InitProvider.Channels[i3].WebhookID")
+		}
+		mg.Spec.InitProvider.Channels[i3].WebhookID = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.InitProvider.Channels[i3].WebhookIDRef = rsp.ResolvedReference
+
+	}
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.DashboardID),
+		Extract:      reference.ExternalName(),
+		Namespace:    mg.GetNamespace(),
+		Reference:    mg.Spec.InitProvider.DashboardIDRef,
+		Selector:     mg.Spec.InitProvider.DashboardIDSelector,
+		To: reference.To{
+			List:    &DashboardList{},
+			Managed: &Dashboard{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.InitProvider.DashboardID")
+	}
+	mg.Spec.InitProvider.DashboardID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.InitProvider.DashboardIDRef = rsp.ResolvedReference
+
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.SavedSearchID),
 		Extract:      reference.ExternalName(),

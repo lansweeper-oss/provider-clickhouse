@@ -27,7 +27,16 @@ type AlertInitParameters struct {
 
 	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
 	// ID of the dashboard that owns the tile. Required together with `tile_id` when `source` is `tile`: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Dashboard
 	DashboardID *string `json:"dashboardId,omitempty" tf:"dashboard_id,omitempty"`
+
+	// Reference to a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDRef *v2.Reference `json:"dashboardIdRef,omitempty" tf:"-"`
+
+	// Selector for a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDSelector *v2.Selector `json:"dashboardIdSelector,omitempty" tf:"-"`
 
 	// search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
 	// Optional expression to evaluate the alert per group (saved-search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
@@ -205,8 +214,17 @@ type AlertParameters struct {
 
 	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
 	// ID of the dashboard that owns the tile. Required together with `tile_id` when `source` is `tile`: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Dashboard
 	// +kubebuilder:validation:Optional
 	DashboardID *string `json:"dashboardId,omitempty" tf:"dashboard_id,omitempty"`
+
+	// Reference to a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDRef *v2.Reference `json:"dashboardIdRef,omitempty" tf:"-"`
+
+	// Selector for a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDSelector *v2.Selector `json:"dashboardIdSelector,omitempty" tf:"-"`
 
 	// search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
 	// Optional expression to evaluate the alert per group (saved-search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
@@ -363,7 +381,16 @@ type ChannelsInitParameters struct {
 
 	// (String) ID of the webhook to notify. Required when type is webhook.
 	// ID of the webhook to notify. Required when `type` is `webhook`.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Webhook
 	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+
+	// Reference to a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDRef *v2.Reference `json:"webhookIdRef,omitempty" tf:"-"`
+
+	// Selector for a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
 }
 
 type ChannelsObservation struct {
@@ -386,8 +413,17 @@ type ChannelsParameters struct {
 
 	// (String) ID of the webhook to notify. Required when type is webhook.
 	// ID of the webhook to notify. Required when `type` is `webhook`.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Webhook
 	// +kubebuilder:validation:Optional
 	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+
+	// Reference to a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDRef *v2.Reference `json:"webhookIdRef,omitempty" tf:"-"`
+
+	// Selector for a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
 }
 
 // AlertSpec defines the desired state of Alert

@@ -21,7 +21,16 @@ type RestoreToPointInTimeInitParameters struct {
 
 	// (String) ID of the source instance whose backup to restore from.
 	// ID of the source instance whose backup to restore from.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1.Service
 	SourceID *string `json:"sourceId,omitempty" tf:"source_id,omitempty"`
+
+	// Reference to a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDRef *v2.Reference `json:"sourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDSelector *v2.Selector `json:"sourceIdSelector,omitempty" tf:"-"`
 }
 
 type RestoreToPointInTimeObservation struct {
@@ -44,8 +53,17 @@ type RestoreToPointInTimeParameters struct {
 
 	// (String) ID of the source instance whose backup to restore from.
 	// ID of the source instance whose backup to restore from.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1.Service
 	// +kubebuilder:validation:Optional
-	SourceID *string `json:"sourceId" tf:"source_id,omitempty"`
+	SourceID *string `json:"sourceId,omitempty" tf:"source_id,omitempty"`
+
+	// Reference to a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDRef *v2.Reference `json:"sourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDSelector *v2.Selector `json:"sourceIdSelector,omitempty" tf:"-"`
 }
 
 type ServiceInitParameters struct {
@@ -92,7 +110,16 @@ type ServiceInitParameters struct {
 
 	// in-time restore (restore_to_point_in_time)
 	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1.Service
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
+
+	// Reference to a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfRef *v2.Reference `json:"readReplicaOfRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfSelector *v2.Selector `json:"readReplicaOfSelector,omitempty" tf:"-"`
 
 	// east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	// Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
@@ -267,8 +294,17 @@ type ServiceParameters struct {
 
 	// in-time restore (restore_to_point_in_time)
 	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1.Service
 	// +kubebuilder:validation:Optional
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
+
+	// Reference to a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfRef *v2.Reference `json:"readReplicaOfRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfSelector *v2.Selector `json:"readReplicaOfSelector,omitempty" tf:"-"`
 
 	// east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	// Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).

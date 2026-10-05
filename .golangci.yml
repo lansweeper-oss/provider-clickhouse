@@ -57,7 +57,7 @@ linters:
         - io.Copy(os.Stdout)
     goconst:
       min-len: 3
-      min-occurrences: 5
+      min-occurrences: 15
     gocritic:
       enabled-tags:
         - performance

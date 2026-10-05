@@ -402,7 +402,17 @@ type ServiceInitParameters struct {
 
 	// set and then remove warehouse_id attribute completely, the provider won't detect the change. If you want to make a secondary service become primary, remove the warehouse_id and taint it before applying.
 	// Set it to the 'warehouse_id' attribute of another service to share the data with it. The service must be in the same cloud and region.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickhouse/v1alpha1.Service
+	// +crossplane:generate:reference:extractor=github.com/crossplane/upjet/v2/pkg/resource.ExtractParamPath("warehouse_id",true)
 	WarehouseID *string `json:"warehouseId,omitempty" tf:"warehouse_id,omitempty"`
+
+	// Reference to a Service in clickhouse to populate warehouseId.
+	// +kubebuilder:validation:Optional
+	WarehouseIDRef *v2.NamespacedReference `json:"warehouseIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in clickhouse to populate warehouseId.
+	// +kubebuilder:validation:Optional
+	WarehouseIDSelector *v2.NamespacedSelector `json:"warehouseIdSelector,omitempty" tf:"-"`
 }
 
 type ServiceObservation struct {
@@ -714,8 +724,18 @@ type ServiceParameters struct {
 
 	// set and then remove warehouse_id attribute completely, the provider won't detect the change. If you want to make a secondary service become primary, remove the warehouse_id and taint it before applying.
 	// Set it to the 'warehouse_id' attribute of another service to share the data with it. The service must be in the same cloud and region.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickhouse/v1alpha1.Service
+	// +crossplane:generate:reference:extractor=github.com/crossplane/upjet/v2/pkg/resource.ExtractParamPath("warehouse_id",true)
 	// +kubebuilder:validation:Optional
 	WarehouseID *string `json:"warehouseId,omitempty" tf:"warehouse_id,omitempty"`
+
+	// Reference to a Service in clickhouse to populate warehouseId.
+	// +kubebuilder:validation:Optional
+	WarehouseIDRef *v2.NamespacedReference `json:"warehouseIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in clickhouse to populate warehouseId.
+	// +kubebuilder:validation:Optional
+	WarehouseIDSelector *v2.NamespacedSelector `json:"warehouseIdSelector,omitempty" tf:"-"`
 }
 
 type TransparentDataEncryptionInitParameters struct {

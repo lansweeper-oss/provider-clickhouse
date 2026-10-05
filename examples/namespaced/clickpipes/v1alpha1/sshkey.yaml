@@ -40,4 +40,6 @@ spec:
         database: app
         host: 10.0.0.5
         port: 5432
-        sshKeyResourceId: ${clickhouse_clickpipes_ssh_key.bastion.id}
+        sshKeyResourceIdSelector:
+          matchLabels:
+            testing.upbound.io/example-name: bastion

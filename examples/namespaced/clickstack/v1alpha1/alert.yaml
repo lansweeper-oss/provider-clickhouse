@@ -11,9 +11,13 @@ spec:
   forProvider:
     channels:
     - type: webhook
-      webhookId: ${clickhouse_clickstack_webhook.slack.id}
+      webhookIdSelector:
+        matchLabels:
+          testing.upbound.io/example-name: slack
     - type: webhook
-      webhookId: ${clickhouse_clickstack_webhook.pagerduty.id}
+      webhookIdSelector:
+        matchLabels:
+          testing.upbound.io/example-name: pagerduty
     interval: 5m
     message: Error volume exceeded threshold
     name: Too many production errors

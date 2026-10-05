@@ -1326,10 +1326,32 @@ func (in *KafkaInitParameters) DeepCopyInto(out *KafkaInitParameters) {
 			}
 		}
 	}
+	if in.ReversePrivateEndpointIdsRefs != nil {
+		in, out := &in.ReversePrivateEndpointIdsRefs, &out.ReversePrivateEndpointIdsRefs
+		*out = make([]v2.Reference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.ReversePrivateEndpointIdsSelector != nil {
+		in, out := &in.ReversePrivateEndpointIdsSelector, &out.ReversePrivateEndpointIdsSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SSHKeyResourceID != nil {
 		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SchemaRegistry != nil {
 		in, out := &in.SchemaRegistry, &out.SchemaRegistry
@@ -1523,10 +1545,32 @@ func (in *KafkaParameters) DeepCopyInto(out *KafkaParameters) {
 			}
 		}
 	}
+	if in.ReversePrivateEndpointIdsRefs != nil {
+		in, out := &in.ReversePrivateEndpointIdsRefs, &out.ReversePrivateEndpointIdsRefs
+		*out = make([]v2.Reference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.ReversePrivateEndpointIdsSelector != nil {
+		in, out := &in.ReversePrivateEndpointIdsSelector, &out.ReversePrivateEndpointIdsSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SSHKeyResourceID != nil {
 		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SchemaRegistry != nil {
 		in, out := &in.SchemaRegistry, &out.SchemaRegistry
@@ -1998,6 +2042,16 @@ func (in *MongodbInitParameters) DeepCopyInto(out *MongodbInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(MongodbSettingsInitParameters)
@@ -2131,6 +2185,16 @@ func (in *MongodbParameters) DeepCopyInto(out *MongodbParameters) {
 		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
@@ -2566,6 +2630,16 @@ func (in *MySQLInitParameters) DeepCopyInto(out *MySQLInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ServerID != nil {
 		in, out := &in.ServerID, &out.ServerID
 		*out = new(float64)
@@ -2739,6 +2813,16 @@ func (in *MySQLParameters) DeepCopyInto(out *MySQLParameters) {
 		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ServerID != nil {
 		in, out := &in.ServerID, &out.ServerID
@@ -3740,6 +3824,16 @@ func (in *PostgresInitParameters) DeepCopyInto(out *PostgresInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(PostgresSettingsInitParameters)
@@ -3913,6 +4007,16 @@ func (in *PostgresParameters) DeepCopyInto(out *PostgresParameters) {
 		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings

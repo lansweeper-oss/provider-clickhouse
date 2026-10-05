@@ -57,7 +57,7 @@ linters:
         - io.Copy(os.Stdout)
     goconst:
       min-len: 3
-      min-occurrences: 15
+      min-occurrences: 15 # it is debatable to lower this, since resulting code is less readable with constants referring to resource/field names
     gocritic:
       enabled-tags:
         - performance

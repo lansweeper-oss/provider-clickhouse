@@ -579,15 +579,27 @@ type KafkaInitParameters struct {
 	// (Attributes) The Kafka offset. (see below for nested schema)
 	Offset *OffsetInitParameters `json:"offset,omitempty" tf:"offset,omitempty"`
 
+	// encoded Protobuf schema used instead of schema_registry. Use filebase64() with a .proto or serialized FileDescriptorSet file up to 768 KiB. Requires format = "Protobuf" and forces replacement when changed.
+	// Base64-encoded Protobuf schema used instead of `schema_registry`. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Requires `format = "Protobuf"` and forces replacement when changed.
+	ProtobufSchemaSecretRef *v2.LocalSecretKeySelector `json:"protobufSchemaSecretRef,omitempty" tf:"-"`
+
 	// (List of String) The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryInitParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
-	// (String) The list of Kafka topics. (comma separated)
-	// The list of Kafka topics. (comma separated)
+	// once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+	// How Kafka tombstone records are handled. Set to `delete` to delete the matching destination row using field mappings sourced from `_key` or `_key.<field>`; this requires `exactly_once = true`. Set to `soft_delete` to write a row with the `_is_deleted` virtual column set to `true`; exactly-once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+	TombstoneMode *string `json:"tombstoneMode,omitempty" tf:"tombstone_mode,omitempty"`
+
+	// separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
+	// One or more Kafka topics as a comma-separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
 	Topics *string `json:"topics,omitempty" tf:"topics,omitempty"`
 
 	// (String) The type of the column.
@@ -635,11 +647,19 @@ type KafkaObservation struct {
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryObservation `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
-	// (String) The list of Kafka topics. (comma separated)
-	// The list of Kafka topics. (comma separated)
+	// once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+	// How Kafka tombstone records are handled. Set to `delete` to delete the matching destination row using field mappings sourced from `_key` or `_key.<field>`; this requires `exactly_once = true`. Set to `soft_delete` to write a row with the `_is_deleted` virtual column set to `true`; exactly-once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+	TombstoneMode *string `json:"tombstoneMode,omitempty" tf:"tombstone_mode,omitempty"`
+
+	// separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
+	// One or more Kafka topics as a comma-separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
 	Topics *string `json:"topics,omitempty" tf:"topics,omitempty"`
 
 	// (String) The type of the column.
@@ -692,17 +712,32 @@ type KafkaParameters struct {
 	// +kubebuilder:validation:Optional
 	Offset *OffsetParameters `json:"offset,omitempty" tf:"offset,omitempty"`
 
+	// encoded Protobuf schema used instead of schema_registry. Use filebase64() with a .proto or serialized FileDescriptorSet file up to 768 KiB. Requires format = "Protobuf" and forces replacement when changed.
+	// Base64-encoded Protobuf schema used instead of `schema_registry`. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Requires `format = "Protobuf"` and forces replacement when changed.
+	// +kubebuilder:validation:Optional
+	ProtobufSchemaSecretRef *v2.LocalSecretKeySelector `json:"protobufSchemaSecretRef,omitempty" tf:"-"`
+
 	// (List of String) The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	// The list of reverse private endpoint IDs for the Kafka source. (comma separated)
 	// +kubebuilder:validation:Optional
 	ReversePrivateEndpointIds []*string `json:"reversePrivateEndpointIds,omitempty" tf:"reverse_private_endpoint_ids,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	SchemaRegistry *SchemaRegistryParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
-	// (String) The list of Kafka topics. (comma separated)
-	// The list of Kafka topics. (comma separated)
+	// once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+	// How Kafka tombstone records are handled. Set to `delete` to delete the matching destination row using field mappings sourced from `_key` or `_key.<field>`; this requires `exactly_once = true`. Set to `soft_delete` to write a row with the `_is_deleted` virtual column set to `true`; exactly-once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+	// +kubebuilder:validation:Optional
+	TombstoneMode *string `json:"tombstoneMode,omitempty" tf:"tombstone_mode,omitempty"`
+
+	// separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
+	// One or more Kafka topics as a comma-separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
 	// +kubebuilder:validation:Optional
 	Topics *string `json:"topics" tf:"topics,omitempty"`
 
@@ -722,7 +757,7 @@ type KinesisInitParameters struct {
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) The format of the Kafka source. (JSONEachRow, Avro, AvroConfluent, Protobuf)
-	// The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`)
+	// The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`, `Protobuf`)
 	Format *string `json:"format,omitempty" tf:"format,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
@@ -733,9 +768,16 @@ type KinesisInitParameters struct {
 	// The iterator type for the Kinesis source. (`TRIM_HORIZON`, `LATEST`, `AT_TIMESTAMP`)
 	IteratorType *string `json:"iteratorType,omitempty" tf:"iterator_type,omitempty"`
 
+	// encoded Protobuf schema used instead of schema_registry. Use filebase64() with a .proto or serialized FileDescriptorSet file up to 768 KiB. Requires format = "Protobuf" and forces replacement when changed.
+	// Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
+	ProtobufSchema *string `json:"protobufSchema,omitempty" tf:"protobuf_schema,omitempty"`
+
 	// (String) The AWS region of the Kinesis stream.
 	// The AWS region of the Kinesis stream.
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
+
+	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	SchemaRegistry *KinesisSchemaRegistryInitParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The name of the Kinesis stream.
 	// The name of the Kinesis stream.
@@ -760,7 +802,7 @@ type KinesisObservation struct {
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) The format of the Kafka source. (JSONEachRow, Avro, AvroConfluent, Protobuf)
-	// The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`)
+	// The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`, `Protobuf`)
 	Format *string `json:"format,omitempty" tf:"format,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
@@ -771,9 +813,16 @@ type KinesisObservation struct {
 	// The iterator type for the Kinesis source. (`TRIM_HORIZON`, `LATEST`, `AT_TIMESTAMP`)
 	IteratorType *string `json:"iteratorType,omitempty" tf:"iterator_type,omitempty"`
 
+	// encoded Protobuf schema used instead of schema_registry. Use filebase64() with a .proto or serialized FileDescriptorSet file up to 768 KiB. Requires format = "Protobuf" and forces replacement when changed.
+	// Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
+	ProtobufSchema *string `json:"protobufSchema,omitempty" tf:"protobuf_schema,omitempty"`
+
 	// (String) The AWS region of the Kinesis stream.
 	// The AWS region of the Kinesis stream.
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
+
+	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	SchemaRegistry *KinesisSchemaRegistryObservation `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The name of the Kinesis stream.
 	// The name of the Kinesis stream.
@@ -800,7 +849,7 @@ type KinesisParameters struct {
 	Authentication *string `json:"authentication" tf:"authentication,omitempty"`
 
 	// (String) The format of the Kafka source. (JSONEachRow, Avro, AvroConfluent, Protobuf)
-	// The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`)
+	// The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`, `Protobuf`)
 	// +kubebuilder:validation:Optional
 	Format *string `json:"format" tf:"format,omitempty"`
 
@@ -814,10 +863,19 @@ type KinesisParameters struct {
 	// +kubebuilder:validation:Optional
 	IteratorType *string `json:"iteratorType" tf:"iterator_type,omitempty"`
 
+	// encoded Protobuf schema used instead of schema_registry. Use filebase64() with a .proto or serialized FileDescriptorSet file up to 768 KiB. Requires format = "Protobuf" and forces replacement when changed.
+	// Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
+	// +kubebuilder:validation:Optional
+	ProtobufSchema *string `json:"protobufSchema,omitempty" tf:"protobuf_schema,omitempty"`
+
 	// (String) The AWS region of the Kinesis stream.
 	// The AWS region of the Kinesis stream.
 	// +kubebuilder:validation:Optional
 	Region *string `json:"region" tf:"region,omitempty"`
+
+	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	SchemaRegistry *KinesisSchemaRegistryParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The name of the Kinesis stream.
 	// The name of the Kinesis stream.
@@ -833,6 +891,67 @@ type KinesisParameters struct {
 	// Whether to use enhanced fan-out consumer.
 	// +kubebuilder:validation:Optional
 	UseEnhancedFanOut *bool `json:"useEnhancedFanOut,omitempty" tf:"use_enhanced_fan_out,omitempty"`
+}
+
+type KinesisSchemaRegistryInitParameters struct {
+
+	// (String) The AWS region of the Glue schema registry.
+	// The AWS region of the Glue schema registry.
+	GlueRegion *string `json:"glueRegion,omitempty" tf:"glue_region,omitempty"`
+
+	// (String) The name of the Glue schema registry.
+	// The name of the Glue schema registry.
+	GlueRegistryName *string `json:"glueRegistryName,omitempty" tf:"glue_registry_name,omitempty"`
+
+	// (String) The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+	// The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+	GlueRoleArn *string `json:"glueRoleArn,omitempty" tf:"glue_role_arn,omitempty"`
+
+	// (String) The type of the column.
+	// The type of the schema registry. (`glue`)
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+}
+
+type KinesisSchemaRegistryObservation struct {
+
+	// (String) The AWS region of the Glue schema registry.
+	// The AWS region of the Glue schema registry.
+	GlueRegion *string `json:"glueRegion,omitempty" tf:"glue_region,omitempty"`
+
+	// (String) The name of the Glue schema registry.
+	// The name of the Glue schema registry.
+	GlueRegistryName *string `json:"glueRegistryName,omitempty" tf:"glue_registry_name,omitempty"`
+
+	// (String) The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+	// The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+	GlueRoleArn *string `json:"glueRoleArn,omitempty" tf:"glue_role_arn,omitempty"`
+
+	// (String) The type of the column.
+	// The type of the schema registry. (`glue`)
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+}
+
+type KinesisSchemaRegistryParameters struct {
+
+	// (String) The AWS region of the Glue schema registry.
+	// The AWS region of the Glue schema registry.
+	// +kubebuilder:validation:Optional
+	GlueRegion *string `json:"glueRegion" tf:"glue_region,omitempty"`
+
+	// (String) The name of the Glue schema registry.
+	// The name of the Glue schema registry.
+	// +kubebuilder:validation:Optional
+	GlueRegistryName *string `json:"glueRegistryName" tf:"glue_registry_name,omitempty"`
+
+	// (String) The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+	// The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+	// +kubebuilder:validation:Optional
+	GlueRoleArn *string `json:"glueRoleArn,omitempty" tf:"glue_role_arn,omitempty"`
+
+	// (String) The type of the column.
+	// The type of the schema registry. (`glue`)
+	// +kubebuilder:validation:Optional
+	Type *string `json:"type" tf:"type,omitempty"`
 }
 
 type MongodbCredentialsInitParameters struct {
@@ -905,8 +1024,16 @@ type MongodbInitParameters struct {
 	// MongoDB read preference for replica set reads. (`primary`, `primaryPreferred`, `secondary`, `secondaryPreferred`, `nearest`)
 	ReadPreference *string `json:"readPreference,omitempty" tf:"read_preference,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *MongodbSettingsInitParameters `json:"settings,omitempty" tf:"settings,omitempty"`
+
+	// (Boolean) Skip certificate verification for the MongoDB connection.
+	// Skip certificate verification for the MongoDB connection.
+	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
 	// (String) TLS/SSL host for secure connections.
 	// TLS/SSL host for secure connections.
@@ -937,8 +1064,16 @@ type MongodbObservation struct {
 	// MongoDB read preference for replica set reads. (`primary`, `primaryPreferred`, `secondary`, `secondaryPreferred`, `nearest`)
 	ReadPreference *string `json:"readPreference,omitempty" tf:"read_preference,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *MongodbSettingsObservation `json:"settings,omitempty" tf:"settings,omitempty"`
+
+	// (Boolean) Skip certificate verification for the MongoDB connection.
+	// Skip certificate verification for the MongoDB connection.
+	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
 	// (String) TLS/SSL host for secure connections.
 	// TLS/SSL host for secure connections.
@@ -973,9 +1108,19 @@ type MongodbParameters struct {
 	// +kubebuilder:validation:Optional
 	ReadPreference *string `json:"readPreference" tf:"read_preference,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional
 	Settings *MongodbSettingsParameters `json:"settings" tf:"settings,omitempty"`
+
+	// (Boolean) Skip certificate verification for the MongoDB connection.
+	// Skip certificate verification for the MongoDB connection.
+	// +kubebuilder:validation:Optional
+	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
 	// (String) TLS/SSL host for secure connections.
 	// TLS/SSL host for secure connections.
@@ -997,6 +1142,10 @@ type MongodbSettingsInitParameters struct {
 	// (Boolean) Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
 	// Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
 	DeleteOnMerge *bool `json:"deleteOnMerge,omitempty" tf:"delete_on_merge,omitempty"`
+
+	// (Number) Number of parallel workers during initial load.
+	// Number of parallel workers to use per collection during the initial snapshot phase. Can only be set at creation time; changing it forces pipe replacement.
+	InitialLoadParallelism *float64 `json:"initialLoadParallelism,omitempty" tf:"initial_load_parallelism,omitempty"`
 
 	// (Number) Number of rows to pull in each batch during CDC replication.
 	// Number of rows to pull in each batch during CDC replication.
@@ -1029,6 +1178,10 @@ type MongodbSettingsObservation struct {
 	// Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
 	DeleteOnMerge *bool `json:"deleteOnMerge,omitempty" tf:"delete_on_merge,omitempty"`
 
+	// (Number) Number of parallel workers during initial load.
+	// Number of parallel workers to use per collection during the initial snapshot phase. Can only be set at creation time; changing it forces pipe replacement.
+	InitialLoadParallelism *float64 `json:"initialLoadParallelism,omitempty" tf:"initial_load_parallelism,omitempty"`
+
 	// (Number) Number of rows to pull in each batch during CDC replication.
 	// Number of rows to pull in each batch during CDC replication.
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
@@ -1060,6 +1213,11 @@ type MongodbSettingsParameters struct {
 	// Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
 	// +kubebuilder:validation:Optional
 	DeleteOnMerge *bool `json:"deleteOnMerge,omitempty" tf:"delete_on_merge,omitempty"`
+
+	// (Number) Number of parallel workers during initial load.
+	// Number of parallel workers to use per collection during the initial snapshot phase. Can only be set at creation time; changing it forces pipe replacement.
+	// +kubebuilder:validation:Optional
+	InitialLoadParallelism *float64 `json:"initialLoadParallelism,omitempty" tf:"initial_load_parallelism,omitempty"`
 
 	// (Number) Number of rows to pull in each batch during CDC replication.
 	// Number of rows to pull in each batch during CDC replication.
@@ -1231,10 +1389,18 @@ type MySQLInitParameters struct {
 	// The port of the MySQL instance. Default is 3306.
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// zero unsigned 32-bit integer (1 to 4294967295).
+	// Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
+	ServerID *float64 `json:"serverId,omitempty" tf:"server_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *MySQLSettingsInitParameters `json:"settings,omitempty" tf:"settings,omitempty"`
 
-	// (Boolean) Skip certificate verification for the MySQL connection.
+	// (Boolean) Skip certificate verification for the MongoDB connection.
 	// Skip certificate verification for the MySQL connection.
 	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
@@ -1279,10 +1445,18 @@ type MySQLObservation struct {
 	// The port of the MySQL instance. Default is 3306.
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// zero unsigned 32-bit integer (1 to 4294967295).
+	// Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
+	ServerID *float64 `json:"serverId,omitempty" tf:"server_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *MySQLSettingsObservation `json:"settings,omitempty" tf:"settings,omitempty"`
 
-	// (Boolean) Skip certificate verification for the MySQL connection.
+	// (Boolean) Skip certificate verification for the MongoDB connection.
 	// Skip certificate verification for the MySQL connection.
 	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
@@ -1334,11 +1508,21 @@ type MySQLParameters struct {
 	// +kubebuilder:validation:Optional
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
+	// zero unsigned 32-bit integer (1 to 4294967295).
+	// Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
+	// +kubebuilder:validation:Optional
+	ServerID *float64 `json:"serverId,omitempty" tf:"server_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional
 	Settings *MySQLSettingsParameters `json:"settings" tf:"settings,omitempty"`
 
-	// (Boolean) Skip certificate verification for the MySQL connection.
+	// (Boolean) Skip certificate verification for the MongoDB connection.
 	// Skip certificate verification for the MySQL connection.
 	// +kubebuilder:validation:Optional
 	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
@@ -1504,6 +1688,10 @@ type MySQLTableMappingsInitParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
+
 	// (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	// Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	PartitionKey *string `json:"partitionKey,omitempty" tf:"partition_key,omitempty"`
@@ -1539,6 +1727,10 @@ type MySQLTableMappingsObservation struct {
 	// Columns to exclude from replication.
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
 	// (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	// Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
@@ -1576,6 +1768,11 @@ type MySQLTableMappingsParameters struct {
 	// +kubebuilder:validation:Optional
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// +kubebuilder:validation:Optional
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
 	// (String) Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
 	// Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
@@ -1947,6 +2144,10 @@ type PostgresInitParameters struct {
 	// The database name of the Postgres instance.
 	Database *string `json:"database,omitempty" tf:"database,omitempty"`
 
+	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
+	// Disable TLS for the Postgres connection.
+	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
+
 	// (String) The hostname of the MySQL instance.
 	// The hostname of the Postgres instance.
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
@@ -1959,8 +2160,16 @@ type PostgresInitParameters struct {
 	// The port of the Postgres instance. Default is 5432.
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *PostgresSettingsInitParameters `json:"settings,omitempty" tf:"settings,omitempty"`
+
+	// (Boolean) Skip certificate verification for the MongoDB connection.
+	// Skip certificate verification for the Postgres connection.
+	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
 	// (String) TLS/SSL host for secure connections.
 	// TLS/SSL host for secure connections. Used to verify the server certificate.
@@ -1991,6 +2200,10 @@ type PostgresObservation struct {
 	// The database name of the Postgres instance.
 	Database *string `json:"database,omitempty" tf:"database,omitempty"`
 
+	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
+	// Disable TLS for the Postgres connection.
+	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
+
 	// (String) The hostname of the MySQL instance.
 	// The hostname of the Postgres instance.
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
@@ -2003,8 +2216,16 @@ type PostgresObservation struct {
 	// The port of the Postgres instance. Default is 5432.
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *PostgresSettingsObservation `json:"settings,omitempty" tf:"settings,omitempty"`
+
+	// (Boolean) Skip certificate verification for the MongoDB connection.
+	// Skip certificate verification for the Postgres connection.
+	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
 	// (String) TLS/SSL host for secure connections.
 	// TLS/SSL host for secure connections. Used to verify the server certificate.
@@ -2039,6 +2260,11 @@ type PostgresParameters struct {
 	// +kubebuilder:validation:Optional
 	Database *string `json:"database" tf:"database,omitempty"`
 
+	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
+	// Disable TLS for the Postgres connection.
+	// +kubebuilder:validation:Optional
+	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
+
 	// (String) The hostname of the MySQL instance.
 	// The hostname of the Postgres instance.
 	// +kubebuilder:validation:Optional
@@ -2054,9 +2280,19 @@ type PostgresParameters struct {
 	// +kubebuilder:validation:Optional
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// (String) ID of a standalone SSH key resource (clickhouse_clickpipes_ssh_key) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+	// +kubebuilder:validation:Optional
+	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
+
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional
 	Settings *PostgresSettingsParameters `json:"settings" tf:"settings,omitempty"`
+
+	// (Boolean) Skip certificate verification for the MongoDB connection.
+	// Skip certificate verification for the Postgres connection.
+	// +kubebuilder:validation:Optional
+	SkipCertVerification *bool `json:"skipCertVerification,omitempty" tf:"skip_cert_verification,omitempty"`
 
 	// (String) TLS/SSL host for secure connections.
 	// TLS/SSL host for secure connections. Used to verify the server certificate.
@@ -2232,7 +2468,7 @@ type PostgresTableMappingsInitParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
@@ -2272,7 +2508,7 @@ type PostgresTableMappingsObservation struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
@@ -2313,7 +2549,7 @@ type PostgresTableMappingsParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// add it with the new value in a subsequent apply (re-adding re-snapshots the table).
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
 	// +kubebuilder:validation:Optional
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
@@ -2732,7 +2968,7 @@ type SourceInitParameters struct {
 	// (Attributes) The Kafka source configuration for the ClickPipe. (see below for nested schema)
 	Kafka *KafkaInitParameters `json:"kafka,omitempty" tf:"kafka,omitempty"`
 
-	// (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field forces resource replacement (destroy and recreate). (see below for nested schema)
+	// (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field, including schema_registry, forces resource replacement (destroy and recreate). (see below for nested schema)
 	Kinesis *KinesisInitParameters `json:"kinesis,omitempty" tf:"kinesis,omitempty"`
 
 	// (Attributes) The MongoDB CDC source configuration for the ClickPipe. (see below for nested schema)
@@ -2759,7 +2995,7 @@ type SourceObservation struct {
 	// (Attributes) The Kafka source configuration for the ClickPipe. (see below for nested schema)
 	Kafka *KafkaObservation `json:"kafka,omitempty" tf:"kafka,omitempty"`
 
-	// (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field forces resource replacement (destroy and recreate). (see below for nested schema)
+	// (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field, including schema_registry, forces resource replacement (destroy and recreate). (see below for nested schema)
 	Kinesis *KinesisObservation `json:"kinesis,omitempty" tf:"kinesis,omitempty"`
 
 	// (Attributes) The MongoDB CDC source configuration for the ClickPipe. (see below for nested schema)
@@ -2788,7 +3024,7 @@ type SourceParameters struct {
 	// +kubebuilder:validation:Optional
 	Kafka *KafkaParameters `json:"kafka,omitempty" tf:"kafka,omitempty"`
 
-	// (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field forces resource replacement (destroy and recreate). (see below for nested schema)
+	// (Attributes) The Kinesis source configuration for the ClickPipe. Only authentication, iam_role and access_key can be updated in place; changing any other field, including schema_registry, forces resource replacement (destroy and recreate). (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Kinesis *KinesisParameters `json:"kinesis,omitempty" tf:"kinesis,omitempty"`
 
@@ -2829,6 +3065,10 @@ type TableDefinitionInitParameters struct {
 	// (List of String) The list of columns for the sorting key.
 	// The list of columns for the sorting key.
 	SortingKey []*string `json:"sortingKey,omitempty" tf:"sorting_key,omitempty"`
+
+	// (String) ClickHouse TTL expression applied to the destination table when ClickPipes creates it.
+	// ClickHouse `TTL` expression applied to the destination table when ClickPipes creates it.
+	TTL *string `json:"ttl,omitempty" tf:"ttl,omitempty"`
 }
 
 type TableDefinitionObservation struct {
@@ -2847,6 +3087,10 @@ type TableDefinitionObservation struct {
 	// (List of String) The list of columns for the sorting key.
 	// The list of columns for the sorting key.
 	SortingKey []*string `json:"sortingKey,omitempty" tf:"sorting_key,omitempty"`
+
+	// (String) ClickHouse TTL expression applied to the destination table when ClickPipes creates it.
+	// ClickHouse `TTL` expression applied to the destination table when ClickPipes creates it.
+	TTL *string `json:"ttl,omitempty" tf:"ttl,omitempty"`
 }
 
 type TableDefinitionParameters struct {
@@ -2869,6 +3113,11 @@ type TableDefinitionParameters struct {
 	// The list of columns for the sorting key.
 	// +kubebuilder:validation:Optional
 	SortingKey []*string `json:"sortingKey,omitempty" tf:"sorting_key,omitempty"`
+
+	// (String) ClickHouse TTL expression applied to the destination table when ClickPipes creates it.
+	// ClickHouse `TTL` expression applied to the destination table when ClickPipes creates it.
+	// +kubebuilder:validation:Optional
+	TTL *string `json:"ttl,omitempty" tf:"ttl,omitempty"`
 }
 
 type TableMappingsInitParameters struct {

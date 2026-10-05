@@ -1,0 +1,17 @@
+apiVersion: query.clickhouse.m.crossplane.io/v1alpha1
+kind: SavedQuery
+metadata:
+  annotations:
+    meta.upbound.io/example-id: query/v1alpha1/savedquery
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    database: default
+    name: Example query
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    sql: SELECT 1 AS value

@@ -135,3 +135,47 @@ func (mg *ReversePrivateEndpointCustomPrivateDNS) ResolveReferences(ctx context.
 
 	return nil
 }
+
+// ResolveReferences of this SSHKey.
+func (mg *SSHKey) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPINamespacedResolver(c, mg)
+
+	var rsp reference.NamespacedResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.NamespacedResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ServiceID),
+		Extract:      reference.ExternalName(),
+		Namespace:    mg.GetNamespace(),
+		Reference:    mg.Spec.ForProvider.ServiceIDRef,
+		Selector:     mg.Spec.ForProvider.ServiceIDSelector,
+		To: reference.To{
+			List:    &v1alpha1.ServiceList{},
+			Managed: &v1alpha1.Service{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.ServiceID")
+	}
+	mg.Spec.ForProvider.ServiceID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.ServiceIDRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.NamespacedResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.ServiceID),
+		Extract:      reference.ExternalName(),
+		Namespace:    mg.GetNamespace(),
+		Reference:    mg.Spec.InitProvider.ServiceIDRef,
+		Selector:     mg.Spec.InitProvider.ServiceIDSelector,
+		To: reference.To{
+			List:    &v1alpha1.ServiceList{},
+			Managed: &v1alpha1.Service{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.InitProvider.ServiceID")
+	}
+	mg.Spec.InitProvider.ServiceID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.InitProvider.ServiceIDRef = rsp.ResolvedReference
+
+	return nil
+}

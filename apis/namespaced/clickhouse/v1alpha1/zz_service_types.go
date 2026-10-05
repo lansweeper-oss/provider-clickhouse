@@ -369,6 +369,10 @@ type ServiceInitParameters struct {
 	// Version number for password_wo. Increment this to trigger a password update when using password_wo.
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
+	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	Profile *string `json:"profile,omitempty" tf:"profile,omitempty"`
+
 	// (Attributes) Configuration of the query API endpoints feature. (see below for nested schema)
 	QueryAPIEndpoints *QueryAPIEndpointsInitParameters `json:"queryApiEndpoints,omitempty" tf:"query_api_endpoints,omitempty"`
 
@@ -501,6 +505,10 @@ type ServiceObservation struct {
 
 	// (Attributes) Service config for private endpoints (see below for nested schema)
 	PrivateEndpointConfig *PrivateEndpointConfigObservation `json:"privateEndpointConfig,omitempty" tf:"private_endpoint_config,omitempty"`
+
+	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	Profile *string `json:"profile,omitempty" tf:"profile,omitempty"`
 
 	// (Attributes) Configuration of the query API endpoints feature. (see below for nested schema)
 	QueryAPIEndpoints *QueryAPIEndpointsObservation `json:"queryApiEndpoints,omitempty" tf:"query_api_endpoints,omitempty"`
@@ -664,6 +672,11 @@ type ServiceParameters struct {
 	// Version number for password_wo. Increment this to trigger a password update when using password_wo.
 	// +kubebuilder:validation:Optional
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
+
+	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// +kubebuilder:validation:Optional
+	Profile *string `json:"profile,omitempty" tf:"profile,omitempty"`
 
 	// (Attributes) Configuration of the query API endpoints feature. (see below for nested schema)
 	// +kubebuilder:validation:Optional

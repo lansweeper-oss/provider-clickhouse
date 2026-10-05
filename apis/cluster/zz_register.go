@@ -17,6 +17,7 @@ import (
 	v1alpha1iam "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1"
 	v1alpha1organization "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/organization/v1alpha1"
 	v1alpha1postgres "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/postgres/v1alpha1"
+	v1alpha1query "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/query/v1alpha1"
 	v1alpha1role "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/role/v1alpha1"
 	v1alpha1service "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/service/v1alpha1"
 	v1alpha1udf "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/udf/v1alpha1"
@@ -34,6 +35,7 @@ func init() {
 		v1alpha1iam.SchemeBuilder.AddToScheme,
 		v1alpha1organization.SchemeBuilder.AddToScheme,
 		v1alpha1postgres.SchemeBuilder.AddToScheme,
+		v1alpha1query.SchemeBuilder.AddToScheme,
 		v1alpha1role.SchemeBuilder.AddToScheme,
 		v1alpha1service.SchemeBuilder.AddToScheme,
 		v1alpha1udf.SchemeBuilder.AddToScheme,

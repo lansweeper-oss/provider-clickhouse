@@ -21,7 +21,7 @@ func (mg *Service) GetTerraformResourceType() string {
 
 // GetConnectionDetailsMapping for this Service
 func (tr *Service) GetConnectionDetailsMapping() map[string]string {
-	return map[string]string{"double_sha1_password_hash": "doubleSha1PasswordHashSecretRef", "password": "passwordSecretRef", "password_hash": "passwordHashSecretRef", "password_wo": "passwordWoSecretRef"}
+	return map[string]string{"double_sha1_password_hash": "doubleSha1PasswordHashSecretRef", "generated_password": "status.atProvider.generatedPassword", "password": "passwordSecretRef", "password_hash": "passwordHashSecretRef", "password_wo": "passwordWoSecretRef"}
 }
 
 // GetObservation of this Service

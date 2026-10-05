@@ -38,11 +38,14 @@ spec:
           is in beta and its behavior may change in future provider versions. Manages
           a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres
           service. A Managed Postgres service is a fully-managed Postgres instance
-          provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create
-          — standard, as a read replica (read_replica_of), or by point-in-time restore
-          (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config,
-          password rotationDeleteImport Three companion data sources are also provided
-          (beta): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates.
+          provisioned in the ClickHouse Cloud control plane. Supports AWS (cloud_provider
+          = "aws") and GCP (cloud_provider = "gcp"). ~> Note: Postgres on GCP is in
+          private preview. Contact ClickHouse support to enable access for your organization
+          and region. Supported lifecycle Create — standard, as a read replica (read_replica_of),
+          or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size,
+          ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport
+          Three companion data sources are also provided (beta): clickhouse_postgres_service,
+          clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates.
           Unsupported attributes The following are intentionally absent from the schema:
           Operational commands (restart / promote / switchover). See "Operational
           commands" below for the rationale.IP allowlist, private endpoints, backup
@@ -89,7 +92,7 @@ spec:
                 properties:
                   cloudProvider:
                     description: |-
-                      Cloud provider hosting the instance. Currently only 'aws' is supported. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+                      Cloud provider hosting the instance. Supported values are 'aws' and 'gcp'. Postgres on GCP is in private preview; contact ClickHouse support to enable access for your organization and region. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
                     type: string
                   haType:
                     description: |-
@@ -159,7 +162,7 @@ spec:
                     type: string
                   region:
                     description: |-
-                      Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+                      Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
                     type: string
                   restoreToPointInTime:
                     description: |-
@@ -211,7 +214,7 @@ spec:
                 properties:
                   cloudProvider:
                     description: |-
-                      Cloud provider hosting the instance. Currently only 'aws' is supported. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+                      Cloud provider hosting the instance. Supported values are 'aws' and 'gcp'. Postgres on GCP is in private preview; contact ClickHouse support to enable access for your organization and region. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
                     type: string
                   haType:
                     description: |-
@@ -281,7 +284,7 @@ spec:
                     type: string
                   region:
                     description: |-
-                      Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+                      Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
                     type: string
                   restoreToPointInTime:
                     description: |-
@@ -388,7 +391,7 @@ spec:
                 properties:
                   cloudProvider:
                     description: |-
-                      Cloud provider hosting the instance. Currently only 'aws' is supported. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+                      Cloud provider hosting the instance. Supported values are 'aws' and 'gcp'. Postgres on GCP is in private preview; contact ClickHouse support to enable access for your organization and region. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
                     type: string
                   createdAt:
                     description: |-
@@ -449,7 +452,7 @@ spec:
                     type: string
                   region:
                     description: |-
-                      Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+                      Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
                     type: string
                   restoreToPointInTime:
                     description: |-

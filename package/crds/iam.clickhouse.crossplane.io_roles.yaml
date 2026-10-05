@@ -101,9 +101,16 @@ spec:
                           type: array
                           x-kubernetes-list-type: set
                         tags:
-                          description: Optional tags for additional policy
-                            metadata. (see below for nested schema)
+                          description: Optional SQL console access configuration.
+                            Set exactly one of role or grants. (see below for nested
+                            schema)
                           properties:
+                            grants:
+                              description: |-
+                                Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+                              items:
+                                type: string
+                              type: array
                             role:
                               description: |-
                                 SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).
@@ -153,9 +160,16 @@ spec:
                           type: array
                           x-kubernetes-list-type: set
                         tags:
-                          description: Optional tags for additional policy
-                            metadata. (see below for nested schema)
+                          description: Optional SQL console access configuration.
+                            Set exactly one of role or grants. (see below for nested
+                            schema)
                           properties:
+                            grants:
+                              description: |-
+                                Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+                              items:
+                                type: string
+                              type: array
                             role:
                               description: |-
                                 SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).
@@ -307,9 +321,16 @@ spec:
                             ID of the role this policy belongs to.
                           type: string
                         tags:
-                          description: Optional tags for additional policy
-                            metadata. (see below for nested schema)
+                          description: Optional SQL console access configuration.
+                            Set exactly one of role or grants. (see below for nested
+                            schema)
                           properties:
+                            grants:
+                              description: |-
+                                Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+                              items:
+                                type: string
+                              type: array
                             role:
                               description: |-
                                 SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).

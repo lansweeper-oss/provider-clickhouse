@@ -157,7 +157,7 @@ type ConnectionStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Connection is the Schema for the Connections API. Manages a ClickHouse connection in ClickStack. Connections hold the credentials and endpoint used by sources to query ClickHouse. Note: on ClickHouse Cloud, connections are managed by ClickHouse Cloud and cannot be created, changed, or deleted through this resource; this resource is for self-hosted ClickStack. Reference an existing Cloud connection by its ID from clickhouse_clickstack_source.connection_id instead.
+// Connection is the Schema for the Connections API. Manages a ClickHouse connection in ClickStack. Connections hold the credentials and endpoint used by sources to query ClickHouse. Note: on ClickHouse Cloud the connections endpoint is not exposed, and each service has a single connection to itself that the platform creates; this resource is for self-hosted ClickStack. To point a source at the Cloud connection, read its id from an existing source rather than creating one here.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

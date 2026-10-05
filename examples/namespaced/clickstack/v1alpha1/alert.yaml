@@ -9,11 +9,11 @@ metadata:
   namespace: crossplane-system
 spec:
   forProvider:
-    channel:
-      type: webhook
-      webhookIdSelector:
-        matchLabels:
-          testing.upbound.io/example-name: slack
+    channels:
+    - type: webhook
+      webhookId: ${clickhouse_clickstack_webhook.slack.id}
+    - type: webhook
+      webhookId: ${clickhouse_clickstack_webhook.pagerduty.id}
     interval: 5m
     message: Error volume exceeded threshold
     name: Too many production errors
@@ -22,3 +22,41 @@ spec:
         testing.upbound.io/example-name: errors
     threshold: 100
     thresholdType: above
+
+---
+
+apiVersion: clickstack.clickhouse.m.crossplane.io/v1alpha1
+kind: Dashboard
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/alert
+  labels:
+    testing.upbound.io/example-name: latency
+  name: latency
+  namespace: crossplane-system
+spec:
+  forProvider:
+    dashboardJson: |-
+      ${jsonencode({
+          name = "Latency"
+          tiles = [
+            {
+              name = "p95 latency"
+              x    = 0
+              y    = 0
+              w    = 12
+              h    = 6
+              config = {
+                displayType = "line"
+                sourceId    = clickhouse_clickstack_source.traces.id
+                select = [
+                  {
+                    aggFn           = "quantile"
+                    level           = 0.95
+                    valueExpression = "Duration"
+                  }
+                ]
+              }
+            }
+          ]
+        })}

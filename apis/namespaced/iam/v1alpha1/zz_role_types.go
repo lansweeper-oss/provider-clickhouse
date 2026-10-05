@@ -29,7 +29,7 @@ type PoliciesInitParameters struct {
 	// +listType=set
 	Resources []*string `json:"resources,omitempty" tf:"resources,omitempty"`
 
-	// (Attributes) Optional tags for additional policy metadata. (see below for nested schema)
+	// (Attributes) Optional SQL console access configuration. Set exactly one of role or grants. (see below for nested schema)
 	Tags *TagsInitParameters `json:"tags,omitempty" tf:"tags,omitempty"`
 }
 
@@ -57,7 +57,7 @@ type PoliciesObservation struct {
 	// ID of the role this policy belongs to.
 	RoleID *string `json:"roleId,omitempty" tf:"role_id,omitempty"`
 
-	// (Attributes) Optional tags for additional policy metadata. (see below for nested schema)
+	// (Attributes) Optional SQL console access configuration. Set exactly one of role or grants. (see below for nested schema)
 	Tags *TagsObservation `json:"tags,omitempty" tf:"tags,omitempty"`
 
 	// (String) Tenant ID that owns this role.
@@ -84,7 +84,7 @@ type PoliciesParameters struct {
 	// +listType=set
 	Resources []*string `json:"resources" tf:"resources,omitempty"`
 
-	// (Attributes) Optional tags for additional policy metadata. (see below for nested schema)
+	// (Attributes) Optional SQL console access configuration. Set exactly one of role or grants. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Tags *TagsParameters `json:"tags,omitempty" tf:"tags,omitempty"`
 }
@@ -146,12 +146,20 @@ type RoleParameters struct {
 
 type TagsInitParameters struct {
 
+	// (List of String) Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+	// Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+	Grants []*string `json:"grants,omitempty" tf:"grants,omitempty"`
+
 	// console-admin (full access), sql-console-readonly (read-only).
 	// SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).
 	Role *string `json:"role,omitempty" tf:"role,omitempty"`
 }
 
 type TagsObservation struct {
+
+	// (List of String) Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+	// Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+	Grants []*string `json:"grants,omitempty" tf:"grants,omitempty"`
 
 	// console-admin (full access), sql-console-readonly (read-only).
 	// SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).
@@ -160,10 +168,15 @@ type TagsObservation struct {
 
 type TagsParameters struct {
 
+	// (List of String) Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+	// Ordered SQL GRANT and REVOKE statements for custom SQL console access.
+	// +kubebuilder:validation:Optional
+	Grants []*string `json:"grants,omitempty" tf:"grants,omitempty"`
+
 	// console-admin (full access), sql-console-readonly (read-only).
 	// SQL console role level for passwordless DB access. One of: sql-console-admin (full access), sql-console-readonly (read-only).
 	// +kubebuilder:validation:Optional
-	Role *string `json:"role" tf:"role,omitempty"`
+	Role *string `json:"role,omitempty" tf:"role,omitempty"`
 }
 
 // RoleSpec defines the desired state of Role

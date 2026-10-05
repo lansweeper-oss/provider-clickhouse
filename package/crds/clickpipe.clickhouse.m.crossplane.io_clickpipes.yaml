@@ -143,6 +143,10 @@ spec:
                             items:
                               type: string
                             type: array
+                          ttl:
+                            description: |-
+                              ClickHouse `TTL` expression applied to the destination table when ClickPipes creates it.
+                            type: string
                         type: object
                     type: object
                   fieldMappings:
@@ -532,6 +536,19 @@ spec:
                                   The timestamp for the Kafka offset. Use with `from_timestamp` offset strategy. (format `2021-01-01T00:00`)
                                 type: string
                             type: object
+                          protobufSchemaSecretRef:
+                            description: |-
+                              Base64-encoded Protobuf schema used instead of `schema_registry`. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Requires `format = "Protobuf"` and forces replacement when changed.
+                            properties:
+                              key:
+                                type: string
+                              name:
+                                description: Name of the secret.
+                                type: string
+                            required:
+                            - key
+                            - name
+                            type: object
                           reversePrivateEndpointIds:
                             description: |-
                               The list of reverse private endpoint IDs for the Kafka source. (comma separated)
@@ -601,9 +618,17 @@ spec:
                                   The URL of the schema registry.
                                 type: string
                             type: object
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
+                          tombstoneMode:
+                            description: |-
+                              How Kafka tombstone records are handled. Set to `delete` to delete the matching destination row using field mappings sourced from `_key` or `_key.<field>`; this requires `exactly_once = true`. Set to `soft_delete` to write a row with the `_is_deleted` virtual column set to `true`; exactly-once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+                            type: string
                           topics:
                             description: |-
-                              The list of Kafka topics. (comma separated)
+                              One or more Kafka topics as a comma-separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
                             type: string
                           type:
                             description: |-
@@ -613,9 +638,9 @@ spec:
                       kinesis:
                         description: The Kinesis source configuration
                           for the ClickPipe. Only authentication, iam_role and access_key
-                          can be updated in place; changing any other field forces
-                          resource replacement (destroy and recreate). (see below
-                          for nested schema)
+                          can be updated in place; changing any other field, including
+                          schema_registry, forces resource replacement (destroy and
+                          recreate). (see below for nested schema)
                         properties:
                           accessKey:
                             description: The access key for the Kinesis
@@ -656,7 +681,7 @@ spec:
                             type: string
                           format:
                             description: |-
-                              The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`)
+                              The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`, `Protobuf`)
                             type: string
                           iamRole:
                             description: |-
@@ -666,10 +691,36 @@ spec:
                             description: |-
                               The iterator type for the Kinesis source. (`TRIM_HORIZON`, `LATEST`, `AT_TIMESTAMP`)
                             type: string
+                          protobufSchema:
+                            description: |-
+                              Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
+                            type: string
                           region:
                             description: |-
                               The AWS region of the Kinesis stream.
                             type: string
+                          schemaRegistry:
+                            description: '(Attributes) The schema registry for the
+                              Kafka source. Immutable: any change forces pipe replacement.
+                              (see below for nested schema)'
+                            properties:
+                              glueRegion:
+                                description: |-
+                                  The AWS region of the Glue schema registry.
+                                type: string
+                              glueRegistryName:
+                                description: |-
+                                  The name of the Glue schema registry.
+                                type: string
+                              glueRoleArn:
+                                description: |-
+                                  The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+                                type: string
+                              type:
+                                description: |-
+                                  The type of the schema registry. (`glue`)
+                                type: string
+                            type: object
                           streamName:
                             description: |-
                               The name of the Kinesis stream.
@@ -750,6 +801,10 @@ spec:
                                 description: |-
                                   Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
                                 type: boolean
+                              initialLoadParallelism:
+                                description: |-
+                                  Number of parallel workers to use per collection during the initial snapshot phase. Can only be set at creation time; changing it forces pipe replacement.
+                                type: number
                               pullBatchSize:
                                 description: |-
                                   Number of rows to pull in each batch during CDC replication.
@@ -775,6 +830,14 @@ spec:
                                   Store JSON values in native ClickHouse JSON format. When disabled, JSON data is stored as String.
                                 type: boolean
                             type: object
+                          skipCertVerification:
+                            description: |-
+                              Skip certificate verification for the MongoDB connection.
+                            type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -885,6 +948,10 @@ spec:
                             description: |-
                               The port of the MySQL instance. Default is 3306.
                             type: number
+                          serverId:
+                            description: |-
+                              Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
+                            type: number
                           settings:
                             description: Advanced configuration options
                               for the ClickPipe. These settings are specific to each
@@ -937,6 +1004,10 @@ spec:
                             description: |-
                               Skip certificate verification for the MySQL connection.
                             type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -950,6 +1021,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                partitionByExpr:
+                                  description: |-
+                                    ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+                                  type: string
                                 partitionKey:
                                   description: |-
                                     Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
@@ -1173,6 +1248,10 @@ spec:
                             description: |-
                               The database name of the Postgres instance.
                             type: string
+                          disableTls:
+                            description: |-
+                              Disable TLS for the Postgres connection.
+                            type: boolean
                           host:
                             description: |-
                               The hostname of the Postgres instance.
@@ -1237,6 +1316,14 @@ spec:
                                   Interval in seconds to sync data from Postgres.
                                 type: number
                             type: object
+                          skipCertVerification:
+                            description: |-
+                              Skip certificate verification for the Postgres connection.
+                            type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -1457,6 +1544,10 @@ spec:
                             items:
                               type: string
                             type: array
+                          ttl:
+                            description: |-
+                              ClickHouse `TTL` expression applied to the destination table when ClickPipes creates it.
+                            type: string
                         type: object
                     type: object
                   fieldMappings:
@@ -1848,6 +1939,19 @@ spec:
                                   The timestamp for the Kafka offset. Use with `from_timestamp` offset strategy. (format `2021-01-01T00:00`)
                                 type: string
                             type: object
+                          protobufSchemaSecretRef:
+                            description: |-
+                              Base64-encoded Protobuf schema used instead of `schema_registry`. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Requires `format = "Protobuf"` and forces replacement when changed.
+                            properties:
+                              key:
+                                type: string
+                              name:
+                                description: Name of the secret.
+                                type: string
+                            required:
+                            - key
+                            - name
+                            type: object
                           reversePrivateEndpointIds:
                             description: |-
                               The list of reverse private endpoint IDs for the Kafka source. (comma separated)
@@ -1919,9 +2023,17 @@ spec:
                                   The URL of the schema registry.
                                 type: string
                             type: object
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
+                          tombstoneMode:
+                            description: |-
+                              How Kafka tombstone records are handled. Set to `delete` to delete the matching destination row using field mappings sourced from `_key` or `_key.<field>`; this requires `exactly_once = true`. Set to `soft_delete` to write a row with the `_is_deleted` virtual column set to `true`; exactly-once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+                            type: string
                           topics:
                             description: |-
-                              The list of Kafka topics. (comma separated)
+                              One or more Kafka topics as a comma-separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
                             type: string
                           type:
                             description: |-
@@ -1931,9 +2043,9 @@ spec:
                       kinesis:
                         description: The Kinesis source configuration
                           for the ClickPipe. Only authentication, iam_role and access_key
-                          can be updated in place; changing any other field forces
-                          resource replacement (destroy and recreate). (see below
-                          for nested schema)
+                          can be updated in place; changing any other field, including
+                          schema_registry, forces resource replacement (destroy and
+                          recreate). (see below for nested schema)
                         properties:
                           accessKey:
                             description: The access key for the Kinesis
@@ -1977,7 +2089,7 @@ spec:
                             type: string
                           format:
                             description: |-
-                              The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`)
+                              The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`, `Protobuf`)
                             type: string
                           iamRole:
                             description: |-
@@ -1987,10 +2099,36 @@ spec:
                             description: |-
                               The iterator type for the Kinesis source. (`TRIM_HORIZON`, `LATEST`, `AT_TIMESTAMP`)
                             type: string
+                          protobufSchema:
+                            description: |-
+                              Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
+                            type: string
                           region:
                             description: |-
                               The AWS region of the Kinesis stream.
                             type: string
+                          schemaRegistry:
+                            description: '(Attributes) The schema registry for the
+                              Kafka source. Immutable: any change forces pipe replacement.
+                              (see below for nested schema)'
+                            properties:
+                              glueRegion:
+                                description: |-
+                                  The AWS region of the Glue schema registry.
+                                type: string
+                              glueRegistryName:
+                                description: |-
+                                  The name of the Glue schema registry.
+                                type: string
+                              glueRoleArn:
+                                description: |-
+                                  The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+                                type: string
+                              type:
+                                description: |-
+                                  The type of the schema registry. (`glue`)
+                                type: string
+                            type: object
                           streamName:
                             description: |-
                               The name of the Kinesis stream.
@@ -2071,6 +2209,10 @@ spec:
                                 description: |-
                                   Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
                                 type: boolean
+                              initialLoadParallelism:
+                                description: |-
+                                  Number of parallel workers to use per collection during the initial snapshot phase. Can only be set at creation time; changing it forces pipe replacement.
+                                type: number
                               pullBatchSize:
                                 description: |-
                                   Number of rows to pull in each batch during CDC replication.
@@ -2096,6 +2238,14 @@ spec:
                                   Store JSON values in native ClickHouse JSON format. When disabled, JSON data is stored as String.
                                 type: boolean
                             type: object
+                          skipCertVerification:
+                            description: |-
+                              Skip certificate verification for the MongoDB connection.
+                            type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -2208,6 +2358,10 @@ spec:
                             description: |-
                               The port of the MySQL instance. Default is 3306.
                             type: number
+                          serverId:
+                            description: |-
+                              Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
+                            type: number
                           settings:
                             description: Advanced configuration options
                               for the ClickPipe. These settings are specific to each
@@ -2260,6 +2414,10 @@ spec:
                             description: |-
                               Skip certificate verification for the MySQL connection.
                             type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -2273,6 +2431,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                partitionByExpr:
+                                  description: |-
+                                    ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+                                  type: string
                                 partitionKey:
                                   description: |-
                                     Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
@@ -2498,6 +2660,10 @@ spec:
                             description: |-
                               The database name of the Postgres instance.
                             type: string
+                          disableTls:
+                            description: |-
+                              Disable TLS for the Postgres connection.
+                            type: boolean
                           host:
                             description: |-
                               The hostname of the Postgres instance.
@@ -2562,6 +2728,14 @@ spec:
                                   Interval in seconds to sync data from Postgres.
                                 type: number
                             type: object
+                          skipCertVerification:
+                            description: |-
+                              Skip certificate verification for the Postgres connection.
+                            type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -2847,6 +3021,10 @@ spec:
                             items:
                               type: string
                             type: array
+                          ttl:
+                            description: |-
+                              ClickHouse `TTL` expression applied to the destination table when ClickPipes creates it.
+                            type: string
                         type: object
                     type: object
                   fieldMappings:
@@ -3084,9 +3262,17 @@ spec:
                                   The URL of the schema registry.
                                 type: string
                             type: object
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
+                          tombstoneMode:
+                            description: |-
+                              How Kafka tombstone records are handled. Set to `delete` to delete the matching destination row using field mappings sourced from `_key` or `_key.<field>`; this requires `exactly_once = true`. Set to `soft_delete` to write a row with the `_is_deleted` virtual column set to `true`; exactly-once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
+                            type: string
                           topics:
                             description: |-
-                              The list of Kafka topics. (comma separated)
+                              One or more Kafka topics as a comma-separated string (for example, topic1,topic2). All topics must have the same schema and are ingested into the same destination table by a single ClickPipe.
                             type: string
                           type:
                             description: |-
@@ -3096,9 +3282,9 @@ spec:
                       kinesis:
                         description: The Kinesis source configuration
                           for the ClickPipe. Only authentication, iam_role and access_key
-                          can be updated in place; changing any other field forces
-                          resource replacement (destroy and recreate). (see below
-                          for nested schema)
+                          can be updated in place; changing any other field, including
+                          schema_registry, forces resource replacement (destroy and
+                          recreate). (see below for nested schema)
                         properties:
                           accessKey:
                             description: The access key for the Kinesis
@@ -3139,7 +3325,7 @@ spec:
                             type: string
                           format:
                             description: |-
-                              The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`)
+                              The format of the Kinesis source. (`JSONEachRow`, `Avro`, `AvroConfluent`, `Protobuf`)
                             type: string
                           iamRole:
                             description: |-
@@ -3149,10 +3335,36 @@ spec:
                             description: |-
                               The iterator type for the Kinesis source. (`TRIM_HORIZON`, `LATEST`, `AT_TIMESTAMP`)
                             type: string
+                          protobufSchema:
+                            description: |-
+                              Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
+                            type: string
                           region:
                             description: |-
                               The AWS region of the Kinesis stream.
                             type: string
+                          schemaRegistry:
+                            description: '(Attributes) The schema registry for the
+                              Kafka source. Immutable: any change forces pipe replacement.
+                              (see below for nested schema)'
+                            properties:
+                              glueRegion:
+                                description: |-
+                                  The AWS region of the Glue schema registry.
+                                type: string
+                              glueRegistryName:
+                                description: |-
+                                  The name of the Glue schema registry.
+                                type: string
+                              glueRoleArn:
+                                description: |-
+                                  The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kinesis source.
+                                type: string
+                              type:
+                                description: |-
+                                  The type of the schema registry. (`glue`)
+                                type: string
+                            type: object
                           streamName:
                             description: |-
                               The name of the Kinesis stream.
@@ -3207,6 +3419,10 @@ spec:
                                 description: |-
                                   Enable hard delete behavior in ReplacingMergeTree for MongoDB DELETE operations.
                                 type: boolean
+                              initialLoadParallelism:
+                                description: |-
+                                  Number of parallel workers to use per collection during the initial snapshot phase. Can only be set at creation time; changing it forces pipe replacement.
+                                type: number
                               pullBatchSize:
                                 description: |-
                                   Number of rows to pull in each batch during CDC replication.
@@ -3232,6 +3448,14 @@ spec:
                                   Store JSON values in native ClickHouse JSON format. When disabled, JSON data is stored as String.
                                 type: boolean
                             type: object
+                          skipCertVerification:
+                            description: |-
+                              Skip certificate verification for the MongoDB connection.
+                            type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -3303,6 +3527,10 @@ spec:
                             description: |-
                               The port of the MySQL instance. Default is 3306.
                             type: number
+                          serverId:
+                            description: |-
+                              Optional MySQL `server_id` the pipe declares itself as in the MySQL replication topology. Must be unique across replicas connected to the source. If omitted, one is assigned randomly. Must be a non-zero unsigned 32-bit integer (1 to 4294967295).
+                            type: number
                           settings:
                             description: Advanced configuration options
                               for the ClickPipe. These settings are specific to each
@@ -3355,6 +3583,10 @@ spec:
                             description: |-
                               Skip certificate verification for the MySQL connection.
                             type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested
@@ -3368,6 +3600,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                partitionByExpr:
+                                  description: |-
+                                    ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+                                  type: string
                                 partitionKey:
                                   description: |-
                                     Custom partitioning column used for parallel snapshotting. Must be an indexed column of integer, date, datetime, or timestamp type.
@@ -3526,6 +3762,10 @@ spec:
                             description: |-
                               The database name of the Postgres instance.
                             type: string
+                          disableTls:
+                            description: |-
+                              Disable TLS for the Postgres connection.
+                            type: boolean
                           host:
                             description: |-
                               The hostname of the Postgres instance.
@@ -3590,6 +3830,14 @@ spec:
                                   Interval in seconds to sync data from Postgres.
                                 type: number
                             type: object
+                          skipCertVerification:
+                            description: |-
+                              Skip certificate verification for the Postgres connection.
+                            type: boolean
+                          sshKeyResourceId:
+                            description: |-
+                              ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
+                            type: string
                           tableMappings:
                             description: Table mappings from BigQuery
                               source to ClickHouse destination. (see below for nested

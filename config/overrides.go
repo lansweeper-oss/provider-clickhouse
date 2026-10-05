@@ -9,9 +9,10 @@ import (
 )
 
 var gkvOverrideMap = map[string]schema.GroupVersionKind{
-	"clickhouse_clickpipe": {Group: "clickpipe"},
-	"clickhouse_role":      {Group: "iam"},
-	"clickhouse_udf":       {Group: "udf"},
+	"clickhouse_clickpipe":   {Group: "clickpipe"},
+	"clickhouse_role":        {Group: "iam"},
+	"clickhouse_saved_query": {Group: "query", Kind: "SavedQuery"},
+	"clickhouse_udf":         {Group: "udf"},
 }
 
 func gvkOverride() config.ResourceOption {
@@ -153,6 +154,16 @@ func Configure(p *config.Provider) {
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
 	})
+
+	for _, name := range []string{"clickhouse_clickpipes_ssh_key", "clickhouse_query_api_endpoint", "clickhouse_saved_query"} {
+		p.AddResourceConfigurator(name, func(r *config.Resource) {
+			r.References = config.References{
+				serviceIDParam: {
+					TerraformName: clickhouseService,
+				},
+			}
+		})
+	}
 
 	// ClickStack resources
 

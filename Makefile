@@ -12,7 +12,7 @@ TERRAFORM_VERSION_VALID := $(shell [ "$(TERRAFORM_VERSION)" = "`printf "$(TERRAF
 
 export TERRAFORM_PROVIDER_SOURCE ?= ClickHouse/clickhouse
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/ClickHouse/terraform-provider-clickhouse
-export TERRAFORM_PROVIDER_VERSION ?= 3.25.3
+export TERRAFORM_PROVIDER_VERSION ?= 3.34.0
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-clickhouse
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://github.com/ClickHouse/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/releases/download/v$(TERRAFORM_PROVIDER_VERSION)
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= $(TERRAFORM_PROVIDER_DOWNLOAD_NAME)_v$(TERRAFORM_PROVIDER_VERSION)
@@ -45,7 +45,7 @@ NPROCS ?= 1
 GO_TEST_PARALLEL := $(shell echo $$(( $(NPROCS) / 2 )))
 
 GO_REQUIRED_VERSION ?= $(shell grep -E '^go ' go.mod | awk '{print $2}')
-GOLANGCILINT_VERSION ?= 2.12.2
+GOLANGCILINT_VERSION ?= 2.14.0
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/provider $(GO_PROJECT)/cmd/generator
 GO_LDFLAGS += -X $(GO_PROJECT)/internal/version.Version=$(VERSION)
 GO_SUBDIRS += cmd internal apis
@@ -59,17 +59,8 @@ KUBECTL_VERSION = v1.36.4
 UPTEST_VERSION = v2.2.0
 CRDDIFF_VERSION = v0.12.1
 CROSSPLANE_CLI_VERSION = v2.5.0
-CROSSPLANE_VERSION = 2.4.0
+CROSSPLANE_VERSION = 2.4.2
 -include build/makelib/k8s_tools.mk
-
-# Override Crossplane CLI download and install (https://github.com/crossplane/build/pull/59)
-$(CROSSPLANE_CLI):
-	@$(INFO) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
-	@mkdir -p $(TOOLS_HOST_DIR) || $(FAIL)
-	@curl -fsSL https://raw.githubusercontent.com/crossplane/crossplane/main/install.sh | XP_CHANNEL=$(CROSSPLANE_CLI_CHANNEL) XP_VERSION=$(CROSSPLANE_CLI_VERSION) sh || $(FAIL)
-	@mv crossplane $(CROSSPLANE_CLI) || $(FAIL)
-	@chmod +x $(CROSSPLANE_CLI)
-	@$(OK) installing Crossplane CLI $(CROSSPLANE_CLI_VERSION)
 
 # ====================================================================================
 # Setup Images
@@ -133,8 +124,17 @@ $(TERRAFORM): check-terraform-version
 TERRAFORM_PROVIDER_PLUGIN_DIR := $(TERRAFORM_WORKDIR)/plugins
 TERRAFORM_PROVIDER_CLI_CONFIG := $(TERRAFORM_WORKDIR)/dev.tfrc
 
+# Per-version stamp: bumping TERRAFORM_PROVIDER_VERSION invalidates the cached
+# docs clone and provider source.
+PROVIDER_VERSION_STAMP := $(WORK_DIR)/.provider-version-$(TERRAFORM_PROVIDER_VERSION)
+
+$(PROVIDER_VERSION_STAMP):
+	@rm -rf $(WORK_DIR)/.provider-version-* "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" "$(PROVIDER_SOURCE_DIR)"
+	@mkdir -p $(WORK_DIR) && touch $@
+
 $(TERRAFORM_PROVIDER_SCHEMA): $(TERRAFORM)
 	@$(INFO) generating provider schema for $(TERRAFORM_PROVIDER_SOURCE) $(TERRAFORM_PROVIDER_VERSION)
+	@rm -rf $(TERRAFORM_PROVIDER_PLUGIN_DIR)
 	@mkdir -p $(TERRAFORM_WORKDIR) $(TERRAFORM_PROVIDER_PLUGIN_DIR)
 	@curl -fsSL $(TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX)/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)_$(TERRAFORM_PROVIDER_VERSION)_$(SAFEHOST_PLATFORM).zip \
 		-o $(TERRAFORM_WORKDIR)/provider.zip
@@ -149,7 +149,7 @@ $(TERRAFORM_PROVIDER_SCHEMA): $(TERRAFORM)
 	@TF_CLI_CONFIG_FILE=$(abspath $(TERRAFORM_PROVIDER_CLI_CONFIG)) $(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) providers schema -json=true > $(TERRAFORM_PROVIDER_SCHEMA) 2>> $(TERRAFORM_WORKDIR)/terraform-logs.txt
 	@$(OK) generating provider schema for $(TERRAFORM_PROVIDER_SOURCE) $(TERRAFORM_PROVIDER_VERSION)
 
-pull-docs:
+pull-docs: $(PROVIDER_VERSION_STAMP)
 	@if [ ! -d "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" ]; then \
   		mkdir -p "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" && \
 		git clone -c advice.detachedHead=false --depth 1 --filter=blob:none --branch "v$(TERRAFORM_PROVIDER_VERSION)" --sparse "$(TERRAFORM_PROVIDER_REPO)" "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)"; \
@@ -170,7 +170,7 @@ $(TERRAFORM_PROVIDER_SCHEMA:.json=.generated.lst): $(TERRAFORM_PROVIDER_SCHEMA)
 # (wired into build.init and generate.init) before the Go tree compiles.
 PROVIDER_SOURCE_DIR := third_party/terraform-provider-clickhouse
 
-provider-source:
+provider-source: $(PROVIDER_VERSION_STAMP)
 	@if [ ! -d "$(PROVIDER_SOURCE_DIR)/pkg/provider" ]; then \
 		$(INFO) extracting ClickHouse provider source v$(TERRAFORM_PROVIDER_VERSION); \
 		rm -rf "$(PROVIDER_SOURCE_DIR)"; \

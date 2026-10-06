@@ -1310,6 +1310,11 @@ func (in *KafkaInitParameters) DeepCopyInto(out *KafkaInitParameters) {
 		*out = new(OffsetInitParameters)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ProtobufSchemaSecretRef != nil {
+		in, out := &in.ProtobufSchemaSecretRef, &out.ProtobufSchemaSecretRef
+		*out = new(v2.SecretKeySelector)
+		**out = **in
+	}
 	if in.ReversePrivateEndpointIds != nil {
 		in, out := &in.ReversePrivateEndpointIds, &out.ReversePrivateEndpointIds
 		*out = make([]*string, len(*in))
@@ -1321,10 +1326,42 @@ func (in *KafkaInitParameters) DeepCopyInto(out *KafkaInitParameters) {
 			}
 		}
 	}
+	if in.ReversePrivateEndpointIdsRefs != nil {
+		in, out := &in.ReversePrivateEndpointIdsRefs, &out.ReversePrivateEndpointIdsRefs
+		*out = make([]v2.Reference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.ReversePrivateEndpointIdsSelector != nil {
+		in, out := &in.ReversePrivateEndpointIdsSelector, &out.ReversePrivateEndpointIdsSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SchemaRegistry != nil {
 		in, out := &in.SchemaRegistry, &out.SchemaRegistry
 		*out = new(SchemaRegistryInitParameters)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.TombstoneMode != nil {
+		in, out := &in.TombstoneMode, &out.TombstoneMode
+		*out = new(string)
+		**out = **in
 	}
 	if in.Topics != nil {
 		in, out := &in.Topics, &out.Topics
@@ -1407,10 +1444,20 @@ func (in *KafkaObservation) DeepCopyInto(out *KafkaObservation) {
 			}
 		}
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
 	if in.SchemaRegistry != nil {
 		in, out := &in.SchemaRegistry, &out.SchemaRegistry
 		*out = new(SchemaRegistryObservation)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.TombstoneMode != nil {
+		in, out := &in.TombstoneMode, &out.TombstoneMode
+		*out = new(string)
+		**out = **in
 	}
 	if in.Topics != nil {
 		in, out := &in.Topics, &out.Topics
@@ -1482,6 +1529,11 @@ func (in *KafkaParameters) DeepCopyInto(out *KafkaParameters) {
 		*out = new(OffsetParameters)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ProtobufSchemaSecretRef != nil {
+		in, out := &in.ProtobufSchemaSecretRef, &out.ProtobufSchemaSecretRef
+		*out = new(v2.SecretKeySelector)
+		**out = **in
+	}
 	if in.ReversePrivateEndpointIds != nil {
 		in, out := &in.ReversePrivateEndpointIds, &out.ReversePrivateEndpointIds
 		*out = make([]*string, len(*in))
@@ -1493,10 +1545,42 @@ func (in *KafkaParameters) DeepCopyInto(out *KafkaParameters) {
 			}
 		}
 	}
+	if in.ReversePrivateEndpointIdsRefs != nil {
+		in, out := &in.ReversePrivateEndpointIdsRefs, &out.ReversePrivateEndpointIdsRefs
+		*out = make([]v2.Reference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.ReversePrivateEndpointIdsSelector != nil {
+		in, out := &in.ReversePrivateEndpointIdsSelector, &out.ReversePrivateEndpointIdsSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SchemaRegistry != nil {
 		in, out := &in.SchemaRegistry, &out.SchemaRegistry
 		*out = new(SchemaRegistryParameters)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.TombstoneMode != nil {
+		in, out := &in.TombstoneMode, &out.TombstoneMode
+		*out = new(string)
+		**out = **in
 	}
 	if in.Topics != nil {
 		in, out := &in.Topics, &out.Topics
@@ -1548,10 +1632,20 @@ func (in *KinesisInitParameters) DeepCopyInto(out *KinesisInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ProtobufSchema != nil {
+		in, out := &in.ProtobufSchema, &out.ProtobufSchema
+		*out = new(string)
+		**out = **in
+	}
 	if in.Region != nil {
 		in, out := &in.Region, &out.Region
 		*out = new(string)
 		**out = **in
+	}
+	if in.SchemaRegistry != nil {
+		in, out := &in.SchemaRegistry, &out.SchemaRegistry
+		*out = new(KinesisSchemaRegistryInitParameters)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StreamName != nil {
 		in, out := &in.StreamName, &out.StreamName
@@ -1608,10 +1702,20 @@ func (in *KinesisObservation) DeepCopyInto(out *KinesisObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ProtobufSchema != nil {
+		in, out := &in.ProtobufSchema, &out.ProtobufSchema
+		*out = new(string)
+		**out = **in
+	}
 	if in.Region != nil {
 		in, out := &in.Region, &out.Region
 		*out = new(string)
 		**out = **in
+	}
+	if in.SchemaRegistry != nil {
+		in, out := &in.SchemaRegistry, &out.SchemaRegistry
+		*out = new(KinesisSchemaRegistryObservation)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StreamName != nil {
 		in, out := &in.StreamName, &out.StreamName
@@ -1668,10 +1772,20 @@ func (in *KinesisParameters) DeepCopyInto(out *KinesisParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ProtobufSchema != nil {
+		in, out := &in.ProtobufSchema, &out.ProtobufSchema
+		*out = new(string)
+		**out = **in
+	}
 	if in.Region != nil {
 		in, out := &in.Region, &out.Region
 		*out = new(string)
 		**out = **in
+	}
+	if in.SchemaRegistry != nil {
+		in, out := &in.SchemaRegistry, &out.SchemaRegistry
+		*out = new(KinesisSchemaRegistryParameters)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StreamName != nil {
 		in, out := &in.StreamName, &out.StreamName
@@ -1696,6 +1810,111 @@ func (in *KinesisParameters) DeepCopy() *KinesisParameters {
 		return nil
 	}
 	out := new(KinesisParameters)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *KinesisSchemaRegistryInitParameters) DeepCopyInto(out *KinesisSchemaRegistryInitParameters) {
+	*out = *in
+	if in.GlueRegion != nil {
+		in, out := &in.GlueRegion, &out.GlueRegion
+		*out = new(string)
+		**out = **in
+	}
+	if in.GlueRegistryName != nil {
+		in, out := &in.GlueRegistryName, &out.GlueRegistryName
+		*out = new(string)
+		**out = **in
+	}
+	if in.GlueRoleArn != nil {
+		in, out := &in.GlueRoleArn, &out.GlueRoleArn
+		*out = new(string)
+		**out = **in
+	}
+	if in.Type != nil {
+		in, out := &in.Type, &out.Type
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new KinesisSchemaRegistryInitParameters.
+func (in *KinesisSchemaRegistryInitParameters) DeepCopy() *KinesisSchemaRegistryInitParameters {
+	if in == nil {
+		return nil
+	}
+	out := new(KinesisSchemaRegistryInitParameters)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *KinesisSchemaRegistryObservation) DeepCopyInto(out *KinesisSchemaRegistryObservation) {
+	*out = *in
+	if in.GlueRegion != nil {
+		in, out := &in.GlueRegion, &out.GlueRegion
+		*out = new(string)
+		**out = **in
+	}
+	if in.GlueRegistryName != nil {
+		in, out := &in.GlueRegistryName, &out.GlueRegistryName
+		*out = new(string)
+		**out = **in
+	}
+	if in.GlueRoleArn != nil {
+		in, out := &in.GlueRoleArn, &out.GlueRoleArn
+		*out = new(string)
+		**out = **in
+	}
+	if in.Type != nil {
+		in, out := &in.Type, &out.Type
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new KinesisSchemaRegistryObservation.
+func (in *KinesisSchemaRegistryObservation) DeepCopy() *KinesisSchemaRegistryObservation {
+	if in == nil {
+		return nil
+	}
+	out := new(KinesisSchemaRegistryObservation)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *KinesisSchemaRegistryParameters) DeepCopyInto(out *KinesisSchemaRegistryParameters) {
+	*out = *in
+	if in.GlueRegion != nil {
+		in, out := &in.GlueRegion, &out.GlueRegion
+		*out = new(string)
+		**out = **in
+	}
+	if in.GlueRegistryName != nil {
+		in, out := &in.GlueRegistryName, &out.GlueRegistryName
+		*out = new(string)
+		**out = **in
+	}
+	if in.GlueRoleArn != nil {
+		in, out := &in.GlueRoleArn, &out.GlueRoleArn
+		*out = new(string)
+		**out = **in
+	}
+	if in.Type != nil {
+		in, out := &in.Type, &out.Type
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new KinesisSchemaRegistryParameters.
+func (in *KinesisSchemaRegistryParameters) DeepCopy() *KinesisSchemaRegistryParameters {
+	if in == nil {
+		return nil
+	}
+	out := new(KinesisSchemaRegistryParameters)
 	in.DeepCopyInto(out)
 	return out
 }
@@ -1818,10 +2037,30 @@ func (in *MongodbInitParameters) DeepCopyInto(out *MongodbInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(MongodbSettingsInitParameters)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.SkipCertVerification != nil {
+		in, out := &in.SkipCertVerification, &out.SkipCertVerification
+		*out = new(bool)
+		**out = **in
 	}
 	if in.TLSHost != nil {
 		in, out := &in.TLSHost, &out.TLSHost
@@ -1875,10 +2114,20 @@ func (in *MongodbObservation) DeepCopyInto(out *MongodbObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(MongodbSettingsObservation)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.SkipCertVerification != nil {
+		in, out := &in.SkipCertVerification, &out.SkipCertVerification
+		*out = new(bool)
+		**out = **in
 	}
 	if in.TLSHost != nil {
 		in, out := &in.TLSHost, &out.TLSHost
@@ -1932,10 +2181,30 @@ func (in *MongodbParameters) DeepCopyInto(out *MongodbParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(MongodbSettingsParameters)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.SkipCertVerification != nil {
+		in, out := &in.SkipCertVerification, &out.SkipCertVerification
+		*out = new(bool)
+		**out = **in
 	}
 	if in.TLSHost != nil {
 		in, out := &in.TLSHost, &out.TLSHost
@@ -1972,6 +2241,11 @@ func (in *MongodbSettingsInitParameters) DeepCopyInto(out *MongodbSettingsInitPa
 	if in.DeleteOnMerge != nil {
 		in, out := &in.DeleteOnMerge, &out.DeleteOnMerge
 		*out = new(bool)
+		**out = **in
+	}
+	if in.InitialLoadParallelism != nil {
+		in, out := &in.InitialLoadParallelism, &out.InitialLoadParallelism
+		*out = new(float64)
 		**out = **in
 	}
 	if in.PullBatchSize != nil {
@@ -2024,6 +2298,11 @@ func (in *MongodbSettingsObservation) DeepCopyInto(out *MongodbSettingsObservati
 		*out = new(bool)
 		**out = **in
 	}
+	if in.InitialLoadParallelism != nil {
+		in, out := &in.InitialLoadParallelism, &out.InitialLoadParallelism
+		*out = new(float64)
+		**out = **in
+	}
 	if in.PullBatchSize != nil {
 		in, out := &in.PullBatchSize, &out.PullBatchSize
 		*out = new(float64)
@@ -2072,6 +2351,11 @@ func (in *MongodbSettingsParameters) DeepCopyInto(out *MongodbSettingsParameters
 	if in.DeleteOnMerge != nil {
 		in, out := &in.DeleteOnMerge, &out.DeleteOnMerge
 		*out = new(bool)
+		**out = **in
+	}
+	if in.InitialLoadParallelism != nil {
+		in, out := &in.InitialLoadParallelism, &out.InitialLoadParallelism
+		*out = new(float64)
 		**out = **in
 	}
 	if in.PullBatchSize != nil {
@@ -2341,6 +2625,26 @@ func (in *MySQLInitParameters) DeepCopyInto(out *MySQLInitParameters) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServerID != nil {
+		in, out := &in.ServerID, &out.ServerID
+		*out = new(float64)
+		**out = **in
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(MySQLSettingsInitParameters)
@@ -2418,6 +2722,16 @@ func (in *MySQLObservation) DeepCopyInto(out *MySQLObservation) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.ServerID != nil {
+		in, out := &in.ServerID, &out.ServerID
+		*out = new(float64)
+		**out = **in
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(MySQLSettingsObservation)
@@ -2492,6 +2806,26 @@ func (in *MySQLParameters) DeepCopyInto(out *MySQLParameters) {
 	}
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
+		*out = new(float64)
+		**out = **in
+	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.ServerID != nil {
+		in, out := &in.ServerID, &out.ServerID
 		*out = new(float64)
 		**out = **in
 	}
@@ -2743,6 +3077,11 @@ func (in *MySQLTableMappingsInitParameters) DeepCopyInto(out *MySQLTableMappings
 			}
 		}
 	}
+	if in.PartitionByExpr != nil {
+		in, out := &in.PartitionByExpr, &out.PartitionByExpr
+		*out = new(string)
+		**out = **in
+	}
 	if in.PartitionKey != nil {
 		in, out := &in.PartitionKey, &out.PartitionKey
 		*out = new(string)
@@ -2810,6 +3149,11 @@ func (in *MySQLTableMappingsObservation) DeepCopyInto(out *MySQLTableMappingsObs
 			}
 		}
 	}
+	if in.PartitionByExpr != nil {
+		in, out := &in.PartitionByExpr, &out.PartitionByExpr
+		*out = new(string)
+		**out = **in
+	}
 	if in.PartitionKey != nil {
 		in, out := &in.PartitionKey, &out.PartitionKey
 		*out = new(string)
@@ -2876,6 +3220,11 @@ func (in *MySQLTableMappingsParameters) DeepCopyInto(out *MySQLTableMappingsPara
 				**out = **in
 			}
 		}
+	}
+	if in.PartitionByExpr != nil {
+		in, out := &in.PartitionByExpr, &out.PartitionByExpr
+		*out = new(string)
+		**out = **in
 	}
 	if in.PartitionKey != nil {
 		in, out := &in.PartitionKey, &out.PartitionKey
@@ -3450,6 +3799,11 @@ func (in *PostgresInitParameters) DeepCopyInto(out *PostgresInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DisableTLS != nil {
+		in, out := &in.DisableTLS, &out.DisableTLS
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Host != nil {
 		in, out := &in.Host, &out.Host
 		*out = new(string)
@@ -3465,10 +3819,30 @@ func (in *PostgresInitParameters) DeepCopyInto(out *PostgresInitParameters) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(PostgresSettingsInitParameters)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.SkipCertVerification != nil {
+		in, out := &in.SkipCertVerification, &out.SkipCertVerification
+		*out = new(bool)
+		**out = **in
 	}
 	if in.TLSHost != nil {
 		in, out := &in.TLSHost, &out.TLSHost
@@ -3522,6 +3896,11 @@ func (in *PostgresObservation) DeepCopyInto(out *PostgresObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DisableTLS != nil {
+		in, out := &in.DisableTLS, &out.DisableTLS
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Host != nil {
 		in, out := &in.Host, &out.Host
 		*out = new(string)
@@ -3537,10 +3916,20 @@ func (in *PostgresObservation) DeepCopyInto(out *PostgresObservation) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(PostgresSettingsObservation)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.SkipCertVerification != nil {
+		in, out := &in.SkipCertVerification, &out.SkipCertVerification
+		*out = new(bool)
+		**out = **in
 	}
 	if in.TLSHost != nil {
 		in, out := &in.TLSHost, &out.TLSHost
@@ -3594,6 +3983,11 @@ func (in *PostgresParameters) DeepCopyInto(out *PostgresParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DisableTLS != nil {
+		in, out := &in.DisableTLS, &out.DisableTLS
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Host != nil {
 		in, out := &in.Host, &out.Host
 		*out = new(string)
@@ -3609,10 +4003,30 @@ func (in *PostgresParameters) DeepCopyInto(out *PostgresParameters) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.SSHKeyResourceID != nil {
+		in, out := &in.SSHKeyResourceID, &out.SSHKeyResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.SSHKeyResourceIDRef != nil {
+		in, out := &in.SSHKeyResourceIDRef, &out.SSHKeyResourceIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SSHKeyResourceIDSelector != nil {
+		in, out := &in.SSHKeyResourceIDSelector, &out.SSHKeyResourceIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Settings != nil {
 		in, out := &in.Settings, &out.Settings
 		*out = new(PostgresSettingsParameters)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.SkipCertVerification != nil {
+		in, out := &in.SkipCertVerification, &out.SkipCertVerification
+		*out = new(bool)
+		**out = **in
 	}
 	if in.TLSHost != nil {
 		in, out := &in.TLSHost, &out.TLSHost
@@ -4887,6 +5301,11 @@ func (in *TableDefinitionInitParameters) DeepCopyInto(out *TableDefinitionInitPa
 			}
 		}
 	}
+	if in.TTL != nil {
+		in, out := &in.TTL, &out.TTL
+		*out = new(string)
+		**out = **in
+	}
 }
 
 // DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new TableDefinitionInitParameters.
@@ -4928,6 +5347,11 @@ func (in *TableDefinitionObservation) DeepCopyInto(out *TableDefinitionObservati
 			}
 		}
 	}
+	if in.TTL != nil {
+		in, out := &in.TTL, &out.TTL
+		*out = new(string)
+		**out = **in
+	}
 }
 
 // DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new TableDefinitionObservation.
@@ -4968,6 +5392,11 @@ func (in *TableDefinitionParameters) DeepCopyInto(out *TableDefinitionParameters
 				**out = **in
 			}
 		}
+	}
+	if in.TTL != nil {
+		in, out := &in.TTL, &out.TTL
+		*out = new(string)
+		**out = **in
 	}
 }
 

@@ -9,9 +9,10 @@ import (
 )
 
 var gkvOverrideMap = map[string]schema.GroupVersionKind{
-	"clickhouse_clickpipe": {Group: "clickpipe"},
-	"clickhouse_role":      {Group: "iam"},
-	"clickhouse_udf":       {Group: "udf"},
+	"clickhouse_clickpipe":   {Group: "clickpipe"},
+	"clickhouse_role":        {Group: "iam"},
+	"clickhouse_saved_query": {Group: "query", Kind: "SavedQuery"},
+	"clickhouse_udf":         {Group: "udf"},
 }
 
 func gvkOverride() config.ResourceOption {
@@ -40,16 +41,31 @@ func Configure(p *config.Provider) {
 		// Sensitive flag and become proper SecretRef fields.
 		clearSensitiveOnNestedBlocks(r.TerraformResource.Schema)
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+			"source.kafka.reverse_private_endpoint_ids": {
+				TerraformName: "clickhouse_clickpipes_reverse_private_endpoint",
+			},
+			"source.kafka.ssh_key_resource_id": {
+				TerraformName: "clickhouse_clickpipes_ssh_key",
+			},
+			"source.mongodb.ssh_key_resource_id": {
+				TerraformName: "clickhouse_clickpipes_ssh_key",
+			},
+			"source.mysql.ssh_key_resource_id": {
+				TerraformName: "clickhouse_clickpipes_ssh_key",
+			},
+			"source.postgres.ssh_key_resource_id": {
+				TerraformName: "clickhouse_clickpipes_ssh_key",
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickpipe_cdc_infrastructure", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 	})
@@ -59,16 +75,32 @@ func Configure(p *config.Provider) {
 			"reverse_private_endpoint_id": {
 				TerraformName: "clickhouse_clickpipes_reverse_private_endpoint",
 			},
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickpipes_reverse_private_endpoint", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_clickpipes_ssh_key", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_query_api_endpoint", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 	})
@@ -81,7 +113,32 @@ func Configure(p *config.Provider) {
 		}
 	})
 
+	p.AddResourceConfigurator("clickhouse_saved_query", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
+	p.AddResourceConfigurator("clickhouse_postgres_service", func(r *config.Resource) {
+		r.References = config.References{
+			"read_replica_of": {
+				TerraformName: "clickhouse_postgres_service",
+			},
+			"restore_to_point_in_time.source_id": {
+				TerraformName: "clickhouse_postgres_service",
+			},
+		}
+	})
+
 	p.AddResourceConfigurator("clickhouse_service", func(r *config.Resource) {
+		r.References = config.References{
+			"warehouse_id": {
+				TerraformName: "clickhouse_service",
+				Extractor:     `github.com/crossplane/upjet/v2/pkg/resource.ExtractParamPath("warehouse_id",true)`,
+			},
+		}
 		r.LateInitializer = config.LateInitializer{
 			IgnoredFields: []string{"warehouse_id", "backup_configuration", "password"},
 		}
@@ -100,8 +157,8 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
@@ -109,8 +166,8 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_service_scheduled_scaling", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
@@ -118,8 +175,8 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_service_transparent_data_encryption_key_association", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
@@ -127,8 +184,8 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_service_upgrade_window", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
@@ -154,8 +211,8 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_udf_attachment", func(r *config.Resource) {
 		r.References = config.References{
-			serviceIDParam: {
-				TerraformName: clickhouseService,
+			"service_id": {
+				TerraformName: "clickhouse_service",
 			},
 		}
 		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
@@ -171,32 +228,38 @@ func Configure(p *config.Provider) {
 			"channel.webhook_id": {
 				TerraformName: "clickhouse_clickstack_webhook",
 			},
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"channels.webhook_id": {
+				TerraformName: "clickhouse_clickstack_webhook",
+			},
+			"dashboard_id": {
+				TerraformName: "clickhouse_clickstack_dashboard",
+			},
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_connection", func(r *config.Resource) {
 		r.References = config.References{
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_dashboard", func(r *config.Resource) {
 		r.References = config.References{
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_role", func(r *config.Resource) {
 		r.References = config.References{
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
@@ -204,38 +267,38 @@ func Configure(p *config.Provider) {
 	p.AddResourceConfigurator("clickhouse_clickstack_saved_search", func(r *config.Resource) {
 		r.References = config.References{
 			"source_id": {
-				TerraformName: clickstackSource,
+				TerraformName: "clickhouse_clickstack_source",
 			},
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
 
-	p.AddResourceConfigurator(clickstackSource, func(r *config.Resource) {
+	p.AddResourceConfigurator("clickhouse_clickstack_source", func(r *config.Resource) {
 		r.References = config.References{
 			"connection_id": {
 				TerraformName: "clickhouse_clickstack_connection",
 			},
 			"log_source_id": {
-				TerraformName: clickstackSource,
+				TerraformName: "clickhouse_clickstack_source",
 			},
 			"metric_source_id": {
-				TerraformName: clickstackSource,
+				TerraformName: "clickhouse_clickstack_source",
 			},
 			"session_source_id": {
-				TerraformName: clickstackSource,
+				TerraformName: "clickhouse_clickstack_source",
 			},
 			"trace_source_id": {
-				TerraformName: clickstackSource,
+				TerraformName: "clickhouse_clickstack_source",
 			},
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
 
-	p.AddResourceConfigurator(clickstackTeam, func(r *config.Resource) {
+	p.AddResourceConfigurator("clickhouse_clickstack_team", func(r *config.Resource) {
 		r.References = config.References{
 			"default_user_role_id": {
 				TerraformName: "clickhouse_clickstack_role",
@@ -248,16 +311,16 @@ func Configure(p *config.Provider) {
 			"role_id": {
 				TerraformName: "clickhouse_clickstack_role",
 			},
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})
 
 	p.AddResourceConfigurator("clickhouse_clickstack_webhook", func(r *config.Resource) {
 		r.References = config.References{
-			teamParam: {
-				TerraformName: clickstackTeam,
+			"team": {
+				TerraformName: "clickhouse_clickstack_team",
 			},
 		}
 	})

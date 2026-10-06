@@ -61,6 +61,99 @@ type AggregatedColumnsParameters struct {
 	SourceColumn *string `json:"sourceColumn,omitempty" tf:"source_column,omitempty"`
 }
 
+type ColumnsInitParameters struct {
+
+	// (Boolean) Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+	// Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+	AllowAll *bool `json:"allowAll,omitempty" tf:"allow_all,omitempty"`
+
+	// (String) Optional display label for the filter in the UI.
+	// Optional display label for the filter in the UI.
+	Label *string `json:"label,omitempty" tf:"label,omitempty"`
+
+	// (String) Display name for the source.
+	// Column name to filter on.
+	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+}
+
+type ColumnsObservation struct {
+
+	// (Boolean) Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+	// Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+	AllowAll *bool `json:"allowAll,omitempty" tf:"allow_all,omitempty"`
+
+	// (String) Optional display label for the filter in the UI.
+	// Optional display label for the filter in the UI.
+	Label *string `json:"label,omitempty" tf:"label,omitempty"`
+
+	// (String) Display name for the source.
+	// Column name to filter on.
+	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+}
+
+type ColumnsParameters struct {
+
+	// (Boolean) Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+	// Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+	// +kubebuilder:validation:Optional
+	AllowAll *bool `json:"allowAll,omitempty" tf:"allow_all,omitempty"`
+
+	// (String) Optional display label for the filter in the UI.
+	// Optional display label for the filter in the UI.
+	// +kubebuilder:validation:Optional
+	Label *string `json:"label,omitempty" tf:"label,omitempty"`
+
+	// (String) Display name for the source.
+	// Column name to filter on.
+	// +kubebuilder:validation:Optional
+	Name *string `json:"name" tf:"name,omitempty"`
+}
+
+type FilterSettingsInitParameters struct {
+
+	// (Attributes List) Columns that must be filtered on every query against this source. (see below for nested schema)
+	Columns []ColumnsInitParameters `json:"columns,omitempty" tf:"columns,omitempty"`
+
+	// (String) ClickHouse database name.
+	// Database of the dictionary table backing the filter values.
+	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
+
+	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// Dictionary table backing the filter values.
+	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
+}
+
+type FilterSettingsObservation struct {
+
+	// (Attributes List) Columns that must be filtered on every query against this source. (see below for nested schema)
+	Columns []ColumnsObservation `json:"columns,omitempty" tf:"columns,omitempty"`
+
+	// (String) ClickHouse database name.
+	// Database of the dictionary table backing the filter values.
+	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
+
+	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// Dictionary table backing the filter values.
+	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
+}
+
+type FilterSettingsParameters struct {
+
+	// (Attributes List) Columns that must be filtered on every query against this source. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	Columns []ColumnsParameters `json:"columns" tf:"columns,omitempty"`
+
+	// (String) ClickHouse database name.
+	// Database of the dictionary table backing the filter values.
+	// +kubebuilder:validation:Optional
+	DatabaseName *string `json:"databaseName" tf:"database_name,omitempty"`
+
+	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// Dictionary table backing the filter values.
+	// +kubebuilder:validation:Optional
+	TableName *string `json:"tableName" tf:"table_name,omitempty"`
+}
+
 type FromInitParameters struct {
 
 	// (String) ClickHouse database name.
@@ -489,6 +582,9 @@ type SourceInitParameters struct {
 	// Expression to extract event-level attributes.
 	EventAttributesExpression *string `json:"eventAttributesExpression,omitempty" tf:"event_attributes_expression,omitempty"`
 
+	// (Attributes) Required source filters: values for the listed columns must be supplied on every query against this source, with candidate values sourced from a dictionary table. (see below for nested schema)
+	FilterSettings *FilterSettingsInitParameters `json:"filterSettings,omitempty" tf:"filter_settings,omitempty"`
+
 	// (Attributes) Database and table location of the source data. (see below for nested schema)
 	From *FromInitParameters `json:"from,omitempty" tf:"from,omitempty"`
 
@@ -690,6 +786,9 @@ type SourceObservation struct {
 	// Expression to extract event-level attributes.
 	EventAttributesExpression *string `json:"eventAttributesExpression,omitempty" tf:"event_attributes_expression,omitempty"`
 
+	// (Attributes) Required source filters: values for the listed columns must be supplied on every query against this source, with candidate values sourced from a dictionary table. (see below for nested schema)
+	FilterSettings *FilterSettingsObservation `json:"filterSettings,omitempty" tf:"filter_settings,omitempty"`
+
 	// (Attributes) Database and table location of the source data. (see below for nested schema)
 	From *FromObservation `json:"from,omitempty" tf:"from,omitempty"`
 
@@ -865,6 +964,10 @@ type SourceParameters struct {
 	// Expression to extract event-level attributes.
 	// +kubebuilder:validation:Optional
 	EventAttributesExpression *string `json:"eventAttributesExpression,omitempty" tf:"event_attributes_expression,omitempty"`
+
+	// (Attributes) Required source filters: values for the listed columns must be supplied on every query against this source, with candidate values sourced from a dictionary table. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	FilterSettings *FilterSettingsParameters `json:"filterSettings,omitempty" tf:"filter_settings,omitempty"`
 
 	// (Attributes) Database and table location of the source data. (see below for nested schema)
 	// +kubebuilder:validation:Optional

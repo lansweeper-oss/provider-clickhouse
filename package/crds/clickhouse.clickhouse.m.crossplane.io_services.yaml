@@ -248,6 +248,10 @@ spec:
                     description: |-
                       Version number for password_wo. Increment this to trigger a password update when using password_wo.
                     type: number
+                  profile:
+                    description: |-
+                      Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+                    type: string
                   queryApiEndpoints:
                     description: Configuration of the query API endpoints
                       feature. (see below for nested schema)
@@ -306,6 +310,88 @@ spec:
                     description: |-
                       Set it to the 'warehouse_id' attribute of another service to share the data with it. The service must be in the same cloud and region.
                     type: string
+                  warehouseIdRef:
+                    description: Reference to a Service in clickhouse to populate
+                      warehouseId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  warehouseIdSelector:
+                    description: Selector for a Service in clickhouse to populate
+                      warehouseId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                 type: object
               initProvider:
                 description: |-
@@ -502,6 +588,10 @@ spec:
                     description: |-
                       Version number for password_wo. Increment this to trigger a password update when using password_wo.
                     type: number
+                  profile:
+                    description: |-
+                      Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+                    type: string
                   queryApiEndpoints:
                     description: Configuration of the query API endpoints
                       feature. (see below for nested schema)
@@ -560,6 +650,88 @@ spec:
                     description: |-
                       Set it to the 'warehouse_id' attribute of another service to share the data with it. The service must be in the same cloud and region.
                     type: string
+                  warehouseIdRef:
+                    description: Reference to a Service in clickhouse to populate
+                      warehouseId.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      namespace:
+                        description: Namespace of the referenced object
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  warehouseIdSelector:
+                    description: Selector for a Service in clickhouse to populate
+                      warehouseId.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      namespace:
+                        description: Namespace for the selector
+                        type: string
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                 type: object
               managementPolicies:
                 default:
@@ -820,6 +992,10 @@ spec:
                           Private DNS Hostname of the VPC you created.
                         type: string
                     type: object
+                  profile:
+                    description: |-
+                      Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+                    type: string
                   queryApiEndpoints:
                     description: Configuration of the query API endpoints
                       feature. (see below for nested schema)

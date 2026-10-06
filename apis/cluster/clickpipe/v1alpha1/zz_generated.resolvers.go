@@ -10,6 +10,7 @@ import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
+	v1alpha11 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipes/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,6 +20,7 @@ func (mg *Clickpipe) ResolveReferences(ctx context.Context, c client.Reader) err
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse
+	var mrsp reference.MultiResolutionResponse
 	var err error
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
@@ -38,6 +40,111 @@ func (mg *Clickpipe) ResolveReferences(ctx context.Context, c client.Reader) err
 	mg.Spec.ForProvider.ServiceID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.ServiceIDRef = rsp.ResolvedReference
 
+	if mg.Spec.ForProvider.Source != nil {
+		if mg.Spec.ForProvider.Source.Kafka != nil {
+			mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+				CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.Source.Kafka.ReversePrivateEndpointIds),
+				Extract:       reference.ExternalName(),
+				Namespace:     mg.GetNamespace(),
+				References:    mg.Spec.ForProvider.Source.Kafka.ReversePrivateEndpointIdsRefs,
+				Selector:      mg.Spec.ForProvider.Source.Kafka.ReversePrivateEndpointIdsSelector,
+				To: reference.To{
+					List:    &v1alpha11.ReversePrivateEndpointList{},
+					Managed: &v1alpha11.ReversePrivateEndpoint{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Source.Kafka.ReversePrivateEndpointIds")
+			}
+			mg.Spec.ForProvider.Source.Kafka.ReversePrivateEndpointIds = reference.ToPtrValues(mrsp.ResolvedValues)
+			mg.Spec.ForProvider.Source.Kafka.ReversePrivateEndpointIdsRefs = mrsp.ResolvedReferences
+
+		}
+	}
+	if mg.Spec.ForProvider.Source != nil {
+		if mg.Spec.ForProvider.Source.Kafka != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Source.Kafka.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.ForProvider.Source.Kafka.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.ForProvider.Source.Kafka.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Source.Kafka.SSHKeyResourceID")
+			}
+			mg.Spec.ForProvider.Source.Kafka.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Source.Kafka.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
+	if mg.Spec.ForProvider.Source != nil {
+		if mg.Spec.ForProvider.Source.Mongodb != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Source.Mongodb.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.ForProvider.Source.Mongodb.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.ForProvider.Source.Mongodb.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Source.Mongodb.SSHKeyResourceID")
+			}
+			mg.Spec.ForProvider.Source.Mongodb.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Source.Mongodb.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
+	if mg.Spec.ForProvider.Source != nil {
+		if mg.Spec.ForProvider.Source.MySQL != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Source.MySQL.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.ForProvider.Source.MySQL.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.ForProvider.Source.MySQL.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Source.MySQL.SSHKeyResourceID")
+			}
+			mg.Spec.ForProvider.Source.MySQL.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Source.MySQL.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
+	if mg.Spec.ForProvider.Source != nil {
+		if mg.Spec.ForProvider.Source.Postgres != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Source.Postgres.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.ForProvider.Source.Postgres.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.ForProvider.Source.Postgres.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.Source.Postgres.SSHKeyResourceID")
+			}
+			mg.Spec.ForProvider.Source.Postgres.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Source.Postgres.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.ServiceID),
 		Extract:      reference.ExternalName(),
@@ -54,6 +161,112 @@ func (mg *Clickpipe) ResolveReferences(ctx context.Context, c client.Reader) err
 	}
 	mg.Spec.InitProvider.ServiceID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.InitProvider.ServiceIDRef = rsp.ResolvedReference
+
+	if mg.Spec.InitProvider.Source != nil {
+		if mg.Spec.InitProvider.Source.Kafka != nil {
+			mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+				CurrentValues: reference.FromPtrValues(mg.Spec.InitProvider.Source.Kafka.ReversePrivateEndpointIds),
+				Extract:       reference.ExternalName(),
+				Namespace:     mg.GetNamespace(),
+				References:    mg.Spec.InitProvider.Source.Kafka.ReversePrivateEndpointIdsRefs,
+				Selector:      mg.Spec.InitProvider.Source.Kafka.ReversePrivateEndpointIdsSelector,
+				To: reference.To{
+					List:    &v1alpha11.ReversePrivateEndpointList{},
+					Managed: &v1alpha11.ReversePrivateEndpoint{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.InitProvider.Source.Kafka.ReversePrivateEndpointIds")
+			}
+			mg.Spec.InitProvider.Source.Kafka.ReversePrivateEndpointIds = reference.ToPtrValues(mrsp.ResolvedValues)
+			mg.Spec.InitProvider.Source.Kafka.ReversePrivateEndpointIdsRefs = mrsp.ResolvedReferences
+
+		}
+	}
+	if mg.Spec.InitProvider.Source != nil {
+		if mg.Spec.InitProvider.Source.Kafka != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.Source.Kafka.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.InitProvider.Source.Kafka.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.InitProvider.Source.Kafka.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.InitProvider.Source.Kafka.SSHKeyResourceID")
+			}
+			mg.Spec.InitProvider.Source.Kafka.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.InitProvider.Source.Kafka.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
+	if mg.Spec.InitProvider.Source != nil {
+		if mg.Spec.InitProvider.Source.Mongodb != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.Source.Mongodb.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.InitProvider.Source.Mongodb.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.InitProvider.Source.Mongodb.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.InitProvider.Source.Mongodb.SSHKeyResourceID")
+			}
+			mg.Spec.InitProvider.Source.Mongodb.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.InitProvider.Source.Mongodb.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
+	if mg.Spec.InitProvider.Source != nil {
+		if mg.Spec.InitProvider.Source.MySQL != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.Source.MySQL.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.InitProvider.Source.MySQL.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.InitProvider.Source.MySQL.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.InitProvider.Source.MySQL.SSHKeyResourceID")
+			}
+			mg.Spec.InitProvider.Source.MySQL.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.InitProvider.Source.MySQL.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
+	if mg.Spec.InitProvider.Source != nil {
+		if mg.Spec.InitProvider.Source.Postgres != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.Source.Postgres.SSHKeyResourceID),
+				Extract:      reference.ExternalName(),
+				Namespace:    mg.GetNamespace(),
+				Reference:    mg.Spec.InitProvider.Source.Postgres.SSHKeyResourceIDRef,
+				Selector:     mg.Spec.InitProvider.Source.Postgres.SSHKeyResourceIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.SSHKeyList{},
+					Managed: &v1alpha11.SSHKey{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.InitProvider.Source.Postgres.SSHKeyResourceID")
+			}
+			mg.Spec.InitProvider.Source.Postgres.SSHKeyResourceID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.InitProvider.Source.Postgres.SSHKeyResourceIDRef = rsp.ResolvedReference
+
+		}
+	}
 
 	return nil
 }

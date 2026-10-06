@@ -1,0 +1,43 @@
+apiVersion: clickpipes.clickhouse.crossplane.io/v1alpha1
+kind: SSHKey
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipes/v1alpha1/sshkey
+  labels:
+    testing.upbound.io/example-name: bastion
+  name: bastion
+spec:
+  forProvider:
+    description: Bastion for the prod VPC
+    host: bastion.example.com
+    name: production-bastion
+    port: 22
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    username: clickpipes
+
+---
+
+apiVersion: clickpipe.clickhouse.crossplane.io/v1alpha1
+kind: Clickpipe
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipes/v1alpha1/sshkey
+  labels:
+    testing.upbound.io/example-name: postgres_via_bastion
+  name: postgres-via-bastion
+spec:
+  forProvider:
+    name: postgres-cdc
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    source:
+      postgres:
+        database: app
+        host: 10.0.0.5
+        port: 5432
+        sshKeyResourceIdSelector:
+          matchLabels:
+            testing.upbound.io/example-name: bastion

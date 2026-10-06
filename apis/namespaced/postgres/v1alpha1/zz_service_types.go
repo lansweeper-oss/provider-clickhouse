@@ -21,7 +21,16 @@ type RestoreToPointInTimeInitParameters struct {
 
 	// (String) ID of the source instance whose backup to restore from.
 	// ID of the source instance whose backup to restore from.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/postgres/v1alpha1.Service
 	SourceID *string `json:"sourceId,omitempty" tf:"source_id,omitempty"`
+
+	// Reference to a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDRef *v2.NamespacedReference `json:"sourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDSelector *v2.NamespacedSelector `json:"sourceIdSelector,omitempty" tf:"-"`
 }
 
 type RestoreToPointInTimeObservation struct {
@@ -44,15 +53,24 @@ type RestoreToPointInTimeParameters struct {
 
 	// (String) ID of the source instance whose backup to restore from.
 	// ID of the source instance whose backup to restore from.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/postgres/v1alpha1.Service
 	// +kubebuilder:validation:Optional
-	SourceID *string `json:"sourceId" tf:"source_id,omitempty"`
+	SourceID *string `json:"sourceId,omitempty" tf:"source_id,omitempty"`
+
+	// Reference to a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDRef *v2.NamespacedReference `json:"sourceIdRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate sourceId.
+	// +kubebuilder:validation:Optional
+	SourceIDSelector *v2.NamespacedSelector `json:"sourceIdSelector,omitempty" tf:"-"`
 }
 
 type ServiceInitParameters struct {
 
 	// time error ("conflicts with the source
 	// instance"). The provider pins these into the plan so it shows real values.
-	// Cloud provider hosting the instance. Currently only 'aws' is supported. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Cloud provider hosting the instance. Supported values are 'aws' and 'gcp'. Postgres on GCP is in private preview; contact ClickHouse support to enable access for your organization and region. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	CloudProvider *string `json:"cloudProvider,omitempty" tf:"cloud_provider,omitempty"`
 
 	// availability mode. One of 'none' (single replica), 'async' (asynchronous replica), or 'sync' (synchronous replica). Mutable post-create; an HA flip triggers a transition. Omitting the attribute preserves the prior value (the server defaults to 'none' on Create); to actively downgrade, set 'ha_type = "none"' explicitly. Omit for a read replica or point-in-time restore (inherited from the source).
@@ -92,10 +110,19 @@ type ServiceInitParameters struct {
 
 	// in-time restore (restore_to_point_in_time)
 	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/postgres/v1alpha1.Service
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
 
-	// east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
-	// Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Reference to a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfRef *v2.NamespacedReference `json:"readReplicaOfRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfSelector *v2.NamespacedSelector `json:"readReplicaOfSelector,omitempty" tf:"-"`
+
+	// east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
 
 	// of-band changes" for the promotion exception).
@@ -124,7 +151,7 @@ type ServiceObservation struct {
 
 	// time error ("conflicts with the source
 	// instance"). The provider pins these into the plan so it shows real values.
-	// Cloud provider hosting the instance. Currently only 'aws' is supported. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Cloud provider hosting the instance. Supported values are 'aws' and 'gcp'. Postgres on GCP is in private preview; contact ClickHouse support to enable access for your organization and region. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	CloudProvider *string `json:"cloudProvider,omitempty" tf:"cloud_provider,omitempty"`
 
 	// (String) RFC3339 timestamp when the service was created.
@@ -180,8 +207,8 @@ type ServiceObservation struct {
 	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
 
-	// east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
-	// Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
 
 	// of-band changes" for the promotion exception).
@@ -218,7 +245,7 @@ type ServiceParameters struct {
 
 	// time error ("conflicts with the source
 	// instance"). The provider pins these into the plan so it shows real values.
-	// Cloud provider hosting the instance. Currently only 'aws' is supported. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Cloud provider hosting the instance. Supported values are 'aws' and 'gcp'. Postgres on GCP is in private preview; contact ClickHouse support to enable access for your organization and region. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	// +kubebuilder:validation:Optional
 	CloudProvider *string `json:"cloudProvider,omitempty" tf:"cloud_provider,omitempty"`
 
@@ -267,11 +294,20 @@ type ServiceParameters struct {
 
 	// in-time restore (restore_to_point_in_time)
 	// ID of the primary instance to replicate. When set, this instance is created as a read replica (streaming replication) of that primary. Immutable for a live replica: changing or removing it destroys and recreates the instance as a standalone primary. The one exception is an out-of-band promotion — if you promote the replica via the API/UI (is_primary becomes true), changing or removing read_replica_of then reconciles state in place without destroying the promoted primary. Mutually exclusive with restore_to_point_in_time and with password/password_wo (a replica inherits the primary's superuser). After an out-of-band promotion, removing read_replica_of requires declaring password or password_wo, which rotates the promoted primary's superuser password.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/postgres/v1alpha1.Service
 	// +kubebuilder:validation:Optional
 	ReadReplicaOf *string `json:"readReplicaOf,omitempty" tf:"read_replica_of,omitempty"`
 
-	// east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
-	// Cloud region (e.g. 'us-east-1'). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Reference to a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfRef *v2.NamespacedReference `json:"readReplicaOfRef,omitempty" tf:"-"`
+
+	// Selector for a Service in postgres to populate readReplicaOf.
+	// +kubebuilder:validation:Optional
+	ReadReplicaOfSelector *v2.NamespacedSelector `json:"readReplicaOfSelector,omitempty" tf:"-"`
+
+	// east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
+	// Cloud region (e.g. 'us-east-1' for AWS or 'us-west1' for GCP). No client-side validation; the server rejects unsupported regions. Required for a standard create; omit for a read replica or point-in-time restore (inherited from the source).
 	// +kubebuilder:validation:Optional
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
 
@@ -327,7 +363,7 @@ type ServiceStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Service is the Schema for the Services API. ~> Note: This resource is in beta and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (beta): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server's PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won't lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you'll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):
+// Service is the Schema for the Services API. ~> Note: This resource is in beta and its behavior may change in future provider versions. Manages a ClickHouse Cloud Managed Postgres https://clickhouse.com/cloud/postgres service. A Managed Postgres service is a fully-managed Postgres instance provisioned in the ClickHouse Cloud control plane. Supports AWS (cloud_provider = "aws") and GCP (cloud_provider = "gcp"). ~> Note: Postgres on GCP is in private preview. Contact ClickHouse support to enable access for your organization and region. Supported lifecycle Create — standard, as a read replica (read_replica_of), or by point-in-time restore (restore_to_point_in_time)ReadUpdate — size, ha_type, tags, pg_config, pgbouncer_config, password rotationDeleteImport Three companion data sources are also provided (beta): clickhouse_postgres_service, clickhouse_postgres_services, and clickhouse_postgres_service_ca_certificates. Unsupported attributes The following are intentionally absent from the schema: Operational commands (restart / promote / switchover). See "Operational commands" below for the rationale.IP allowlist, private endpoints, backup configuration, maintenance windows, customer-managed encryption keys, BYOC. These depend on server-side endpoint additions.Configurable lifecycle timeouts — there is no timeouts {} block; the provider uses fixed internal poll/retry budgets. Tag semantics Tags are a map(string → string) — same shape as clickhouse_service. Values must be non-empty alphanumeric / . / - / _ strings (server regex ^[a-zA-Z0-9._-]+$); the server's PATCH endpoint returns 400 BAD_REQUEST on omitted values, so the schema rejects empty values at plan time. Setting tags = {} clears all user-controlled tags. Omitting the attribute entirely preserves the prior state value (Optional + Computed + UseStateForUnknown). The Postgres PATCH endpoint has PUT-like semantics specifically for the tags field: omitting it from the request body clears all tags server-side. The provider works around this by re-asserting the current state tags in every PATCH that mutates size or ha_type, so users won't lose tags when they resize or change HA mode. This is invisible end-to-end but worth knowing if you inspect TF_LOG=DEBUG request bodies — you'll see tags repeated on non-tag mutations. Runtime configuration (pg_config / pgbouncer_config) Postgres server parameters and PgBouncer pooler parameters are managed as map(string → string) (same shape as tags):
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

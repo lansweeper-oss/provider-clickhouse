@@ -15,11 +15,31 @@ import (
 
 type AlertInitParameters struct {
 
-	// (Attributes) Notification channel for the alert. (see below for nested schema)
+	// (Attributes, Deprecated) Single notification channel for the alert. Deprecated: use channels. Exactly one of channel or channels must be set. Importing an alert always populates channels, so a config still on channel shows a diff after import. (see below for nested schema)
 	Channel *ChannelInitParameters `json:"channel,omitempty" tf:"channel,omitempty"`
 
-	// op (recreate the alert to fully reset it).
-	// Optional expression to evaluate the alert per group. Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
+	// (Attributes List) Notification channels for the alert, in order. Between 1 and 10 entries, no duplicates. Exactly one of channel or channels must be set. (see below for nested schema)
+	Channels []ChannelsInitParameters `json:"channels,omitempty" tf:"channels,omitempty"`
+
+	// level name, where and whereLanguage, which a tile config does not. Like dashboard_json, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list inline among its sources and has no chart config field, so it rejects the request. saved_search and tile alerts work on both.
+	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
+	ChartConfig *string `json:"chartConfig,omitempty" tf:"chart_config,omitempty"`
+
+	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// ID of the dashboard that owns the tile. Required together with `tile_id` when `source` is `tile`: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Dashboard
+	DashboardID *string `json:"dashboardId,omitempty" tf:"dashboard_id,omitempty"`
+
+	// Reference to a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDRef *v2.Reference `json:"dashboardIdRef,omitempty" tf:"-"`
+
+	// Selector for a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDSelector *v2.Selector `json:"dashboardIdSelector,omitempty" tf:"-"`
+
+	// search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
+	// Optional expression to evaluate the alert per group (saved-search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
 	GroupBy *string `json:"groupBy,omitempty" tf:"group_by,omitempty"`
 
 	// (String) Evaluation window: one of 1m, 5m, 15m, 30m, 1h, 6h, 12h, 1d.
@@ -42,8 +62,8 @@ type AlertInitParameters struct {
 	// Fire only after the condition holds for this many consecutive windows (>= 1).
 	NumConsecutiveWindows *float64 `json:"numConsecutiveWindows,omitempty" tf:"num_consecutive_windows,omitempty"`
 
-	// (String) ID of the saved search this alert evaluates.
-	// ID of the saved search this alert evaluates.
+	// (String) ID of the saved search this alert evaluates. Required when source is saved_search.
+	// ID of the saved search this alert evaluates. Required when `source` is `saved_search`.
 	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.SavedSearch
 	SavedSearchID *string `json:"savedSearchId,omitempty" tf:"saved_search_id,omitempty"`
 
@@ -62,6 +82,10 @@ type AlertInitParameters struct {
 	// zero schedule_offset_minutes; setting one clears the other.
 	// Absolute UTC anchor (RFC3339) for window alignment. Mutually exclusive with a non-zero `schedule_offset_minutes`; setting one clears the other.
 	ScheduleStartAt *string `json:"scheduleStartAt,omitempty" tf:"schedule_start_at,omitempty"`
+
+	// (String) What the alert evaluates: saved_search (default, requires saved_search_id), tile (requires dashboard_id and tile_id), or inline (requires chart_config). Changing this forces replacement.
+	// What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
+	Source *string `json:"source,omitempty" tf:"source,omitempty"`
 
 	// hdx-team). Changing this forces the alert to be replaced.
 	// Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
@@ -87,15 +111,30 @@ type AlertInitParameters struct {
 	// (String) Comparison type: one of above, below, above_exclusive, below_or_equal, equal, not_equal, between, not_between.
 	// Comparison type: one of `above`, `below`, `above_exclusive`, `below_or_equal`, `equal`, `not_equal`, `between`, `not_between`.
 	ThresholdType *string `json:"thresholdType,omitempty" tf:"threshold_type,omitempty"`
+
+	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	TileID *string `json:"tileId,omitempty" tf:"tile_id,omitempty"`
 }
 
 type AlertObservation struct {
 
-	// (Attributes) Notification channel for the alert. (see below for nested schema)
+	// (Attributes, Deprecated) Single notification channel for the alert. Deprecated: use channels. Exactly one of channel or channels must be set. Importing an alert always populates channels, so a config still on channel shows a diff after import. (see below for nested schema)
 	Channel *ChannelObservation `json:"channel,omitempty" tf:"channel,omitempty"`
 
-	// op (recreate the alert to fully reset it).
-	// Optional expression to evaluate the alert per group. Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
+	// (Attributes List) Notification channels for the alert, in order. Between 1 and 10 entries, no duplicates. Exactly one of channel or channels must be set. (see below for nested schema)
+	Channels []ChannelsObservation `json:"channels,omitempty" tf:"channels,omitempty"`
+
+	// level name, where and whereLanguage, which a tile config does not. Like dashboard_json, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list inline among its sources and has no chart config field, so it rejects the request. saved_search and tile alerts work on both.
+	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
+	ChartConfig *string `json:"chartConfig,omitempty" tf:"chart_config,omitempty"`
+
+	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// ID of the dashboard that owns the tile. Required together with `tile_id` when `source` is `tile`: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	DashboardID *string `json:"dashboardId,omitempty" tf:"dashboard_id,omitempty"`
+
+	// search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
+	// Optional expression to evaluate the alert per group (saved-search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
 	GroupBy *string `json:"groupBy,omitempty" tf:"group_by,omitempty"`
 
 	// (String) Identifier of the alert.
@@ -121,8 +160,8 @@ type AlertObservation struct {
 	// Fire only after the condition holds for this many consecutive windows (>= 1).
 	NumConsecutiveWindows *float64 `json:"numConsecutiveWindows,omitempty" tf:"num_consecutive_windows,omitempty"`
 
-	// (String) ID of the saved search this alert evaluates.
-	// ID of the saved search this alert evaluates.
+	// (String) ID of the saved search this alert evaluates. Required when source is saved_search.
+	// ID of the saved search this alert evaluates. Required when `source` is `saved_search`.
 	SavedSearchID *string `json:"savedSearchId,omitempty" tf:"saved_search_id,omitempty"`
 
 	// 1439, and less than the interval). Mutually exclusive with schedule_start_at; setting one clears the other.
@@ -132,6 +171,10 @@ type AlertObservation struct {
 	// zero schedule_offset_minutes; setting one clears the other.
 	// Absolute UTC anchor (RFC3339) for window alignment. Mutually exclusive with a non-zero `schedule_offset_minutes`; setting one clears the other.
 	ScheduleStartAt *string `json:"scheduleStartAt,omitempty" tf:"schedule_start_at,omitempty"`
+
+	// (String) What the alert evaluates: saved_search (default, requires saved_search_id), tile (requires dashboard_id and tile_id), or inline (requires chart_config). Changing this forces replacement.
+	// What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
+	Source *string `json:"source,omitempty" tf:"source,omitempty"`
 
 	// hdx-team). Changing this forces the alert to be replaced.
 	// Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
@@ -148,16 +191,43 @@ type AlertObservation struct {
 	// (String) Comparison type: one of above, below, above_exclusive, below_or_equal, equal, not_equal, between, not_between.
 	// Comparison type: one of `above`, `below`, `above_exclusive`, `below_or_equal`, `equal`, `not_equal`, `between`, `not_between`.
 	ThresholdType *string `json:"thresholdType,omitempty" tf:"threshold_type,omitempty"`
+
+	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	TileID *string `json:"tileId,omitempty" tf:"tile_id,omitempty"`
 }
 
 type AlertParameters struct {
 
-	// (Attributes) Notification channel for the alert. (see below for nested schema)
+	// (Attributes, Deprecated) Single notification channel for the alert. Deprecated: use channels. Exactly one of channel or channels must be set. Importing an alert always populates channels, so a config still on channel shows a diff after import. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Channel *ChannelParameters `json:"channel,omitempty" tf:"channel,omitempty"`
 
-	// op (recreate the alert to fully reset it).
-	// Optional expression to evaluate the alert per group. Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
+	// (Attributes List) Notification channels for the alert, in order. Between 1 and 10 entries, no duplicates. Exactly one of channel or channels must be set. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	Channels []ChannelsParameters `json:"channels,omitempty" tf:"channels,omitempty"`
+
+	// level name, where and whereLanguage, which a tile config does not. Like dashboard_json, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list inline among its sources and has no chart config field, so it rejects the request. saved_search and tile alerts work on both.
+	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
+	// +kubebuilder:validation:Optional
+	ChartConfig *string `json:"chartConfig,omitempty" tf:"chart_config,omitempty"`
+
+	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// ID of the dashboard that owns the tile. Required together with `tile_id` when `source` is `tile`: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Dashboard
+	// +kubebuilder:validation:Optional
+	DashboardID *string `json:"dashboardId,omitempty" tf:"dashboard_id,omitempty"`
+
+	// Reference to a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDRef *v2.Reference `json:"dashboardIdRef,omitempty" tf:"-"`
+
+	// Selector for a Dashboard in clickstack to populate dashboardId.
+	// +kubebuilder:validation:Optional
+	DashboardIDSelector *v2.Selector `json:"dashboardIdSelector,omitempty" tf:"-"`
+
+	// search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
+	// Optional expression to evaluate the alert per group (saved-search alerts only). Sticky once set: the API keeps the previous value when the field is omitted and cannot clear it, so removing it from config is a no-op (recreate the alert to fully reset it).
 	// +kubebuilder:validation:Optional
 	GroupBy *string `json:"groupBy,omitempty" tf:"group_by,omitempty"`
 
@@ -186,8 +256,8 @@ type AlertParameters struct {
 	// +kubebuilder:validation:Optional
 	NumConsecutiveWindows *float64 `json:"numConsecutiveWindows,omitempty" tf:"num_consecutive_windows,omitempty"`
 
-	// (String) ID of the saved search this alert evaluates.
-	// ID of the saved search this alert evaluates.
+	// (String) ID of the saved search this alert evaluates. Required when source is saved_search.
+	// ID of the saved search this alert evaluates. Required when `source` is `saved_search`.
 	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.SavedSearch
 	// +kubebuilder:validation:Optional
 	SavedSearchID *string `json:"savedSearchId,omitempty" tf:"saved_search_id,omitempty"`
@@ -209,6 +279,11 @@ type AlertParameters struct {
 	// Absolute UTC anchor (RFC3339) for window alignment. Mutually exclusive with a non-zero `schedule_offset_minutes`; setting one clears the other.
 	// +kubebuilder:validation:Optional
 	ScheduleStartAt *string `json:"scheduleStartAt,omitempty" tf:"schedule_start_at,omitempty"`
+
+	// (String) What the alert evaluates: saved_search (default, requires saved_search_id), tile (requires dashboard_id and tile_id), or inline (requires chart_config). Changing this forces replacement.
+	// What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
+	// +kubebuilder:validation:Optional
+	Source *string `json:"source,omitempty" tf:"source,omitempty"`
 
 	// hdx-team). Changing this forces the alert to be replaced.
 	// Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
@@ -238,6 +313,11 @@ type AlertParameters struct {
 	// Comparison type: one of `above`, `below`, `above_exclusive`, `below_or_equal`, `equal`, `not_equal`, `between`, `not_between`.
 	// +kubebuilder:validation:Optional
 	ThresholdType *string `json:"thresholdType,omitempty" tf:"threshold_type,omitempty"`
+
+	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// +kubebuilder:validation:Optional
+	TileID *string `json:"tileId,omitempty" tf:"tile_id,omitempty"`
 }
 
 type ChannelInitParameters struct {
@@ -293,6 +373,59 @@ type ChannelParameters struct {
 	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
 }
 
+type ChannelsInitParameters struct {
+
+	// (String) Channel type. Currently only webhook is supported.
+	// Channel type. Currently only `webhook` is supported.
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+
+	// (String) ID of the webhook to notify. Required when type is webhook.
+	// ID of the webhook to notify. Required when `type` is `webhook`.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Webhook
+	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+
+	// Reference to a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDRef *v2.Reference `json:"webhookIdRef,omitempty" tf:"-"`
+
+	// Selector for a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
+}
+
+type ChannelsObservation struct {
+
+	// (String) Channel type. Currently only webhook is supported.
+	// Channel type. Currently only `webhook` is supported.
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+
+	// (String) ID of the webhook to notify. Required when type is webhook.
+	// ID of the webhook to notify. Required when `type` is `webhook`.
+	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+}
+
+type ChannelsParameters struct {
+
+	// (String) Channel type. Currently only webhook is supported.
+	// Channel type. Currently only `webhook` is supported.
+	// +kubebuilder:validation:Optional
+	Type *string `json:"type" tf:"type,omitempty"`
+
+	// (String) ID of the webhook to notify. Required when type is webhook.
+	// ID of the webhook to notify. Required when `type` is `webhook`.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Webhook
+	// +kubebuilder:validation:Optional
+	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+
+	// Reference to a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDRef *v2.Reference `json:"webhookIdRef,omitempty" tf:"-"`
+
+	// Selector for a Webhook in clickstack to populate webhookId.
+	// +kubebuilder:validation:Optional
+	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
+}
+
 // AlertSpec defines the desired state of Alert
 type AlertSpec struct {
 	v2.ClusterManagedResourceSpec `json:",inline"`
@@ -320,7 +453,7 @@ type AlertStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Alert is the Schema for the Alerts API. Manages a ClickStack alert that evaluates a saved search on a schedule and notifies through a channel when a threshold is crossed. Alerts are threshold-based (there is no anomaly mode). Configuration is validated at plan time; those rules mirror the ClickStack server contract on a best-effort basis, so a server-side rule change may make the plan-time checks slightly stale until a new provider release.
+// Alert is the Schema for the Alerts API. Manages a ClickStack alert that evaluates a saved search, a dashboard tile, or its own chart config on a schedule and notifies one or more channels when a threshold is crossed. Set source to saved_search (the default) with saved_search_id, to tile with dashboard_id and tile_id, or to inline with chart_config for a standalone alert that has no saved search or dashboard behind it. Tile ids are assigned by the server and cannot be set in dashboard_json; reference the tile through the dashboard's computed tile_ids map (tile_id = clickhouse_clickstack_dashboard.x.tile_ids["
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
@@ -329,7 +462,6 @@ type AlertStatus struct {
 type Alert struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.channel) || (has(self.initProvider) && has(self.initProvider.channel))",message="spec.forProvider.channel is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.interval) || (has(self.initProvider) && has(self.initProvider.interval))",message="spec.forProvider.interval is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.threshold) || (has(self.initProvider) && has(self.initProvider.threshold))",message="spec.forProvider.threshold is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.thresholdType) || (has(self.initProvider) && has(self.initProvider.thresholdType))",message="spec.forProvider.thresholdType is a required parameter"

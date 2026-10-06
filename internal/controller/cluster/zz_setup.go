@@ -14,6 +14,7 @@ import (
 	clickpipe "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipe/clickpipe"
 	reverseprivateendpoint "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipes/reverseprivateendpoint"
 	reverseprivateendpointcustomprivatedns "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipes/reverseprivateendpointcustomprivatedns"
+	sshkey "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipes/sshkey"
 	alert "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickstack/alert"
 	connection "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickstack/connection"
 	dashboard "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickstack/dashboard"
@@ -27,6 +28,8 @@ import (
 	settings "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/organization/settings"
 	servicepostgres "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/postgres/service"
 	providerconfig "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/providerconfig"
+	apiendpoint "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/query/apiendpoint"
+	savedquery "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/query/savedquery"
 	assignment "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/role/assignment"
 	privateendpointsattachment "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/privateendpointsattachment"
 	scheduledscaling "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/scheduledscaling"
@@ -45,6 +48,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		clickpipe.Setup,
 		reverseprivateendpoint.Setup,
 		reverseprivateendpointcustomprivatedns.Setup,
+		sshkey.Setup,
 		alert.Setup,
 		connection.Setup,
 		dashboard.Setup,
@@ -58,6 +62,8 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		settings.Setup,
 		servicepostgres.Setup,
 		providerconfig.Setup,
+		apiendpoint.Setup,
+		savedquery.Setup,
 		assignment.Setup,
 		privateendpointsattachment.Setup,
 		scheduledscaling.Setup,
@@ -82,6 +88,7 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		clickpipe.SetupGated,
 		reverseprivateendpoint.SetupGated,
 		reverseprivateendpointcustomprivatedns.SetupGated,
+		sshkey.SetupGated,
 		alert.SetupGated,
 		connection.SetupGated,
 		dashboard.SetupGated,
@@ -95,6 +102,8 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		settings.SetupGated,
 		servicepostgres.SetupGated,
 		providerconfig.SetupGated,
+		apiendpoint.SetupGated,
+		savedquery.SetupGated,
 		assignment.SetupGated,
 		privateendpointsattachment.SetupGated,
 		scheduledscaling.SetupGated,
@@ -118,6 +127,7 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		clickpipe.SetupWebhookWithManager,
 		reverseprivateendpoint.SetupWebhookWithManager,
 		reverseprivateendpointcustomprivatedns.SetupWebhookWithManager,
+		sshkey.SetupWebhookWithManager,
 		alert.SetupWebhookWithManager,
 		connection.SetupWebhookWithManager,
 		dashboard.SetupWebhookWithManager,
@@ -131,6 +141,8 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		settings.SetupWebhookWithManager,
 		servicepostgres.SetupWebhookWithManager,
 		providerconfig.SetupWebhookWithManager,
+		apiendpoint.SetupWebhookWithManager,
+		savedquery.SetupWebhookWithManager,
 		assignment.SetupWebhookWithManager,
 		privateendpointsattachment.SetupWebhookWithManager,
 		scheduledscaling.SetupWebhookWithManager,

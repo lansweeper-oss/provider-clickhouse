@@ -49,6 +49,11 @@ type DashboardObservation struct {
 	// hdx-team). Changing this forces replacement.
 	// Team ID to manage this dashboard under (`x-hdx-team`). Changing this forces replacement.
 	Team *string `json:"team,omitempty" tf:"team,omitempty"`
+
+	// assigned tile ids keyed by tile name, for tiles whose name is non-empty and unique within the dashboard. Reference these from clickhouse_clickstack_alert (source = "tile"): tile_id = clickhouse_clickstack_dashboard.x.tile_ids["<tile name>"]. Tile ids cannot be chosen in dashboard_json; the server assigns them and keeps them across updates for tiles that keep their unique name. Position only decides which id a blank- or duplicate-named tile gets, and only among those tiles: a named tile's id is never taken by position. A tile that keeps its unique name keeps its id at plan time; a new or renamed tile's id is known only after apply, and a name that disappears leaves the map, so an alert still referencing it fails at plan time with an invalid index.
+	// Server-assigned tile ids keyed by tile name, for tiles whose name is non-empty and unique within the dashboard. Reference these from `clickhouse_clickstack_alert` (`source = "tile"`): `tile_id = clickhouse_clickstack_dashboard.x.tile_ids["<tile name>"]`. Tile ids cannot be chosen in `dashboard_json`; the server assigns them and keeps them across updates for tiles that keep their unique name. Position only decides which id a blank- or duplicate-named tile gets, and only among those tiles: a named tile's id is never taken by position. A tile that keeps its unique name keeps its id at plan time; a new or renamed tile's id is known only after apply, and a name that disappears leaves the map, so an alert still referencing it fails at plan time with an invalid index.
+	// +mapType=granular
+	TileIds map[string]*string `json:"tileIds,omitempty" tf:"tile_ids,omitempty"`
 }
 
 type DashboardParameters struct {
@@ -100,7 +105,7 @@ type DashboardStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Dashboard is the Schema for the Dashboards API. Manages a ClickStack dashboard from a JSON document (the v2 API dashboard body: name, tiles, tags, filters, savedQuery, containers). The JSON is validated at plan time against the ClickStack API when the validate endpoint is available. PromQL tiles are not supported by the API and cannot be managed here.g. edits in the UI). Tile alerts (alerts bound to a dashboard tile) are not managed by this resource. Tiles with duplicate or blank names, or renamed between applies, fall back to positional matching and may lose their alert; pin an explicit id on such tiles if you manage tile alerts in the UI.
+// Dashboard is the Schema for the Dashboards API. Manages a ClickStack dashboard from a JSON document (the v2 API dashboard body: name, tiles, tags, filters, savedQuery, containers). The JSON is validated at plan time against the ClickStack API when the validate endpoint is available. PromQL tiles are not supported by the API and cannot be managed here.g. edits in the UI). Tile alerts are managed with clickhouse_clickstack_alert (source = "tile"), which references this dashboard's id and a tile id. Tile ids are assigned by the server and cannot be set in dashboard_json (an authored id is ignored on create and replaced on update unless the server already has it). Position only decides ids among blank- or duplicate-named tiles. Importing a dashboard does not import its tile alerts; import each alert separately.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

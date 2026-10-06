@@ -791,6 +791,11 @@ func (in *ServiceInitParameters) DeepCopyInto(out *ServiceInitParameters) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.Profile != nil {
+		in, out := &in.Profile, &out.Profile
+		*out = new(string)
+		**out = **in
+	}
 	if in.QueryAPIEndpoints != nil {
 		in, out := &in.QueryAPIEndpoints, &out.QueryAPIEndpoints
 		*out = new(QueryAPIEndpointsInitParameters)
@@ -841,6 +846,16 @@ func (in *ServiceInitParameters) DeepCopyInto(out *ServiceInitParameters) {
 		in, out := &in.WarehouseID, &out.WarehouseID
 		*out = new(string)
 		**out = **in
+	}
+	if in.WarehouseIDRef != nil {
+		in, out := &in.WarehouseIDRef, &out.WarehouseIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.WarehouseIDSelector != nil {
+		in, out := &in.WarehouseIDSelector, &out.WarehouseIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -1020,6 +1035,11 @@ func (in *ServiceObservation) DeepCopyInto(out *ServiceObservation) {
 		in, out := &in.PrivateEndpointConfig, &out.PrivateEndpointConfig
 		*out = new(PrivateEndpointConfigObservation)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Profile != nil {
+		in, out := &in.Profile, &out.Profile
+		*out = new(string)
+		**out = **in
 	}
 	if in.QueryAPIEndpoints != nil {
 		in, out := &in.QueryAPIEndpoints, &out.QueryAPIEndpoints
@@ -1219,6 +1239,11 @@ func (in *ServiceParameters) DeepCopyInto(out *ServiceParameters) {
 		*out = new(float64)
 		**out = **in
 	}
+	if in.Profile != nil {
+		in, out := &in.Profile, &out.Profile
+		*out = new(string)
+		**out = **in
+	}
 	if in.QueryAPIEndpoints != nil {
 		in, out := &in.QueryAPIEndpoints, &out.QueryAPIEndpoints
 		*out = new(QueryAPIEndpointsParameters)
@@ -1269,6 +1294,16 @@ func (in *ServiceParameters) DeepCopyInto(out *ServiceParameters) {
 		in, out := &in.WarehouseID, &out.WarehouseID
 		*out = new(string)
 		**out = **in
+	}
+	if in.WarehouseIDRef != nil {
+		in, out := &in.WarehouseIDRef, &out.WarehouseIDRef
+		*out = new(v2.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.WarehouseIDSelector != nil {
+		in, out := &in.WarehouseIDSelector, &out.WarehouseIDSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

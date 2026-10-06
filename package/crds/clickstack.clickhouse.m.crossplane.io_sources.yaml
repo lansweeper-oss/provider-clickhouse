@@ -177,6 +177,41 @@ spec:
                     description: |-
                       Expression to extract event-level attributes.
                     type: string
+                  filterSettings:
+                    description: '(Attributes) Required source filters: values for
+                      the listed columns must be supplied on every query against this
+                      source, with candidate values sourced from a dictionary table.
+                      (see below for nested schema)'
+                    properties:
+                      columns:
+                        description: Columns that must be filtered
+                          on every query against this source. (see below for nested
+                          schema)
+                        items:
+                          properties:
+                            allowAll:
+                              description: |-
+                                Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+                              type: boolean
+                            label:
+                              description: |-
+                                Optional display label for the filter in the UI.
+                              type: string
+                            name:
+                              description: |-
+                                Column name to filter on.
+                              type: string
+                          type: object
+                        type: array
+                      databaseName:
+                        description: |-
+                          Database of the dictionary table backing the filter values.
+                        type: string
+                      tableName:
+                        description: |-
+                          Dictionary table backing the filter values.
+                        type: string
+                    type: object
                   from:
                     description: Database and table location of the source
                       data. (see below for nested schema)
@@ -964,6 +999,41 @@ spec:
                     description: |-
                       Expression to extract event-level attributes.
                     type: string
+                  filterSettings:
+                    description: '(Attributes) Required source filters: values for
+                      the listed columns must be supplied on every query against this
+                      source, with candidate values sourced from a dictionary table.
+                      (see below for nested schema)'
+                    properties:
+                      columns:
+                        description: Columns that must be filtered
+                          on every query against this source. (see below for nested
+                          schema)
+                        items:
+                          properties:
+                            allowAll:
+                              description: |-
+                                Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+                              type: boolean
+                            label:
+                              description: |-
+                                Optional display label for the filter in the UI.
+                              type: string
+                            name:
+                              description: |-
+                                Column name to filter on.
+                              type: string
+                          type: object
+                        type: array
+                      databaseName:
+                        description: |-
+                          Database of the dictionary table backing the filter values.
+                        type: string
+                      tableName:
+                        description: |-
+                          Dictionary table backing the filter values.
+                        type: string
+                    type: object
                   from:
                     description: Database and table location of the source
                       data. (see below for nested schema)
@@ -1736,6 +1806,41 @@ spec:
                     description: |-
                       Expression to extract event-level attributes.
                     type: string
+                  filterSettings:
+                    description: '(Attributes) Required source filters: values for
+                      the listed columns must be supplied on every query against this
+                      source, with candidate values sourced from a dictionary table.
+                      (see below for nested schema)'
+                    properties:
+                      columns:
+                        description: Columns that must be filtered
+                          on every query against this source. (see below for nested
+                          schema)
+                        items:
+                          properties:
+                            allowAll:
+                              description: |-
+                                Whether an "all values" selection is offered for this column instead of requiring explicit values. Defaults to false.
+                              type: boolean
+                            label:
+                              description: |-
+                                Optional display label for the filter in the UI.
+                              type: string
+                            name:
+                              description: |-
+                                Column name to filter on.
+                              type: string
+                          type: object
+                        type: array
+                      databaseName:
+                        description: |-
+                          Database of the dictionary table backing the filter values.
+                        type: string
+                      tableName:
+                        description: |-
+                          Dictionary table backing the filter values.
+                        type: string
+                    type: object
                   from:
                     description: Database and table location of the source
                       data. (see below for nested schema)

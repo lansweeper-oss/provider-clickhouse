@@ -1,0 +1,24 @@
+apiVersion: query.clickhouse.crossplane.io/v1alpha1
+kind: APIEndpoint
+metadata:
+  annotations:
+    meta.upbound.io/example-id: query/v1alpha1/apiendpoint
+  labels:
+    testing.upbound.io/example-name: format_date
+  name: format-date
+spec:
+  forProvider:
+    allowedOrigins:
+    - https://example.com
+    apiKeyIds:
+    - ${data.clickhouse_api_key_id.current.id}
+    database: default
+    name: format-date
+    parameters:
+      date: "2026-08-13"
+    roles:
+    - sql_console_read_only
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    sql: SELECT formatDateTime({date:Date}, '%F') AS date

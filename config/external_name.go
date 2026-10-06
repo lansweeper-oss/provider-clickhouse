@@ -8,28 +8,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	clickhouseService = "clickhouse_service"
-	clickstackGroup   = "clickstack"
-	serviceIDParam    = "service_id"
-	teamParam         = "team"
-	clickstackTeam    = "clickhouse_clickstack_team"
-	clickstackSource  = "clickhouse_clickstack_source"
-)
-
 // getExternalNameFromServiceID returns a GetExternalNameFn that reads
 // "service_id" from tfstate. Use for TF resources whose schema does not expose
 // an "id" attribute, where upjet's default IDAsExternalName fails post-apply
 // with "cannot find id in tfstate".
 func getExternalNameFromServiceID() func(map[string]any) (string, error) {
 	return func(tfstate map[string]any) (string, error) {
-		v, ok := tfstate[serviceIDParam]
+		v, ok := tfstate["service_id"]
 		if !ok {
-			return "", errors.Errorf("cannot find %s in tfstate", serviceIDParam)
+			return "", errors.Errorf("cannot find %s in tfstate", "service_id")
 		}
 		s, ok := v.(string)
 		if !ok {
-			return "", errors.Errorf("%s in tfstate is not a string", serviceIDParam)
+			return "", errors.Errorf("%s in tfstate is not a string", "service_id")
 		}
 		return s, nil
 	}
@@ -50,20 +41,23 @@ var uuidRe = regexp.MustCompile(`^[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit
 // provider.
 var ExternalNameConfigs = map[string]config.ExternalName{
 	// ClickHouse Cloud resources
-	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 	"clickhouse_clickpipe":                                              config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns": config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
+	"clickhouse_clickpipes_ssh_key":                                     withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_organization_settings":                                  config.IdentifierFromProvider,
+	"clickhouse_query_api_endpoint":                                     withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_role_assignment":                                        withSentinelWhenNotUUID(config.ParameterAsIdentifier("role_id")),
 	"clickhouse_role":                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
-	"clickhouse_service_private_endpoints_attachment":                   withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
-	"clickhouse_service_scheduled_scaling":                              withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
-	"clickhouse_service_transparent_data_encryption_key_association":    withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
-	"clickhouse_service_upgrade_window":                                 withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
-	"clickhouse_udf_attachment":                                         withSentinelWhenNotUUID(config.ParameterAsIdentifier(serviceIDParam)),
+	"clickhouse_saved_query":                                            withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_service_private_endpoints_attachment":                   withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_scheduled_scaling":                              withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_transparent_data_encryption_key_association":    withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_upgrade_window":                                 withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_udf_attachment":                                         withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 	"clickhouse_udf":                                                    identifierFromParameter("function_name"),
-	clickhouseService:                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_service":                                                withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	// Postgres resources
 	"clickhouse_postgres_service": withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	// ClickStack resources
@@ -72,8 +66,8 @@ var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_clickstack_dashboard":    config.IdentifierFromProvider,
 	"clickhouse_clickstack_role":         config.IdentifierFromProvider,
 	"clickhouse_clickstack_saved_search": config.IdentifierFromProvider,
-	clickstackSource:                     config.IdentifierFromProvider,
-	clickstackTeam:                       config.IdentifierFromProvider,
+	"clickhouse_clickstack_source":       config.IdentifierFromProvider,
+	"clickhouse_clickstack_team":         config.IdentifierFromProvider,
 	"clickhouse_clickstack_team_member":  withOptionalPrefix(identifierFromParameterOrAnnotation("email"), "team"),
 	"clickhouse_clickstack_webhook":      config.IdentifierFromProvider,
 }

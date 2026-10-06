@@ -14,11 +14,14 @@ spec:
         type: String
       - name: my_field2
         type: UInt64
+      - name: event_time
+        type: DateTime
       managedTable: true
       table: my_table
       tableDefinition:
       - engine:
         - type: MergeTree
+        ttl: event_time + INTERVAL 30 DAY
     fieldMappings:
     - destinationField: my_field1
       sourceField: my_field

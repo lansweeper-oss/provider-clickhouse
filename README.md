@@ -8,7 +8,7 @@ Terraform provider. It exposes XRM-conformant managed resources for the
 ClickHouse Cloud API (services, private endpoints, transparent data encryption,
 organization settings, ...).
 
-[![Upstream Terraform Provider](https://img.shields.io/badge/upstream_terraform_provider-v3.25.3-blue?logo=terraform)](https://github.com/ClickHouse/terraform-provider-clickhouse/tree/v3.25.3)
+[![Upstream Terraform Provider](https://img.shields.io/badge/upstream_terraform_provider-v3.34.0-blue?logo=terraform)](https://github.com/ClickHouse/terraform-provider-clickhouse/tree/v3.34.0)
 
 ## Getting Started
 

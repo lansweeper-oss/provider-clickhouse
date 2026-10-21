@@ -1,0 +1,44 @@
+apiVersion: byoc.clickhouse.m.crossplane.io/v1alpha1
+kind: Infrastructure
+metadata:
+  annotations:
+    meta.upbound.io/example-id: byoc/v1alpha1/infrastructure
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    accountId: ${var.aws_account_id}
+    displayName: Production BYOC
+    externalId: ${var.external_id}
+    regionId: us-east-1
+    tags:
+      environment: production
+    vpcCidrRange: 10.0.0.0/16
+
+---
+
+apiVersion: clickhouse.clickhouse.m.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: byoc/v1alpha1/infrastructure
+  labels:
+    testing.upbound.io/example-name: byoc
+  name: byoc
+  namespace: crossplane-system
+spec:
+  forProvider:
+    byocIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    cloudProvider: aws
+    maxReplicaMemoryGb: 8
+    minReplicaMemoryGb: 8
+    name: byoc service
+    passwordHashSecretRef:
+      key: example-key
+      name: example-secret
+    profile: v1-standard-byoc-4
+    region: us-east-1

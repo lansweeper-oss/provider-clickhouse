@@ -9,6 +9,7 @@ import (
 
 	"github.com/crossplane/upjet/v2/pkg/controller"
 
+	infrastructure "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/byoc/infrastructure"
 	service "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickhouse/service"
 	cdcinfrastructure "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipe/cdcinfrastructure"
 	clickpipe "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickpipe/clickpipe"
@@ -24,6 +25,7 @@ import (
 	team "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickstack/team"
 	teammember "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickstack/teammember"
 	webhook "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/clickstack/webhook"
+	apikey "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/iam/apikey"
 	roleiam "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/iam/role"
 	settings "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/organization/settings"
 	servicepostgres "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/postgres/service"
@@ -43,6 +45,7 @@ import (
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
+		infrastructure.Setup,
 		service.Setup,
 		cdcinfrastructure.Setup,
 		clickpipe.Setup,
@@ -58,6 +61,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		team.Setup,
 		teammember.Setup,
 		webhook.Setup,
+		apikey.Setup,
 		roleiam.Setup,
 		settings.Setup,
 		servicepostgres.Setup,
@@ -83,6 +87,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 // the supplied manager gated.
 func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
+		infrastructure.SetupGated,
 		service.SetupGated,
 		cdcinfrastructure.SetupGated,
 		clickpipe.SetupGated,
@@ -98,6 +103,7 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		team.SetupGated,
 		teammember.SetupGated,
 		webhook.SetupGated,
+		apikey.SetupGated,
 		roleiam.SetupGated,
 		settings.SetupGated,
 		servicepostgres.SetupGated,
@@ -122,6 +128,7 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 // SetupWebhookWithManager registers conversion webhooks for all resource kinds in the group.
 func SetupWebhookWithManager(mgr ctrl.Manager) error {
 	for _, setup := range []func(ctrl.Manager) error{
+		infrastructure.SetupWebhookWithManager,
 		service.SetupWebhookWithManager,
 		cdcinfrastructure.SetupWebhookWithManager,
 		clickpipe.SetupWebhookWithManager,
@@ -137,6 +144,7 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		team.SetupWebhookWithManager,
 		teammember.SetupWebhookWithManager,
 		webhook.SetupWebhookWithManager,
+		apikey.SetupWebhookWithManager,
 		roleiam.SetupWebhookWithManager,
 		settings.SetupWebhookWithManager,
 		servicepostgres.SetupWebhookWithManager,

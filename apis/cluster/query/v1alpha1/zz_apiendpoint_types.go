@@ -17,8 +17,17 @@ type APIEndpointInitParameters struct {
 
 	// (Set of String) API key IDs allowed to call the endpoint.
 	// API key IDs allowed to call the endpoint.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1.APIKey
 	// +listType=set
 	APIKeyIds []*string `json:"apiKeyIds,omitempty" tf:"api_key_ids,omitempty"`
+
+	// References to APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsRefs []v2.Reference `json:"apiKeyIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsSelector *v2.Selector `json:"apiKeyIdsSelector,omitempty" tf:"-"`
 
 	// (Set of String) Origins allowed by the endpoint CORS policy. Omit this field to restrict access to backend servers.
 	// Origins allowed by the endpoint CORS policy. Omit this field to restrict access to backend servers.
@@ -111,9 +120,18 @@ type APIEndpointParameters struct {
 
 	// (Set of String) API key IDs allowed to call the endpoint.
 	// API key IDs allowed to call the endpoint.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1.APIKey
 	// +kubebuilder:validation:Optional
 	// +listType=set
 	APIKeyIds []*string `json:"apiKeyIds,omitempty" tf:"api_key_ids,omitempty"`
+
+	// References to APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsRefs []v2.Reference `json:"apiKeyIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsSelector *v2.Selector `json:"apiKeyIdsSelector,omitempty" tf:"-"`
 
 	// (Set of String) Origins allowed by the endpoint CORS policy. Omit this field to restrict access to backend servers.
 	// Origins allowed by the endpoint CORS policy. Omit this field to restrict access to backend servers.
@@ -190,7 +208,7 @@ type APIEndpointStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// APIEndpoint is the Schema for the APIEndpoints API. Use this resource to create a Query API endpoint from a SQL query in ClickHouse Cloud. The endpoint runs the query over HTTP, so callers do not need a native driver to connect to the ClickHouse Cloud service. You can configure query parameters, API keys, database roles, and CORS allowed domains. For more information, see Setting up query API endpoints https://clickhouse.com/docs/products/cloud/guides/sql-console/query-endpoints. ~> Note: This resource is in beta. Its behavior may change in future provider versions. You can import an existing endpoint if it was created through the Query API endpoints API.
+// APIEndpoint is the Schema for the APIEndpoints API. Use this resource to create a Query API endpoint from a SQL query in ClickHouse Cloud. The endpoint runs the query over HTTP, so callers do not need a native driver to connect to the ClickHouse Cloud service. You can configure query parameters, API keys, database roles, and CORS allowed domains. For more information, see Setting up query API endpoints https://clickhouse.com/docs/products/cloud/guides/sql-console/query-endpoints. You can import an existing endpoint if it was created through the Query API endpoints API.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
@@ -199,7 +217,6 @@ type APIEndpointStatus struct {
 type APIEndpoint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.apiKeyIds) || (has(self.initProvider) && has(self.initProvider.apiKeyIds))",message="spec.forProvider.apiKeyIds is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.database) || (has(self.initProvider) && has(self.initProvider.database))",message="spec.forProvider.database is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.name) || (has(self.initProvider) && has(self.initProvider.name))",message="spec.forProvider.name is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.roles) || (has(self.initProvider) && has(self.initProvider.roles))",message="spec.forProvider.roles is a required parameter"

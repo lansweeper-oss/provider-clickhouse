@@ -1,0 +1,532 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.23.0
+  name: infrastructures.byoc.clickhouse.m.crossplane.io
+spec:
+  group: byoc.clickhouse.m.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - clickhouse
+    kind: Infrastructure
+    listKind: InfrastructureList
+    plural: infrastructures
+    singular: infrastructure
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: 'Infrastructure is the Schema for the Infrastructures API. Provision
+          a BYOC (Bring Your Own Cloud) infrastructure: a ClickHouse Cloud data plane
+          deployed into your own AWS account, GCP project or Azure subscription. Once
+          the infrastructure reaches the ''infra-ready'' state, clickhouse_service
+          resources can be deployed into it via their byoc_id attribute. Before creating,
+          the provider runs the preflight validation endpoint to simulate the cloud
+          permissions the deployment needs and fails the apply with the failing checks
+          if any are denied. Set skip_preflight_validation = true to create without
+          this gate (for example if validation is not yet supported for your cloud
+          provider). Creation provisions cloud infrastructure in your account and
+          typically takes 30-60 minutes. Deletion triggers an asynchronous termination
+          that removes the provisioned cloud resources. The cloud-side onboarding
+          (IAM role or service principal trusted by ClickHouse Cloud, and for BYO-VPC
+          topologies the VPC and subnets) must exist before creating this resource.
+          See the BYOC onboarding documentation https://clickhouse.com/docs/cloud/reference/byoc
+          for details. ~> Note: This resource is in beta. Its behavior may change
+          in future provider versions. Known limitations: Write-only creation parameters
+          (external_id, tenant_id, service_principal_client_id, availability_zone_suffixes,
+          public_subnet_ids) are not returned by the API. Changing a previously recorded
+          value still requires replacement. The BYO-VPC attributes (vpc_id, private_subnet_ids,
+          gcp_pod_cidr_range_names, gcp_shared_vpc_host_project_id) are returned by
+          the API and restored during import; configuring a different value plans
+          a replacement.'
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: InfrastructureSpec defines the desired state of Infrastructure
+            properties:
+              forProvider:
+                properties:
+                  accountId:
+                    description: |-
+                      Customer cloud account to deploy into: AWS account ID, GCP project ID or Azure subscription ID.
+                    type: string
+                  availabilityZoneSuffixes:
+                    description: |-
+                      Availability zone suffixes (e.g. ['a', 'b', 'c']) for the ClickHouse-managed VPC. Write-only; the resolved zones are returned by the data source as 'vpc_availability_zone_list'.
+                    items:
+                      type: string
+                    type: array
+                  displayName:
+                    description: |-
+                      Human readable name of the infrastructure. Defaults to a server-generated name.
+                    type: string
+                  enablePrivateLink:
+                    description: |-
+                      Enable private link connectivity (AWS PrivateLink, GCP Private Service Connect or Azure Private Link).
+                    type: boolean
+                  enablePrivateLoadBalancer:
+                    description: |-
+                      Enable the internal (VPC-private) load balancer.
+                    type: boolean
+                  enablePublicLoadBalancer:
+                    description: |-
+                      Enable the internet-facing load balancer.
+                    type: boolean
+                  externalId:
+                    description: |-
+                      VPC attributes (vpc_id, private_subnet_ids, gcp_pod_cidr_range_names, gcp_shared_vpc_host_project_id) are returned by the API and restored during import; configuring a different value plans a replacement.
+                      AWS only: ExternalID of the onboarding IAM role trust policy. Write-only; not returned by the API.
+                    type: string
+                  gcpPodCidrRangeNames:
+                    description: |-
+                      VPC: names of the secondary ranges used for pod IPs.
+                      GCP BYO-VPC: names of the secondary ranges used for pod IPs.
+                    items:
+                      type: string
+                    type: array
+                  gcpPscSubnetId:
+                    description: |-
+                      GCP only: subnet for the Private Service Connect NAT. Only accepted together with 'enable_private_link = true'.
+                    type: string
+                  gcpSharedVpcHostProjectId:
+                    description: |-
+                      VPC: host project ID when the customer-managed VPC is a shared VPC.
+                      GCP BYO-VPC: host project ID when the customer-managed VPC is a shared VPC.
+                    type: string
+                  privateSubnetIds:
+                    description: |-
+                      VPC: private subnet IDs to deploy into.
+                      BYO-VPC: private subnet IDs to deploy into.
+                    items:
+                      type: string
+                    type: array
+                  publicSubnetIds:
+                    description: |-
+                      VPC: public subnet IDs for internet-facing load balancers. Write-only; not returned by the API.
+                      BYO-VPC: public subnet IDs for internet-facing load balancers. Write-only; not returned by the API.
+                    items:
+                      type: string
+                    type: array
+                  regionId:
+                    description: |-
+                      BYOC region to deploy into (e.g. 'us-east-1').
+                    type: string
+                  servicePrincipalClientId:
+                    description: |-
+                      Azure only: client ID of the onboarding service principal. Write-only; not returned by the API.
+                    type: string
+                  skipPreflightValidation:
+                    description: |-
+                      Skip the preflight cloud permission validation before creating. Defaults to false.
+                    type: boolean
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Tags to apply to the cloud resources of the infrastructure (max 50). Updates replace the full tag set.
+                    type: object
+                    x-kubernetes-map-type: granular
+                  tenantId:
+                    description: |-
+                      Azure only: Entra tenant ID of the subscription. Write-only; not returned by the API.
+                    type: string
+                  vpcCidrRange:
+                    description: |-
+                      CIDR range for the ClickHouse-managed VPC. Mutually exclusive with the BYO-VPC attributes.
+                    type: string
+                  vpcId:
+                    description: |-
+                      VPC: ID of the customer-managed VPC to deploy into instead of a ClickHouse-managed one.
+                      BYO-VPC: ID of the customer-managed VPC to deploy into instead of a ClickHouse-managed one.
+                    type: string
+                type: object
+              initProvider:
+                description: |-
+                  THIS IS A BETA FIELD. It will be honored
+                  unless the Management Policies feature flag is disabled.
+                  InitProvider holds the same fields as ForProvider, with the exception
+                  of Identifier and other resource reference fields. The fields that are
+                  in InitProvider are merged into ForProvider when the resource is created.
+                  The same fields are also added to the terraform ignore_changes hook, to
+                  avoid updating them after creation. This is useful for fields that are
+                  required on creation, but we do not desire to update them after creation,
+                  for example because of an external controller is managing them, like an
+                  autoscaler.
+                properties:
+                  accountId:
+                    description: |-
+                      Customer cloud account to deploy into: AWS account ID, GCP project ID or Azure subscription ID.
+                    type: string
+                  availabilityZoneSuffixes:
+                    description: |-
+                      Availability zone suffixes (e.g. ['a', 'b', 'c']) for the ClickHouse-managed VPC. Write-only; the resolved zones are returned by the data source as 'vpc_availability_zone_list'.
+                    items:
+                      type: string
+                    type: array
+                  displayName:
+                    description: |-
+                      Human readable name of the infrastructure. Defaults to a server-generated name.
+                    type: string
+                  enablePrivateLink:
+                    description: |-
+                      Enable private link connectivity (AWS PrivateLink, GCP Private Service Connect or Azure Private Link).
+                    type: boolean
+                  enablePrivateLoadBalancer:
+                    description: |-
+                      Enable the internal (VPC-private) load balancer.
+                    type: boolean
+                  enablePublicLoadBalancer:
+                    description: |-
+                      Enable the internet-facing load balancer.
+                    type: boolean
+                  externalId:
+                    description: |-
+                      VPC attributes (vpc_id, private_subnet_ids, gcp_pod_cidr_range_names, gcp_shared_vpc_host_project_id) are returned by the API and restored during import; configuring a different value plans a replacement.
+                      AWS only: ExternalID of the onboarding IAM role trust policy. Write-only; not returned by the API.
+                    type: string
+                  gcpPodCidrRangeNames:
+                    description: |-
+                      VPC: names of the secondary ranges used for pod IPs.
+                      GCP BYO-VPC: names of the secondary ranges used for pod IPs.
+                    items:
+                      type: string
+                    type: array
+                  gcpPscSubnetId:
+                    description: |-
+                      GCP only: subnet for the Private Service Connect NAT. Only accepted together with 'enable_private_link = true'.
+                    type: string
+                  gcpSharedVpcHostProjectId:
+                    description: |-
+                      VPC: host project ID when the customer-managed VPC is a shared VPC.
+                      GCP BYO-VPC: host project ID when the customer-managed VPC is a shared VPC.
+                    type: string
+                  privateSubnetIds:
+                    description: |-
+                      VPC: private subnet IDs to deploy into.
+                      BYO-VPC: private subnet IDs to deploy into.
+                    items:
+                      type: string
+                    type: array
+                  publicSubnetIds:
+                    description: |-
+                      VPC: public subnet IDs for internet-facing load balancers. Write-only; not returned by the API.
+                      BYO-VPC: public subnet IDs for internet-facing load balancers. Write-only; not returned by the API.
+                    items:
+                      type: string
+                    type: array
+                  regionId:
+                    description: |-
+                      BYOC region to deploy into (e.g. 'us-east-1').
+                    type: string
+                  servicePrincipalClientId:
+                    description: |-
+                      Azure only: client ID of the onboarding service principal. Write-only; not returned by the API.
+                    type: string
+                  skipPreflightValidation:
+                    description: |-
+                      Skip the preflight cloud permission validation before creating. Defaults to false.
+                    type: boolean
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Tags to apply to the cloud resources of the infrastructure (max 50). Updates replace the full tag set.
+                    type: object
+                    x-kubernetes-map-type: granular
+                  tenantId:
+                    description: |-
+                      Azure only: Entra tenant ID of the subscription. Write-only; not returned by the API.
+                    type: string
+                  vpcCidrRange:
+                    description: |-
+                      CIDR range for the ClickHouse-managed VPC. Mutually exclusive with the BYO-VPC attributes.
+                    type: string
+                  vpcId:
+                    description: |-
+                      VPC: ID of the customer-managed VPC to deploy into instead of a ClickHouse-managed one.
+                      BYO-VPC: ID of the customer-managed VPC to deploy into instead of a ClickHouse-managed one.
+                    type: string
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+            x-kubernetes-validations:
+            - message: spec.forProvider.accountId is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.accountId)
+                || (has(self.initProvider) && has(self.initProvider.accountId))'
+            - message: spec.forProvider.regionId is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.regionId)
+                || (has(self.initProvider) && has(self.initProvider.regionId))'
+          status:
+            description: InfrastructureStatus defines the observed state of Infrastructure.
+            properties:
+              atProvider:
+                properties:
+                  accountId:
+                    description: |-
+                      Customer cloud account to deploy into: AWS account ID, GCP project ID or Azure subscription ID.
+                    type: string
+                  availabilityZoneSuffixes:
+                    description: |-
+                      Availability zone suffixes (e.g. ['a', 'b', 'c']) for the ClickHouse-managed VPC. Write-only; the resolved zones are returned by the data source as 'vpc_availability_zone_list'.
+                    items:
+                      type: string
+                    type: array
+                  cloudProvider:
+                    description: |-
+                      Cloud provider the infrastructure runs in ('aws', 'gcp' or 'azure'), derived from 'region_id'.
+                    type: string
+                  displayName:
+                    description: |-
+                      Human readable name of the infrastructure. Defaults to a server-generated name.
+                    type: string
+                  enablePrivateLink:
+                    description: |-
+                      Enable private link connectivity (AWS PrivateLink, GCP Private Service Connect or Azure Private Link).
+                    type: boolean
+                  enablePrivateLoadBalancer:
+                    description: |-
+                      Enable the internal (VPC-private) load balancer.
+                    type: boolean
+                  enablePublicLoadBalancer:
+                    description: |-
+                      Enable the internet-facing load balancer.
+                    type: boolean
+                  externalId:
+                    description: |-
+                      VPC attributes (vpc_id, private_subnet_ids, gcp_pod_cidr_range_names, gcp_shared_vpc_host_project_id) are returned by the API and restored during import; configuring a different value plans a replacement.
+                      AWS only: ExternalID of the onboarding IAM role trust policy. Write-only; not returned by the API.
+                    type: string
+                  gcpPodCidrRangeNames:
+                    description: |-
+                      VPC: names of the secondary ranges used for pod IPs.
+                      GCP BYO-VPC: names of the secondary ranges used for pod IPs.
+                    items:
+                      type: string
+                    type: array
+                  gcpPscSubnetId:
+                    description: |-
+                      GCP only: subnet for the Private Service Connect NAT. Only accepted together with 'enable_private_link = true'.
+                    type: string
+                  gcpSharedVpcHostProjectId:
+                    description: |-
+                      VPC: host project ID when the customer-managed VPC is a shared VPC.
+                      GCP BYO-VPC: host project ID when the customer-managed VPC is a shared VPC.
+                    type: string
+                  id:
+                    description: Unique ID of the BYOC infrastructure.
+                    type: string
+                  isByoVpc:
+                    description: |-
+                      Whether the infrastructure runs inside a customer-managed VPC.
+                    type: boolean
+                  privateSubnetIds:
+                    description: |-
+                      VPC: private subnet IDs to deploy into.
+                      BYO-VPC: private subnet IDs to deploy into.
+                    items:
+                      type: string
+                    type: array
+                  publicSubnetIds:
+                    description: |-
+                      VPC: public subnet IDs for internet-facing load balancers. Write-only; not returned by the API.
+                      BYO-VPC: public subnet IDs for internet-facing load balancers. Write-only; not returned by the API.
+                    items:
+                      type: string
+                    type: array
+                  regionId:
+                    description: |-
+                      BYOC region to deploy into (e.g. 'us-east-1').
+                    type: string
+                  servicePrincipalClientId:
+                    description: |-
+                      Azure only: client ID of the onboarding service principal. Write-only; not returned by the API.
+                    type: string
+                  skipPreflightValidation:
+                    description: |-
+                      Skip the preflight cloud permission validation before creating. Defaults to false.
+                    type: boolean
+                  state:
+                    description: |-
+                      Provisioning state of the infrastructure (e.g. 'infra-provisioning', 'infra-ready').
+                    type: string
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Tags to apply to the cloud resources of the infrastructure (max 50). Updates replace the full tag set.
+                    type: object
+                    x-kubernetes-map-type: granular
+                  tenantId:
+                    description: |-
+                      Azure only: Entra tenant ID of the subscription. Write-only; not returned by the API.
+                    type: string
+                  vpcCidrRange:
+                    description: |-
+                      CIDR range for the ClickHouse-managed VPC. Mutually exclusive with the BYO-VPC attributes.
+                    type: string
+                  vpcId:
+                    description: |-
+                      VPC: ID of the customer-managed VPC to deploy into instead of a ClickHouse-managed one.
+                      BYO-VPC: ID of the customer-managed VPC to deploy into instead of a ClickHouse-managed one.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              lastHandledReconcileAt:
+                description: |-
+                  LastHandledReconcileAt holds the value of the most recent
+                  reconcile-requested-at annotation token that the controller has
+                  processed. Users can compare this to the annotation to determine
+                  whether a reconcile request has been handled.
+                type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

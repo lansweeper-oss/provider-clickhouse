@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: udfs.udf.clickhouse.crossplane.io
 spec:
   group: udf.clickhouse.crossplane.io
@@ -34,24 +34,23 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: 'Udf is the Schema for the Udfs API. You can use the clickhouse_udf
+        description: Udf is the Schema for the Udfs API. You can use the clickhouse_udf
           resource to create and manage User Defined Functions (UDFs) in ClickHouse
-          Cloud. ~> Note: This resource is in beta. Its behavior may change in future
-          provider versions. Point source_archive_path at a ZIP of your function source,
-          and set source_archive_hash to filebase64sha256(... On apply, the provider
-          uploads the archive and waits for the build to finish. If a build fails
-          By default, a failed build fails the apply (fail_on_build_error = true).
-          Set it to false if you''d rather get a warning and move on. Either way,
-          the failed version stays in state, and applying again with the same source
-          won''t retry the build — you''ll need to fix the source and give source_archive_hash
-          a new value first. On create, a failed build also taints the resource, so
-          the next apply replaces it from scratch. On update, the previous, working
-          version keeps running while you sort things out. Either way, it stops rather
-          than risk creating a duplicate version, and saves the last known status
-          in state. A couple of things to know function_name can''t reuse a built-in
-          ClickHouse function name (like sum) — the API rejects reserved names. Deleting
-          this resource removes all versions of the UDF and detaches it from every
-          service that uses it.'
+          Cloud. Point source_archive_path at a ZIP of your function source, and set
+          source_archive_hash to filebase64sha256(... On apply, the provider uploads
+          the archive and waits for the build to finish. If a build fails By default,
+          a failed build fails the apply (fail_on_build_error = true). Set it to false
+          if you'd rather get a warning and move on. Either way, the failed version
+          stays in state, and applying again with the same source won't retry the
+          build — you'll need to fix the source and give source_archive_hash a new
+          value first. On create, a failed build also taints the resource, so the
+          next apply replaces it from scratch. On update, the previous, working version
+          keeps running while you sort things out. Either way, it stops rather than
+          risk creating a duplicate version, and saves the last known status in state.
+          A couple of things to know function_name can't reuse a built-in ClickHouse
+          function name (like sum) — the API rejects reserved names. Deleting this
+          resource removes all versions of the UDF and detaches it from every service
+          that uses it.
         properties:
           apiVersion:
             description: |-
@@ -156,10 +155,6 @@ spec:
                     description: |-
                       Sandbox isolation level.
                     type: string
-                  sandboxVersion:
-                    description: |-
-                      Sandbox runtime version.
-                    type: string
                   sendChunkHeader:
                     description: |-
                       Whether ClickHouse sends a row-count chunk header.
@@ -256,10 +251,6 @@ spec:
                   sandboxType:
                     description: |-
                       Sandbox isolation level.
-                    type: string
-                  sandboxVersion:
-                    description: |-
-                      Sandbox runtime version.
                     type: string
                   sendChunkHeader:
                     description: |-
@@ -470,10 +461,6 @@ spec:
                   sandboxType:
                     description: |-
                       Sandbox isolation level.
-                    type: string
-                  sandboxVersion:
-                    description: |-
-                      Sandbox runtime version.
                     type: string
                   sendChunkHeader:
                     description: |-

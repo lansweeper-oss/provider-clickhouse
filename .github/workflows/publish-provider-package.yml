@@ -89,6 +89,8 @@ jobs:
   add-extensions:
     needs: mirror-to-upbound
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -101,6 +103,19 @@ jobs:
           registry: xpkg.upbound.io
           username: ${{ secrets.XPKG_MIRROR_ACCESS_ID }}
           password: ${{ secrets.XPKG_MIRROR_TOKEN }}
+
+      - name: Add release notes extension
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          RELEASE_BODY=$(gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json body -q .body 2>/dev/null || true)
+          if [ -z "$RELEASE_BODY" ]; then
+            echo "No GitHub release notes found for $VERSION, skipping"
+            exit 0
+          fi
+          mkdir -p extensions/release-notes
+          printf '%s\n' "$RELEASE_BODY" > extensions/release-notes/release_notes.md
 
       - name: Append extensions
         run: make xpkg.append VERSION=${{ github.event.inputs.version }}

@@ -9,6 +9,7 @@
 package v1alpha1
 
 import (
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -52,6 +53,18 @@ func (in *AssignmentInitParameters) DeepCopyInto(out *AssignmentInitParameters) 
 				**out = **in
 			}
 		}
+	}
+	if in.APIKeyIdsRefs != nil {
+		in, out := &in.APIKeyIdsRefs, &out.APIKeyIdsRefs
+		*out = make([]v2.Reference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.APIKeyIdsSelector != nil {
+		in, out := &in.APIKeyIdsSelector, &out.APIKeyIdsSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserIds != nil {
 		in, out := &in.UserIds, &out.UserIds
@@ -163,6 +176,18 @@ func (in *AssignmentParameters) DeepCopyInto(out *AssignmentParameters) {
 				**out = **in
 			}
 		}
+	}
+	if in.APIKeyIdsRefs != nil {
+		in, out := &in.APIKeyIdsRefs, &out.APIKeyIdsRefs
+		*out = make([]v2.Reference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.APIKeyIdsSelector != nil {
+		in, out := &in.APIKeyIdsSelector, &out.APIKeyIdsSelector
+		*out = new(v2.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UserIds != nil {
 		in, out := &in.UserIds, &out.UserIds

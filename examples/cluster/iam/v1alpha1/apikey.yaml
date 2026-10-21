@@ -1,0 +1,15 @@
+apiVersion: iam.clickhouse.crossplane.io/v1alpha1
+kind: APIKey
+metadata:
+  annotations:
+    meta.upbound.io/example-id: iam/v1alpha1/apikey
+  labels:
+    testing.upbound.io/example-name: monitoring
+  name: monitoring
+spec:
+  forProvider:
+    ipAccess:
+    - description: vpc
+      source: 10.0.0.0/8
+    name: prometheus-scraper
+    state: enabled

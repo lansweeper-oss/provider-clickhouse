@@ -43,8 +43,16 @@ type AccessKeyParameters struct {
 
 type BigqueryInitParameters struct {
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// Authentication method for the BigQuery source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
+	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
+
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *CredentialsInitParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
+
+	// (String) GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+	// GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *SettingsInitParameters `json:"settings,omitempty" tf:"settings,omitempty"`
@@ -59,8 +67,16 @@ type BigqueryInitParameters struct {
 
 type BigqueryObservation struct {
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// Authentication method for the BigQuery source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
+	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
+
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *CredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
+
+	// (String) GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+	// GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	Settings *SettingsObservation `json:"settings,omitempty" tf:"settings,omitempty"`
@@ -75,9 +91,19 @@ type BigqueryObservation struct {
 
 type BigqueryParameters struct {
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// Authentication method for the BigQuery source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
 	// +kubebuilder:validation:Optional
-	Credentials *CredentialsParameters `json:"credentials" tf:"credentials,omitempty"`
+	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
+
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	Credentials *CredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
+
+	// (String) GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+	// GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+	// +kubebuilder:validation:Optional
+	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
 	// (Dynamic) Advanced configuration options for the ClickPipe. These settings are specific to each pipe. For the complete list of available options, see the OpenAPI documentation at https://clickhouse.com/docs/cloud/manage/api/swagger (search for the ClickPipes settings endpoint).
 	// +kubebuilder:validation:Optional
@@ -128,8 +154,8 @@ type ClickpipeInitParameters struct {
 	// (Attributes) The data source for the ClickPipe. At least one source configuration must be provided. (see below for nested schema)
 	Source *SourceInitParameters `json:"source,omitempty" tf:"source,omitempty"`
 
-	// (Boolean) Whether the ClickPipe should be stopped. Default is false (ClickPipe will be running). Cannot be set to true on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
-	// Whether the ClickPipe should be stopped. Default is `false` (ClickPipe will be running). Cannot be set to `true` on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+	// storage ClickPipes, set to true to create the pipe without starting ingestion, then set to false and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; state reports the live status.
+	// Whether the ClickPipe should be stopped. Default is `false`. For streaming and object-storage ClickPipes, set to `true` to create the pipe without starting ingestion, then set to `false` and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; `state` reports the live status.
 	Stopped *bool `json:"stopped,omitempty" tf:"stopped,omitempty"`
 
 	// (Boolean) Set to true to trigger a resync operation. Only applicable for Postgres pipes. Automatically resets to false after the resync is triggered.
@@ -170,8 +196,8 @@ type ClickpipeObservation struct {
 	// The current state of the ClickPipe. This is a read-only field that reports the actual state from ClickHouse Cloud. Possible values include `Running`, `Stopped`, `Paused`, `Provisioning`, `Failed`, `InternalError`, etc.
 	State *string `json:"state,omitempty" tf:"state,omitempty"`
 
-	// (Boolean) Whether the ClickPipe should be stopped. Default is false (ClickPipe will be running). Cannot be set to true on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
-	// Whether the ClickPipe should be stopped. Default is `false` (ClickPipe will be running). Cannot be set to `true` on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+	// storage ClickPipes, set to true to create the pipe without starting ingestion, then set to false and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; state reports the live status.
+	// Whether the ClickPipe should be stopped. Default is `false`. For streaming and object-storage ClickPipes, set to `true` to create the pipe without starting ingestion, then set to `false` and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; `state` reports the live status.
 	Stopped *bool `json:"stopped,omitempty" tf:"stopped,omitempty"`
 
 	// (Boolean) Set to true to trigger a resync operation. Only applicable for Postgres pipes. Automatically resets to false after the resync is triggered.
@@ -221,8 +247,8 @@ type ClickpipeParameters struct {
 	// +kubebuilder:validation:Optional
 	Source *SourceParameters `json:"source,omitempty" tf:"source,omitempty"`
 
-	// (Boolean) Whether the ClickPipe should be stopped. Default is false (ClickPipe will be running). Cannot be set to true on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
-	// Whether the ClickPipe should be stopped. Default is `false` (ClickPipe will be running). Cannot be set to `true` on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+	// storage ClickPipes, set to true to create the pipe without starting ingestion, then set to false and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; state reports the live status.
+	// Whether the ClickPipe should be stopped. Default is `false`. For streaming and object-storage ClickPipes, set to `true` to create the pipe without starting ingestion, then set to `false` and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; `state` reports the live status.
 	// +kubebuilder:validation:Optional
 	Stopped *bool `json:"stopped,omitempty" tf:"stopped,omitempty"`
 
@@ -376,8 +402,8 @@ type EngineInitParameters struct {
 	// The type of the engine. Supported engines: `MergeTree`, `ReplacingMergeTree`, `SummingMergeTree`, `Null`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
-	// (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree.
-	// Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree`.
+	// (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree and the pipe is being created.
+	// Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
 	VersionColumnID *string `json:"versionColumnId,omitempty" tf:"version_column_id,omitempty"`
 }
 
@@ -391,8 +417,8 @@ type EngineObservation struct {
 	// The type of the engine. Supported engines: `MergeTree`, `ReplacingMergeTree`, `SummingMergeTree`, `Null`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
-	// (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree.
-	// Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree`.
+	// (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree and the pipe is being created.
+	// Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
 	VersionColumnID *string `json:"versionColumnId,omitempty" tf:"version_column_id,omitempty"`
 }
 
@@ -408,8 +434,8 @@ type EngineParameters struct {
 	// +kubebuilder:validation:Optional
 	Type *string `json:"type" tf:"type,omitempty"`
 
-	// (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree.
-	// Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree`.
+	// (String) Column ID to use as version for ReplacingMergeTree engine. Required when engine type is ReplacingMergeTree and the pipe is being created.
+	// Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
 	// +kubebuilder:validation:Optional
 	VersionColumnID *string `json:"versionColumnId,omitempty" tf:"version_column_id,omitempty"`
 }
@@ -447,6 +473,54 @@ type FieldMappingsParameters struct {
 	// The name of the source field.
 	// +kubebuilder:validation:Optional
 	SourceField *string `json:"sourceField" tf:"source_field,omitempty"`
+}
+
+type GlueInitParameters struct {
+
+	// (String) The AWS region of the Glue schema registry.
+	// The AWS region of the Glue schema registry.
+	Region *string `json:"region,omitempty" tf:"region,omitempty"`
+
+	// (String) The name of the Glue schema registry.
+	// The name of the Glue schema registry.
+	RegistryName *string `json:"registryName,omitempty" tf:"registry_name,omitempty"`
+
+	// (String) The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses IAM_ROLE or IAM_USER authentication.
+	// The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses `IAM_ROLE` or `IAM_USER` authentication.
+	RoleArn *string `json:"roleArn,omitempty" tf:"role_arn,omitempty"`
+}
+
+type GlueObservation struct {
+
+	// (String) The AWS region of the Glue schema registry.
+	// The AWS region of the Glue schema registry.
+	Region *string `json:"region,omitempty" tf:"region,omitempty"`
+
+	// (String) The name of the Glue schema registry.
+	// The name of the Glue schema registry.
+	RegistryName *string `json:"registryName,omitempty" tf:"registry_name,omitempty"`
+
+	// (String) The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses IAM_ROLE or IAM_USER authentication.
+	// The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses `IAM_ROLE` or `IAM_USER` authentication.
+	RoleArn *string `json:"roleArn,omitempty" tf:"role_arn,omitempty"`
+}
+
+type GlueParameters struct {
+
+	// (String) The AWS region of the Glue schema registry.
+	// The AWS region of the Glue schema registry.
+	// +kubebuilder:validation:Optional
+	Region *string `json:"region" tf:"region,omitempty"`
+
+	// (String) The name of the Glue schema registry.
+	// The name of the Glue schema registry.
+	// +kubebuilder:validation:Optional
+	RegistryName *string `json:"registryName" tf:"registry_name,omitempty"`
+
+	// (String) The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses IAM_ROLE or IAM_USER authentication.
+	// The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses `IAM_ROLE` or `IAM_USER` authentication.
+	// +kubebuilder:validation:Optional
+	RoleArn *string `json:"roleArn,omitempty" tf:"role_arn,omitempty"`
 }
 
 type KafkaCredentialsInitParameters struct {
@@ -545,8 +619,8 @@ type KafkaCredentialsParameters struct {
 
 type KafkaInitParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`). Default is `PLAIN`.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). Default is `PLAIN`. `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview and is supported only for GCMK.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) The list of Kafka bootstrap brokers. (comma separated)
@@ -561,7 +635,7 @@ type KafkaInitParameters struct {
 	// Consumer group of the Kafka source. If not provided `clickpipes-<ID>` will be used.
 	ConsumerGroup *string `json:"consumerGroup,omitempty" tf:"consumer_group,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *KafkaCredentialsInitParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// once delivery. Guarantees every Kafka record is inserted exactly once across restarts and rebalances.
@@ -609,7 +683,7 @@ type KafkaInitParameters struct {
 	// +kubebuilder:validation:Optional
 	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
-	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// compatible registry (url, authentication, credentials) or an AWS Glue schema registry (type = "glue" with a glue block). Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryInitParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
@@ -627,8 +701,8 @@ type KafkaInitParameters struct {
 
 type KafkaObservation struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`). Default is `PLAIN`.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). Default is `PLAIN`. `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview and is supported only for GCMK.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) The list of Kafka bootstrap brokers. (comma separated)
@@ -643,7 +717,7 @@ type KafkaObservation struct {
 	// Consumer group of the Kafka source. If not provided `clickpipes-<ID>` will be used.
 	ConsumerGroup *string `json:"consumerGroup,omitempty" tf:"consumer_group,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *KafkaCredentialsObservation `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// once delivery. Guarantees every Kafka record is inserted exactly once across restarts and rebalances.
@@ -669,7 +743,7 @@ type KafkaObservation struct {
 	// ID of a standalone SSH key resource (`clickhouse_clickpipes_ssh_key`) to tunnel the connection through. Mutually exclusive with inline SSH configuration. Immutable; changing it forces resource replacement.
 	SSHKeyResourceID *string `json:"sshKeyResourceId,omitempty" tf:"ssh_key_resource_id,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// compatible registry (url, authentication, credentials) or an AWS Glue schema registry (type = "glue" with a glue block). Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *SchemaRegistryObservation `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// once delivery is not required. This setting is create-only; changing it forces ClickPipe replacement.
@@ -687,8 +761,8 @@ type KafkaObservation struct {
 
 type KafkaParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`). Default is `PLAIN`.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). Default is `PLAIN`. `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview and is supported only for GCMK.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -707,7 +781,7 @@ type KafkaParameters struct {
 	// +kubebuilder:validation:Optional
 	ConsumerGroup *string `json:"consumerGroup,omitempty" tf:"consumer_group,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Credentials *KafkaCredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
@@ -763,7 +837,7 @@ type KafkaParameters struct {
 	// +kubebuilder:validation:Optional
 	SSHKeyResourceIDSelector *v2.NamespacedSelector `json:"sshKeyResourceIdSelector,omitempty" tf:"-"`
 
-	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// compatible registry (url, authentication, credentials) or an AWS Glue schema registry (type = "glue" with a glue block). Immutable: any change forces pipe replacement. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	SchemaRegistry *SchemaRegistryParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
@@ -788,7 +862,7 @@ type KinesisInitParameters struct {
 	// (Attributes) The access key for the Kinesis source. Use with IAM_USER authentication. Can be rotated in place via an update. (see below for nested schema)
 	AccessKey *AccessKeyInitParameters `json:"accessKey,omitempty" tf:"access_key,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// The authentication method for the Kinesis source. (`IAM_ROLE`, `IAM_USER`).
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -808,11 +882,11 @@ type KinesisInitParameters struct {
 	// Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
 	ProtobufSchema *string `json:"protobufSchema,omitempty" tf:"protobuf_schema,omitempty"`
 
-	// (String) The AWS region of the Kinesis stream.
+	// (String) The AWS region of the Glue schema registry.
 	// The AWS region of the Kinesis stream.
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// compatible registry (url, authentication, credentials) or an AWS Glue schema registry (type = "glue" with a glue block). Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *KinesisSchemaRegistryInitParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The name of the Kinesis stream.
@@ -833,7 +907,7 @@ type KinesisObservation struct {
 	// (Attributes) The access key for the Kinesis source. Use with IAM_USER authentication. Can be rotated in place via an update. (see below for nested schema)
 	AccessKey *AccessKeyParameters `json:"accessKey,omitempty" tf:"access_key,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// The authentication method for the Kinesis source. (`IAM_ROLE`, `IAM_USER`).
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -853,11 +927,11 @@ type KinesisObservation struct {
 	// Base64-encoded Protobuf schema. Use `filebase64()` with a `.proto` or serialized `FileDescriptorSet` file up to 768 KiB. Required with `format = "Protobuf"` unless `schema_registry` is set, and not supported with other formats. Changing it forces replacement.
 	ProtobufSchema *string `json:"protobufSchema,omitempty" tf:"protobuf_schema,omitempty"`
 
-	// (String) The AWS region of the Kinesis stream.
+	// (String) The AWS region of the Glue schema registry.
 	// The AWS region of the Kinesis stream.
 	Region *string `json:"region,omitempty" tf:"region,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// compatible registry (url, authentication, credentials) or an AWS Glue schema registry (type = "glue" with a glue block). Immutable: any change forces pipe replacement. (see below for nested schema)
 	SchemaRegistry *KinesisSchemaRegistryObservation `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
 	// (String) The name of the Kinesis stream.
@@ -879,7 +953,7 @@ type KinesisParameters struct {
 	// +kubebuilder:validation:Optional
 	AccessKey *AccessKeyParameters `json:"accessKey,omitempty" tf:"access_key,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// The authentication method for the Kinesis source. (`IAM_ROLE`, `IAM_USER`).
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication" tf:"authentication,omitempty"`
@@ -904,12 +978,12 @@ type KinesisParameters struct {
 	// +kubebuilder:validation:Optional
 	ProtobufSchema *string `json:"protobufSchema,omitempty" tf:"protobuf_schema,omitempty"`
 
-	// (String) The AWS region of the Kinesis stream.
+	// (String) The AWS region of the Glue schema registry.
 	// The AWS region of the Kinesis stream.
 	// +kubebuilder:validation:Optional
 	Region *string `json:"region" tf:"region,omitempty"`
 
-	// (Attributes) The schema registry for the Kafka source. Immutable: any change forces pipe replacement. (see below for nested schema)
+	// compatible registry (url, authentication, credentials) or an AWS Glue schema registry (type = "glue" with a glue block). Immutable: any change forces pipe replacement. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	SchemaRegistry *KinesisSchemaRegistryParameters `json:"schemaRegistry,omitempty" tf:"schema_registry,omitempty"`
 
@@ -1049,7 +1123,7 @@ type MongodbInitParameters struct {
 	// PEM encoded CA certificate to validate the MongoDB server certificate.
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *MongodbCredentialsInitParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
@@ -1098,7 +1172,7 @@ type MongodbObservation struct {
 	// PEM encoded CA certificate to validate the MongoDB server certificate.
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *MongodbCredentialsObservation `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
@@ -1139,7 +1213,7 @@ type MongodbParameters struct {
 	// +kubebuilder:validation:Optional
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Credentials *MongodbCredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
@@ -1205,7 +1279,7 @@ type MongodbSettingsInitParameters struct {
 	// Number of rows to pull in each batch during CDC replication.
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the MongoDB pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
@@ -1217,7 +1291,7 @@ type MongodbSettingsInitParameters struct {
 	// Number of collections to snapshot in parallel during the initial load phase.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from MongoDB during CDC replication.
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 
@@ -1240,7 +1314,7 @@ type MongodbSettingsObservation struct {
 	// Number of rows to pull in each batch during CDC replication.
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the MongoDB pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
@@ -1252,7 +1326,7 @@ type MongodbSettingsObservation struct {
 	// Number of collections to snapshot in parallel during the initial load phase.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from MongoDB during CDC replication.
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 
@@ -1278,7 +1352,7 @@ type MongodbSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the MongoDB pipe. (`cdc`, `snapshot`, `cdc_only`)
 	// +kubebuilder:validation:Optional
 	ReplicationMode *string `json:"replicationMode" tf:"replication_mode,omitempty"`
@@ -1293,7 +1367,7 @@ type MongodbSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from MongoDB during CDC replication.
 	// +kubebuilder:validation:Optional
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
@@ -1416,7 +1490,7 @@ type MySQLCredentialsParameters struct {
 
 type MySQLInitParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -1424,7 +1498,7 @@ type MySQLInitParameters struct {
 	// PEM encoded CA certificate to validate the MySQL server certificate.
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *MySQLCredentialsInitParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
@@ -1475,13 +1549,13 @@ type MySQLInitParameters struct {
 	TableMappings []MySQLTableMappingsInitParameters `json:"tableMappings,omitempty" tf:"table_mappings,omitempty"`
 
 	// (String) The type of the column.
-	// The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
+	// The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `cloudsqlmysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 }
 
 type MySQLObservation struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -1489,7 +1563,7 @@ type MySQLObservation struct {
 	// PEM encoded CA certificate to validate the MySQL server certificate.
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *MySQLCredentialsObservation `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
@@ -1531,13 +1605,13 @@ type MySQLObservation struct {
 	TableMappings []MySQLTableMappingsObservation `json:"tableMappings,omitempty" tf:"table_mappings,omitempty"`
 
 	// (String) The type of the column.
-	// The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
+	// The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `cloudsqlmysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 }
 
 type MySQLParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
@@ -1547,7 +1621,7 @@ type MySQLParameters struct {
 	// +kubebuilder:validation:Optional
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Credentials *MySQLCredentialsParameters `json:"credentials" tf:"credentials,omitempty"`
 
@@ -1609,7 +1683,7 @@ type MySQLParameters struct {
 	TableMappings []MySQLTableMappingsParameters `json:"tableMappings" tf:"table_mappings,omitempty"`
 
 	// (String) The type of the column.
-	// The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
+	// The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `cloudsqlmysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
 	// +kubebuilder:validation:Optional
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 }
@@ -1636,7 +1710,7 @@ type MySQLSettingsInitParameters struct {
 	// Replication mechanism for the MySQL pipe. (`GTID`, `FILE_POS`). Default is `GTID`. Mechanisms other than `GTID` (e.g. `FILE_POS`) must be enabled for your organization; contact ClickHouse support to enable this feature.
 	ReplicationMechanism *string `json:"replicationMechanism,omitempty" tf:"replication_mechanism,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the MySQL pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
@@ -1648,7 +1722,7 @@ type MySQLSettingsInitParameters struct {
 	// Number of parallel tables to snapshot.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from MySQL.
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 
@@ -1679,7 +1753,7 @@ type MySQLSettingsObservation struct {
 	// Replication mechanism for the MySQL pipe. (`GTID`, `FILE_POS`). Default is `GTID`. Mechanisms other than `GTID` (e.g. `FILE_POS`) must be enabled for your organization; contact ClickHouse support to enable this feature.
 	ReplicationMechanism *string `json:"replicationMechanism,omitempty" tf:"replication_mechanism,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the MySQL pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
@@ -1691,7 +1765,7 @@ type MySQLSettingsObservation struct {
 	// Number of parallel tables to snapshot.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from MySQL.
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 
@@ -1727,7 +1801,7 @@ type MySQLSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	ReplicationMechanism *string `json:"replicationMechanism,omitempty" tf:"replication_mechanism,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the MySQL pipe. (`cdc`, `snapshot`, `cdc_only`)
 	// +kubebuilder:validation:Optional
 	ReplicationMode *string `json:"replicationMode" tf:"replication_mode,omitempty"`
@@ -1742,7 +1816,7 @@ type MySQLSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from MySQL.
 	// +kubebuilder:validation:Optional
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
@@ -1914,8 +1988,8 @@ type ObjectStorageInitParameters struct {
 	// (Attributes) The access key for the Kinesis source. Use with IAM_USER authentication. Can be rotated in place via an update. (see below for nested schema)
 	AccessKey *ObjectStorageAccessKeyInitParameters `json:"accessKey,omitempty" tf:"access_key,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER and SERVICE_ACCOUNT are for GCS. If not provided, no authentication is used
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER, SERVICE_ACCOUNT, and the Private Preview SERVICE_ACCOUNT_WORKLOAD_IDENTITY are for GCS. If not provided, no authentication is used.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) Container name for Azure Blob Storage. Required when type is azureblobstorage. Example: mycontainer
@@ -1970,7 +2044,7 @@ type ObjectStorageInitParameters struct {
 	// The type of the S3-compatible source (`s3`, `gcs`, `azureblobstorage`). Default is `s3`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
-	// (String) The URL of the schema registry.
+	// (String) The URL of the schema registry. Required for confluent registries.
 	// The URL of the S3/GCS bucket. Required for S3 and GCS types. Not used for Azure Blob Storage (use path and azure_container_name instead). You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
 	URL *string `json:"url,omitempty" tf:"url,omitempty"`
 }
@@ -1980,8 +2054,8 @@ type ObjectStorageObservation struct {
 	// (Attributes) The access key for the Kinesis source. Use with IAM_USER authentication. Can be rotated in place via an update. (see below for nested schema)
 	AccessKey *ObjectStorageAccessKeyParameters `json:"accessKey,omitempty" tf:"access_key,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER and SERVICE_ACCOUNT are for GCS. If not provided, no authentication is used
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER, SERVICE_ACCOUNT, and the Private Preview SERVICE_ACCOUNT_WORKLOAD_IDENTITY are for GCS. If not provided, no authentication is used.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) Container name for Azure Blob Storage. Required when type is azureblobstorage. Example: mycontainer
@@ -2028,7 +2102,7 @@ type ObjectStorageObservation struct {
 	// The type of the S3-compatible source (`s3`, `gcs`, `azureblobstorage`). Default is `s3`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
-	// (String) The URL of the schema registry.
+	// (String) The URL of the schema registry. Required for confluent registries.
 	// The URL of the S3/GCS bucket. Required for S3 and GCS types. Not used for Azure Blob Storage (use path and azure_container_name instead). You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
 	URL *string `json:"url,omitempty" tf:"url,omitempty"`
 }
@@ -2039,8 +2113,8 @@ type ObjectStorageParameters struct {
 	// +kubebuilder:validation:Optional
 	AccessKey *ObjectStorageAccessKeyParameters `json:"accessKey,omitempty" tf:"access_key,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER and SERVICE_ACCOUNT are for GCS. If not provided, no authentication is used
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER, SERVICE_ACCOUNT, and the Private Preview SERVICE_ACCOUNT_WORKLOAD_IDENTITY are for GCS. If not provided, no authentication is used.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -2109,7 +2183,7 @@ type ObjectStorageParameters struct {
 	// +kubebuilder:validation:Optional
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
-	// (String) The URL of the schema registry.
+	// (String) The URL of the schema registry. Required for confluent registries.
 	// The URL of the S3/GCS bucket. Required for S3 and GCS types. Not used for Azure Blob Storage (use path and azure_container_name instead). You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
 	// +kubebuilder:validation:Optional
 	URL *string `json:"url,omitempty" tf:"url,omitempty"`
@@ -2201,7 +2275,7 @@ type PostgresCredentialsParameters struct {
 
 type PostgresInitParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -2209,7 +2283,7 @@ type PostgresInitParameters struct {
 	// PEM encoded CA certificate to validate the Postgres server certificate.
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *PostgresCredentialsInitParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (String) The name of the ClickHouse database. Default is default.
@@ -2266,7 +2340,7 @@ type PostgresInitParameters struct {
 
 type PostgresObservation struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -2274,7 +2348,7 @@ type PostgresObservation struct {
 	// PEM encoded CA certificate to validate the Postgres server certificate.
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *PostgresCredentialsObservation `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (String) The name of the ClickHouse database. Default is default.
@@ -2322,7 +2396,7 @@ type PostgresObservation struct {
 
 type PostgresParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
 	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
@@ -2332,7 +2406,7 @@ type PostgresParameters struct {
 	// +kubebuilder:validation:Optional
 	CACertificate *string `json:"caCertificate,omitempty" tf:"ca_certificate,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Credentials *PostgresCredentialsParameters `json:"credentials" tf:"credentials,omitempty"`
 
@@ -2425,7 +2499,7 @@ type PostgresSettingsInitParameters struct {
 	// Number of rows to pull in each batch.
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the Postgres pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
@@ -2441,7 +2515,7 @@ type PostgresSettingsInitParameters struct {
 	// Number of parallel tables to snapshot.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from Postgres.
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 }
@@ -2472,7 +2546,7 @@ type PostgresSettingsObservation struct {
 	// Number of rows to pull in each batch.
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the Postgres pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
@@ -2488,7 +2562,7 @@ type PostgresSettingsObservation struct {
 	// Number of parallel tables to snapshot.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from Postgres.
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 }
@@ -2525,7 +2599,7 @@ type PostgresSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	PullBatchSize *float64 `json:"pullBatchSize,omitempty" tf:"pull_batch_size,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
 	// Replication mode for the Postgres pipe. (`cdc`, `snapshot`, `cdc_only`)
 	// +kubebuilder:validation:Optional
 	ReplicationMode *string `json:"replicationMode" tf:"replication_mode,omitempty"`
@@ -2545,7 +2619,7 @@ type PostgresSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
 
-	// (Number) Interval in seconds to sync data from MongoDB during CDC replication.
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
 	// Interval in seconds to sync data from Postgres.
 	// +kubebuilder:validation:Optional
 	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
@@ -2686,8 +2760,8 @@ type PubsubInitParameters struct {
 	// Acknowledgement deadline in seconds (10–600).
 	AckDeadline *float64 `json:"ackDeadline,omitempty" tf:"ack_deadline,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Pub/Sub source. Currently only `SERVICE_ACCOUNT` is supported.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Pub/Sub source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (Boolean) Whether to enable ordered message delivery. Immutable — changing it requires destroy+create because ordered delivery is a property of the subscription at creation time.
@@ -2702,7 +2776,7 @@ type PubsubInitParameters struct {
 	// The message format of the Pub/Sub topic. (`JSONEachRow`, `Avro`, `Protobuf`)
 	Format *string `json:"format,omitempty" tf:"format,omitempty"`
 
-	// (String) The GCP project ID that owns the Pub/Sub topic.
+	// (String) GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
 	// The GCP project ID that owns the Pub/Sub topic.
 	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
@@ -2728,8 +2802,8 @@ type PubsubObservation struct {
 	// Acknowledgement deadline in seconds (10–600).
 	AckDeadline *float64 `json:"ackDeadline,omitempty" tf:"ack_deadline,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Pub/Sub source. Currently only `SERVICE_ACCOUNT` is supported.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Pub/Sub source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (Boolean) Whether to enable ordered message delivery. Immutable — changing it requires destroy+create because ordered delivery is a property of the subscription at creation time.
@@ -2744,7 +2818,7 @@ type PubsubObservation struct {
 	// The message format of the Pub/Sub topic. (`JSONEachRow`, `Avro`, `Protobuf`)
 	Format *string `json:"format,omitempty" tf:"format,omitempty"`
 
-	// (String) The GCP project ID that owns the Pub/Sub topic.
+	// (String) GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
 	// The GCP project ID that owns the Pub/Sub topic.
 	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
@@ -2771,8 +2845,8 @@ type PubsubParameters struct {
 	// +kubebuilder:validation:Optional
 	AckDeadline *float64 `json:"ackDeadline,omitempty" tf:"ack_deadline,omitempty"`
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Pub/Sub source. Currently only `SERVICE_ACCOUNT` is supported.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Pub/Sub source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication" tf:"authentication,omitempty"`
 
@@ -2791,7 +2865,7 @@ type PubsubParameters struct {
 	// +kubebuilder:validation:Optional
 	Format *string `json:"format" tf:"format,omitempty"`
 
-	// (String) The GCP project ID that owns the Pub/Sub topic.
+	// (String) GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
 	// The GCP project ID that owns the Pub/Sub topic.
 	// +kubebuilder:validation:Optional
 	ProjectID *string `json:"projectId" tf:"project_id,omitempty"`
@@ -2808,7 +2882,7 @@ type PubsubParameters struct {
 
 	// encoded GCP service account JSON key for GCS authentication. Required when authentication is SERVICE_ACCOUNT.
 	// +kubebuilder:validation:Optional
-	ServiceAccountKey *ServiceAccountKeyParameters `json:"serviceAccountKey" tf:"service_account_key,omitempty"`
+	ServiceAccountKey *ServiceAccountKeyParameters `json:"serviceAccountKey,omitempty" tf:"service_account_key,omitempty"`
 
 	// qualified path).
 	// The Pub/Sub topic name (not the fully-qualified path).
@@ -2915,47 +2989,70 @@ type SchemaRegistryCredentialsParameters struct {
 
 type SchemaRegistryInitParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Schema Registry. Only supported is `PLAIN`.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Schema Registry. Only supported is `PLAIN`. Required for `confluent` registries.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *SchemaRegistryCredentialsInitParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
-	// (String) The URL of the schema registry.
-	// The URL of the schema registry.
+	// (Attributes) The AWS Glue schema registry. Required for glue registries. (see below for nested schema)
+	Glue *GlueInitParameters `json:"glue,omitempty" tf:"glue,omitempty"`
+
+	// (String) The type of the column.
+	// The type of the schema registry. (`confluent`, `glue`). Default is `confluent`. The AWS Glue schema registry must be enabled for the organization.
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+
+	// (String) The URL of the schema registry. Required for confluent registries.
+	// The URL of the schema registry. Required for `confluent` registries.
 	URL *string `json:"url,omitempty" tf:"url,omitempty"`
 }
 
 type SchemaRegistryObservation struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Schema Registry. Only supported is `PLAIN`.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Schema Registry. Only supported is `PLAIN`. Required for `confluent` registries.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	Credentials *SchemaRegistryCredentialsObservation `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
-	// (String) The URL of the schema registry.
-	// The URL of the schema registry.
+	// (Attributes) The AWS Glue schema registry. Required for glue registries. (see below for nested schema)
+	Glue *GlueObservation `json:"glue,omitempty" tf:"glue,omitempty"`
+
+	// (String) The type of the column.
+	// The type of the schema registry. (`confluent`, `glue`). Default is `confluent`. The AWS Glue schema registry must be enabled for the organization.
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+
+	// (String) The URL of the schema registry. Required for confluent registries.
+	// The URL of the schema registry. Required for `confluent` registries.
 	URL *string `json:"url,omitempty" tf:"url,omitempty"`
 }
 
 type SchemaRegistryParameters struct {
 
-	// SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-	// The authentication method for the Schema Registry. Only supported is `PLAIN`.
+	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
+	// The authentication method for the Schema Registry. Only supported is `PLAIN`. Required for `confluent` registries.
 	// +kubebuilder:validation:Optional
-	Authentication *string `json:"authentication" tf:"authentication,omitempty"`
+	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
-	// (Attributes, Sensitive) The credentials for BigQuery access. (see below for nested schema)
+	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
-	Credentials *SchemaRegistryCredentialsParameters `json:"credentials" tf:"credentials,omitempty"`
+	Credentials *SchemaRegistryCredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
-	// (String) The URL of the schema registry.
-	// The URL of the schema registry.
+	// (Attributes) The AWS Glue schema registry. Required for glue registries. (see below for nested schema)
 	// +kubebuilder:validation:Optional
-	URL *string `json:"url" tf:"url,omitempty"`
+	Glue *GlueParameters `json:"glue,omitempty" tf:"glue,omitempty"`
+
+	// (String) The type of the column.
+	// The type of the schema registry. (`confluent`, `glue`). Default is `confluent`. The AWS Glue schema registry must be enabled for the organization.
+	// +kubebuilder:validation:Optional
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+
+	// (String) The URL of the schema registry. Required for confluent registries.
+	// The URL of the schema registry. Required for `confluent` registries.
+	// +kubebuilder:validation:Optional
+	URL *string `json:"url,omitempty" tf:"url,omitempty"`
 }
 
 type ServiceAccountKeyInitParameters struct {
@@ -2986,8 +3083,20 @@ type SettingsInitParameters struct {
 	// Number of parallel workers during initial load.
 	InitialLoadParallelism *float64 `json:"initialLoadParallelism,omitempty" tf:"initial_load_parallelism,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
-	// Replication mode for the BigQuery pipe. (`snapshot`)
+	// (Number) Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is snapshot. Defaults to 86400 (24 hours) for CDC modes.
+	// Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is `snapshot`. Defaults to 86400 (24 hours) for CDC modes.
+	PullWindowSizeSeconds *float64 `json:"pullWindowSizeSeconds,omitempty" tf:"pull_window_size_seconds,omitempty"`
+
+	// (Number) Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is snapshot. Defaults to 4 for CDC modes.
+	// Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is `snapshot`. Defaults to 4 for CDC modes.
+	QueryCdcPullSyncParallelism *float64 `json:"queryCdcPullSyncParallelism,omitempty" tf:"query_cdc_pull_sync_parallelism,omitempty"`
+
+	// (String) How changes are captured from BigQuery. (query_based, events_based). query_based polls each table using a watermark timestamp column (see query_cdc_watermark_column in table_mappings), events_based reads the BigQuery change history using the APPENDS or CHANGES table function (see events_function in table_mappings). Required when replication_mode is cdc or cdc_only, and must be omitted for snapshot.
+	// How changes are captured from BigQuery. (`query_based`, `events_based`). `query_based` polls each table using a watermark timestamp column (see `query_cdc_watermark_column` in `table_mappings`), `events_based` reads the BigQuery change history using the `APPENDS` or `CHANGES` table function (see `events_function` in `table_mappings`). Required when `replication_mode` is `cdc` or `cdc_only`, and must be omitted for `snapshot`.
+	ReplicationMethod *string `json:"replicationMethod,omitempty" tf:"replication_method,omitempty"`
+
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
+	// Replication mode for the BigQuery pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
 	// (Number) Number of rows to snapshot per partition.
@@ -2997,6 +3106,14 @@ type SettingsInitParameters struct {
 	// (Number) Number of parallel tables to snapshot.
 	// Number of parallel tables to snapshot.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
+
+	// visible rows may be skipped. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
+	// Each CDC sync reads data only up to now minus this delay, giving recently written rows time to become visible in BigQuery. Increase it if your tables are loaded via batch jobs or Google Cloud Dataflow; if set too low, late-visible rows may be skipped. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+	SyncDelaySeconds *float64 `json:"syncDelaySeconds,omitempty" tf:"sync_delay_seconds,omitempty"`
+
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
+	// Interval in seconds between CDC syncs. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 }
 
 type SettingsObservation struct {
@@ -3009,8 +3126,20 @@ type SettingsObservation struct {
 	// Number of parallel workers during initial load.
 	InitialLoadParallelism *float64 `json:"initialLoadParallelism,omitempty" tf:"initial_load_parallelism,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
-	// Replication mode for the BigQuery pipe. (`snapshot`)
+	// (Number) Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is snapshot. Defaults to 86400 (24 hours) for CDC modes.
+	// Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is `snapshot`. Defaults to 86400 (24 hours) for CDC modes.
+	PullWindowSizeSeconds *float64 `json:"pullWindowSizeSeconds,omitempty" tf:"pull_window_size_seconds,omitempty"`
+
+	// (Number) Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is snapshot. Defaults to 4 for CDC modes.
+	// Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is `snapshot`. Defaults to 4 for CDC modes.
+	QueryCdcPullSyncParallelism *float64 `json:"queryCdcPullSyncParallelism,omitempty" tf:"query_cdc_pull_sync_parallelism,omitempty"`
+
+	// (String) How changes are captured from BigQuery. (query_based, events_based). query_based polls each table using a watermark timestamp column (see query_cdc_watermark_column in table_mappings), events_based reads the BigQuery change history using the APPENDS or CHANGES table function (see events_function in table_mappings). Required when replication_mode is cdc or cdc_only, and must be omitted for snapshot.
+	// How changes are captured from BigQuery. (`query_based`, `events_based`). `query_based` polls each table using a watermark timestamp column (see `query_cdc_watermark_column` in `table_mappings`), `events_based` reads the BigQuery change history using the `APPENDS` or `CHANGES` table function (see `events_function` in `table_mappings`). Required when `replication_mode` is `cdc` or `cdc_only`, and must be omitted for `snapshot`.
+	ReplicationMethod *string `json:"replicationMethod,omitempty" tf:"replication_method,omitempty"`
+
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
+	// Replication mode for the BigQuery pipe. (`cdc`, `snapshot`, `cdc_only`)
 	ReplicationMode *string `json:"replicationMode,omitempty" tf:"replication_mode,omitempty"`
 
 	// (Number) Number of rows to snapshot per partition.
@@ -3020,6 +3149,14 @@ type SettingsObservation struct {
 	// (Number) Number of parallel tables to snapshot.
 	// Number of parallel tables to snapshot.
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
+
+	// visible rows may be skipped. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
+	// Each CDC sync reads data only up to now minus this delay, giving recently written rows time to become visible in BigQuery. Increase it if your tables are loaded via batch jobs or Google Cloud Dataflow; if set too low, late-visible rows may be skipped. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+	SyncDelaySeconds *float64 `json:"syncDelaySeconds,omitempty" tf:"sync_delay_seconds,omitempty"`
+
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
+	// Interval in seconds between CDC syncs. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 }
 
 type SettingsParameters struct {
@@ -3034,8 +3171,23 @@ type SettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	InitialLoadParallelism *float64 `json:"initialLoadParallelism,omitempty" tf:"initial_load_parallelism,omitempty"`
 
-	// (String) Replication mode for the BigQuery pipe. (snapshot)
-	// Replication mode for the BigQuery pipe. (`snapshot`)
+	// (Number) Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is snapshot. Defaults to 86400 (24 hours) for CDC modes.
+	// Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is `snapshot`. Defaults to 86400 (24 hours) for CDC modes.
+	// +kubebuilder:validation:Optional
+	PullWindowSizeSeconds *float64 `json:"pullWindowSizeSeconds,omitempty" tf:"pull_window_size_seconds,omitempty"`
+
+	// (Number) Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is snapshot. Defaults to 4 for CDC modes.
+	// Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is `snapshot`. Defaults to 4 for CDC modes.
+	// +kubebuilder:validation:Optional
+	QueryCdcPullSyncParallelism *float64 `json:"queryCdcPullSyncParallelism,omitempty" tf:"query_cdc_pull_sync_parallelism,omitempty"`
+
+	// (String) How changes are captured from BigQuery. (query_based, events_based). query_based polls each table using a watermark timestamp column (see query_cdc_watermark_column in table_mappings), events_based reads the BigQuery change history using the APPENDS or CHANGES table function (see events_function in table_mappings). Required when replication_mode is cdc or cdc_only, and must be omitted for snapshot.
+	// How changes are captured from BigQuery. (`query_based`, `events_based`). `query_based` polls each table using a watermark timestamp column (see `query_cdc_watermark_column` in `table_mappings`), `events_based` reads the BigQuery change history using the `APPENDS` or `CHANGES` table function (see `events_function` in `table_mappings`). Required when `replication_mode` is `cdc` or `cdc_only`, and must be omitted for `snapshot`.
+	// +kubebuilder:validation:Optional
+	ReplicationMethod *string `json:"replicationMethod,omitempty" tf:"replication_method,omitempty"`
+
+	// (String) Replication mode for the BigQuery pipe. (cdc, snapshot, cdc_only)
+	// Replication mode for the BigQuery pipe. (`cdc`, `snapshot`, `cdc_only`)
 	// +kubebuilder:validation:Optional
 	ReplicationMode *string `json:"replicationMode" tf:"replication_mode,omitempty"`
 
@@ -3048,6 +3200,16 @@ type SettingsParameters struct {
 	// Number of parallel tables to snapshot.
 	// +kubebuilder:validation:Optional
 	SnapshotNumberOfParallelTables *float64 `json:"snapshotNumberOfParallelTables,omitempty" tf:"snapshot_number_of_parallel_tables,omitempty"`
+
+	// visible rows may be skipped. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
+	// Each CDC sync reads data only up to now minus this delay, giving recently written rows time to become visible in BigQuery. Increase it if your tables are loaded via batch jobs or Google Cloud Dataflow; if set too low, late-visible rows may be skipped. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+	// +kubebuilder:validation:Optional
+	SyncDelaySeconds *float64 `json:"syncDelaySeconds,omitempty" tf:"sync_delay_seconds,omitempty"`
+
+	// (Number) Interval in seconds between CDC syncs. Must be omitted when replication_mode is snapshot. Defaults to 60 for CDC modes.
+	// Interval in seconds between CDC syncs. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+	// +kubebuilder:validation:Optional
+	SyncIntervalSeconds *float64 `json:"syncIntervalSeconds,omitempty" tf:"sync_interval_seconds,omitempty"`
 }
 
 type SourceInitParameters struct {
@@ -3152,8 +3314,8 @@ type TableDefinitionInitParameters struct {
 	// The primary key of the table.
 	PrimaryKey *string `json:"primaryKey,omitempty" tf:"primary_key,omitempty"`
 
-	// (List of String) The list of columns for the sorting key.
-	// The list of columns for the sorting key.
+	// (List of String) The list of columns for the sorting key. Required when engine type is ReplacingMergeTree and the pipe is being created.
+	// The list of columns for the sorting key. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
 	SortingKey []*string `json:"sortingKey,omitempty" tf:"sorting_key,omitempty"`
 
 	// (String) ClickHouse TTL expression applied to the destination table when ClickPipes creates it.
@@ -3174,8 +3336,8 @@ type TableDefinitionObservation struct {
 	// The primary key of the table.
 	PrimaryKey *string `json:"primaryKey,omitempty" tf:"primary_key,omitempty"`
 
-	// (List of String) The list of columns for the sorting key.
-	// The list of columns for the sorting key.
+	// (List of String) The list of columns for the sorting key. Required when engine type is ReplacingMergeTree and the pipe is being created.
+	// The list of columns for the sorting key. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
 	SortingKey []*string `json:"sortingKey,omitempty" tf:"sorting_key,omitempty"`
 
 	// (String) ClickHouse TTL expression applied to the destination table when ClickPipes creates it.
@@ -3199,8 +3361,8 @@ type TableDefinitionParameters struct {
 	// +kubebuilder:validation:Optional
 	PrimaryKey *string `json:"primaryKey,omitempty" tf:"primary_key,omitempty"`
 
-	// (List of String) The list of columns for the sorting key.
-	// The list of columns for the sorting key.
+	// (List of String) The list of columns for the sorting key. Required when engine type is ReplacingMergeTree and the pipe is being created.
+	// The list of columns for the sorting key. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
 	// +kubebuilder:validation:Optional
 	SortingKey []*string `json:"sortingKey,omitempty" tf:"sorting_key,omitempty"`
 
@@ -3212,10 +3374,18 @@ type TableDefinitionParameters struct {
 
 type TableMappingsInitParameters struct {
 
+	// (String) BigQuery table function used to read changes. (appends, changes). Required for every table when replication_method is events_based; must be omitted otherwise.
+	// BigQuery table function used to read changes. (`appends`, `changes`). Required for every table when `replication_method` is `events_based`; must be omitted otherwise.
+	EventsFunction *string `json:"eventsFunction,omitempty" tf:"events_function,omitempty"`
+
 	// (Set of String) Columns to exclude from replication.
 	// Columns to exclude from replication.
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) Source column of type TIMESTAMP used as the CDC watermark. Required for every table when replication_method is query_based; must be omitted otherwise.
+	// Source column of type `TIMESTAMP` used as the CDC watermark. Required for every table when `replication_method` is `query_based`; must be omitted otherwise.
+	QueryCdcWatermarkColumn *string `json:"queryCdcWatermarkColumn,omitempty" tf:"query_cdc_watermark_column,omitempty"`
 
 	// (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
 	// Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
@@ -3244,10 +3414,18 @@ type TableMappingsInitParameters struct {
 
 type TableMappingsObservation struct {
 
+	// (String) BigQuery table function used to read changes. (appends, changes). Required for every table when replication_method is events_based; must be omitted otherwise.
+	// BigQuery table function used to read changes. (`appends`, `changes`). Required for every table when `replication_method` is `events_based`; must be omitted otherwise.
+	EventsFunction *string `json:"eventsFunction,omitempty" tf:"events_function,omitempty"`
+
 	// (Set of String) Columns to exclude from replication.
 	// Columns to exclude from replication.
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) Source column of type TIMESTAMP used as the CDC watermark. Required for every table when replication_method is query_based; must be omitted otherwise.
+	// Source column of type `TIMESTAMP` used as the CDC watermark. Required for every table when `replication_method` is `query_based`; must be omitted otherwise.
+	QueryCdcWatermarkColumn *string `json:"queryCdcWatermarkColumn,omitempty" tf:"query_cdc_watermark_column,omitempty"`
 
 	// (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
 	// Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
@@ -3276,11 +3454,21 @@ type TableMappingsObservation struct {
 
 type TableMappingsParameters struct {
 
+	// (String) BigQuery table function used to read changes. (appends, changes). Required for every table when replication_method is events_based; must be omitted otherwise.
+	// BigQuery table function used to read changes. (`appends`, `changes`). Required for every table when `replication_method` is `events_based`; must be omitted otherwise.
+	// +kubebuilder:validation:Optional
+	EventsFunction *string `json:"eventsFunction,omitempty" tf:"events_function,omitempty"`
+
 	// (Set of String) Columns to exclude from replication.
 	// Columns to exclude from replication.
 	// +kubebuilder:validation:Optional
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) Source column of type TIMESTAMP used as the CDC watermark. Required for every table when replication_method is query_based; must be omitted otherwise.
+	// Source column of type `TIMESTAMP` used as the CDC watermark. Required for every table when `replication_method` is `query_based`; must be omitted otherwise.
+	// +kubebuilder:validation:Optional
+	QueryCdcWatermarkColumn *string `json:"queryCdcWatermarkColumn,omitempty" tf:"query_cdc_watermark_column,omitempty"`
 
 	// (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
 	// Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.

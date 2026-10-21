@@ -220,7 +220,16 @@ type QueryAPIEndpointsInitParameters struct {
 
 	// (List of String) The UUIDs of the API Keys to grant access to the query API.
 	// The UUIDs of the API Keys to grant access to the query API.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/iam/v1alpha1.APIKey
 	APIKeyIds []*string `json:"apiKeyIds,omitempty" tf:"api_key_ids,omitempty"`
+
+	// References to APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsRefs []v2.NamespacedReference `json:"apiKeyIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsSelector *v2.NamespacedSelector `json:"apiKeyIdsSelector,omitempty" tf:"-"`
 
 	// origin resource sharing (CORS) access to the query API. Leave this field empty to restrict access to backend servers only
 	// Comma separated list of domain names to be allowed cross-origin resource sharing (CORS) access to the query API. Leave this field empty to restrict access to backend servers only
@@ -250,8 +259,17 @@ type QueryAPIEndpointsParameters struct {
 
 	// (List of String) The UUIDs of the API Keys to grant access to the query API.
 	// The UUIDs of the API Keys to grant access to the query API.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/iam/v1alpha1.APIKey
 	// +kubebuilder:validation:Optional
-	APIKeyIds []*string `json:"apiKeyIds" tf:"api_key_ids,omitempty"`
+	APIKeyIds []*string `json:"apiKeyIds,omitempty" tf:"api_key_ids,omitempty"`
+
+	// References to APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsRefs []v2.NamespacedReference `json:"apiKeyIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsSelector *v2.NamespacedSelector `json:"apiKeyIdsSelector,omitempty" tf:"-"`
 
 	// origin resource sharing (CORS) access to the query API. Leave this field empty to restrict access to backend servers only
 	// Comma separated list of domain names to be allowed cross-origin resource sharing (CORS) access to the query API. Leave this field empty to restrict access to backend servers only
@@ -279,7 +297,16 @@ type ServiceInitParameters struct {
 
 	// replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
 	// BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/byoc/v1alpha1.Infrastructure
 	ByocID *string `json:"byocId,omitempty" tf:"byoc_id,omitempty"`
+
+	// Reference to a Infrastructure in byoc to populate byocId.
+	// +kubebuilder:validation:Optional
+	ByocIDRef *v2.NamespacedReference `json:"byocIdRef,omitempty" tf:"-"`
+
+	// Selector for a Infrastructure in byoc to populate byocId.
+	// +kubebuilder:validation:Optional
+	ByocIDSelector *v2.NamespacedSelector `json:"byocIdSelector,omitempty" tf:"-"`
 
 	// (String) Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
 	// Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
@@ -387,6 +414,9 @@ type ServiceInitParameters struct {
 	// (String) Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	// Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	ReleaseChannel *string `json:"releaseChannel,omitempty" tf:"release_channel,omitempty"`
+
+	// (Attributes) Configuration of service snapshot settings. Snapshots are a beta feature that requires the snapshots feature enabled for your organization, a PPv2 tier, and the backups entitlement. When enabling snapshots, an ineligible organization is rejected at plan time (when the organization API reports eligibility); otherwise an ineligible organization can still fail at apply. When enabled, gap and time_frame must be supplied together as a supported preset: (gap 30, time_frame 1440) or (gap 60, time_frame 2880). (see below for nested schema)
+	SnapshotConfiguration *SnapshotConfigurationInitParameters `json:"snapshotConfiguration,omitempty" tf:"snapshot_configuration,omitempty"`
 
 	// value pairs.
 	// Tags associated with the service as key-value pairs.
@@ -535,6 +565,9 @@ type ServiceObservation struct {
 	// Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	ReleaseChannel *string `json:"releaseChannel,omitempty" tf:"release_channel,omitempty"`
 
+	// (Attributes) Configuration of service snapshot settings. Snapshots are a beta feature that requires the snapshots feature enabled for your organization, a PPv2 tier, and the backups entitlement. When enabling snapshots, an ineligible organization is rejected at plan time (when the organization API reports eligibility); otherwise an ineligible organization can still fail at apply. When enabled, gap and time_frame must be supplied together as a supported preset: (gap 30, time_frame 1440) or (gap 60, time_frame 2880). (see below for nested schema)
+	SnapshotConfiguration *SnapshotConfigurationObservation `json:"snapshotConfiguration,omitempty" tf:"snapshot_configuration,omitempty"`
+
 	// value pairs.
 	// Tags associated with the service as key-value pairs.
 	// +mapType=granular
@@ -570,8 +603,17 @@ type ServiceParameters struct {
 
 	// replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
 	// BYOC ID related to the cloud provider account you want to create this service into. When set, the per-replica memory fields (min_replica_memory_gb and max_replica_memory_gb) are required on create — a BYOC service cannot be sized via the deprecated min_total_memory_gb/max_total_memory_gb fields that non-BYOC production services accept.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/byoc/v1alpha1.Infrastructure
 	// +kubebuilder:validation:Optional
 	ByocID *string `json:"byocId,omitempty" tf:"byoc_id,omitempty"`
+
+	// Reference to a Infrastructure in byoc to populate byocId.
+	// +kubebuilder:validation:Optional
+	ByocIDRef *v2.NamespacedReference `json:"byocIdRef,omitempty" tf:"-"`
+
+	// Selector for a Infrastructure in byoc to populate byocId.
+	// +kubebuilder:validation:Optional
+	ByocIDSelector *v2.NamespacedSelector `json:"byocIdSelector,omitempty" tf:"-"`
 
 	// (String) Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
 	// Cloud provider ('aws', 'gcp', or 'azure') in which the service is deployed in.
@@ -707,6 +749,10 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	ReleaseChannel *string `json:"releaseChannel,omitempty" tf:"release_channel,omitempty"`
 
+	// (Attributes) Configuration of service snapshot settings. Snapshots are a beta feature that requires the snapshots feature enabled for your organization, a PPv2 tier, and the backups entitlement. When enabling snapshots, an ineligible organization is rejected at plan time (when the organization API reports eligibility); otherwise an ineligible organization can still fail at apply. When enabled, gap and time_frame must be supplied together as a supported preset: (gap 30, time_frame 1440) or (gap 60, time_frame 2880). (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	SnapshotConfiguration *SnapshotConfigurationParameters `json:"snapshotConfiguration,omitempty" tf:"snapshot_configuration,omitempty"`
+
 	// value pairs.
 	// Tags associated with the service as key-value pairs.
 	// +kubebuilder:validation:Optional
@@ -736,6 +782,54 @@ type ServiceParameters struct {
 	// Selector for a Service in clickhouse to populate warehouseId.
 	// +kubebuilder:validation:Optional
 	WarehouseIDSelector *v2.NamespacedSelector `json:"warehouseIdSelector,omitempty" tf:"-"`
+}
+
+type SnapshotConfigurationInitParameters struct {
+
+	// (Boolean) Whether to enable the mysql endpoint or not.
+	// Whether scheduled snapshots are enabled for the service. When true, gap and time_frame are required.
+	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
+
+	// (Number) Interval in minutes between snapshots. Required when enabled, and paired with time_frame: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// Interval in minutes between snapshots. Required when enabled, and paired with time_frame: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	Gap *float64 `json:"gap,omitempty" tf:"gap,omitempty"`
+
+	// (Number) Retention window in minutes the snapshots cover. Required when enabled, and paired with gap: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// Retention window in minutes the snapshots cover. Required when enabled, and paired with gap: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	TimeFrame *float64 `json:"timeFrame,omitempty" tf:"time_frame,omitempty"`
+}
+
+type SnapshotConfigurationObservation struct {
+
+	// (Boolean) Whether to enable the mysql endpoint or not.
+	// Whether scheduled snapshots are enabled for the service. When true, gap and time_frame are required.
+	Enabled *bool `json:"enabled,omitempty" tf:"enabled,omitempty"`
+
+	// (Number) Interval in minutes between snapshots. Required when enabled, and paired with time_frame: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// Interval in minutes between snapshots. Required when enabled, and paired with time_frame: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	Gap *float64 `json:"gap,omitempty" tf:"gap,omitempty"`
+
+	// (Number) Retention window in minutes the snapshots cover. Required when enabled, and paired with gap: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// Retention window in minutes the snapshots cover. Required when enabled, and paired with gap: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	TimeFrame *float64 `json:"timeFrame,omitempty" tf:"time_frame,omitempty"`
+}
+
+type SnapshotConfigurationParameters struct {
+
+	// (Boolean) Whether to enable the mysql endpoint or not.
+	// Whether scheduled snapshots are enabled for the service. When true, gap and time_frame are required.
+	// +kubebuilder:validation:Optional
+	Enabled *bool `json:"enabled" tf:"enabled,omitempty"`
+
+	// (Number) Interval in minutes between snapshots. Required when enabled, and paired with time_frame: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// Interval in minutes between snapshots. Required when enabled, and paired with time_frame: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// +kubebuilder:validation:Optional
+	Gap *float64 `json:"gap,omitempty" tf:"gap,omitempty"`
+
+	// (Number) Retention window in minutes the snapshots cover. Required when enabled, and paired with gap: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// Retention window in minutes the snapshots cover. Required when enabled, and paired with gap: only the presets (gap 30, time_frame 1440) and (gap 60, time_frame 2880) are accepted.
+	// +kubebuilder:validation:Optional
+	TimeFrame *float64 `json:"timeFrame,omitempty" tf:"time_frame,omitempty"`
 }
 
 type TransparentDataEncryptionInitParameters struct {

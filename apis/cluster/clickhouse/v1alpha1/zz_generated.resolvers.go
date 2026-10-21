@@ -10,6 +10,8 @@ import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/v2/pkg/reference"
 	resource "github.com/crossplane/upjet/v2/pkg/resource"
+	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/byoc/v1alpha1"
+	v1alpha11 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,8 +21,45 @@ func (mg *Service) ResolveReferences(ctx context.Context, c client.Reader) error
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse
+	var mrsp reference.MultiResolutionResponse
 	var err error
 
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ByocID),
+		Extract:      reference.ExternalName(),
+		Namespace:    mg.GetNamespace(),
+		Reference:    mg.Spec.ForProvider.ByocIDRef,
+		Selector:     mg.Spec.ForProvider.ByocIDSelector,
+		To: reference.To{
+			List:    &v1alpha1.InfrastructureList{},
+			Managed: &v1alpha1.Infrastructure{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.ByocID")
+	}
+	mg.Spec.ForProvider.ByocID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.ByocIDRef = rsp.ResolvedReference
+
+	if mg.Spec.ForProvider.QueryAPIEndpoints != nil {
+		mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+			CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.QueryAPIEndpoints.APIKeyIds),
+			Extract:       reference.ExternalName(),
+			Namespace:     mg.GetNamespace(),
+			References:    mg.Spec.ForProvider.QueryAPIEndpoints.APIKeyIdsRefs,
+			Selector:      mg.Spec.ForProvider.QueryAPIEndpoints.APIKeyIdsSelector,
+			To: reference.To{
+				List:    &v1alpha11.APIKeyList{},
+				Managed: &v1alpha11.APIKey{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.ForProvider.QueryAPIEndpoints.APIKeyIds")
+		}
+		mg.Spec.ForProvider.QueryAPIEndpoints.APIKeyIds = reference.ToPtrValues(mrsp.ResolvedValues)
+		mg.Spec.ForProvider.QueryAPIEndpoints.APIKeyIdsRefs = mrsp.ResolvedReferences
+
+	}
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.WarehouseID),
 		Extract:      resource.ExtractParamPath("warehouse_id", true),
@@ -38,6 +77,42 @@ func (mg *Service) ResolveReferences(ctx context.Context, c client.Reader) error
 	mg.Spec.ForProvider.WarehouseID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.WarehouseIDRef = rsp.ResolvedReference
 
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.ByocID),
+		Extract:      reference.ExternalName(),
+		Namespace:    mg.GetNamespace(),
+		Reference:    mg.Spec.InitProvider.ByocIDRef,
+		Selector:     mg.Spec.InitProvider.ByocIDSelector,
+		To: reference.To{
+			List:    &v1alpha1.InfrastructureList{},
+			Managed: &v1alpha1.Infrastructure{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.InitProvider.ByocID")
+	}
+	mg.Spec.InitProvider.ByocID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.InitProvider.ByocIDRef = rsp.ResolvedReference
+
+	if mg.Spec.InitProvider.QueryAPIEndpoints != nil {
+		mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+			CurrentValues: reference.FromPtrValues(mg.Spec.InitProvider.QueryAPIEndpoints.APIKeyIds),
+			Extract:       reference.ExternalName(),
+			Namespace:     mg.GetNamespace(),
+			References:    mg.Spec.InitProvider.QueryAPIEndpoints.APIKeyIdsRefs,
+			Selector:      mg.Spec.InitProvider.QueryAPIEndpoints.APIKeyIdsSelector,
+			To: reference.To{
+				List:    &v1alpha11.APIKeyList{},
+				Managed: &v1alpha11.APIKey{},
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "mg.Spec.InitProvider.QueryAPIEndpoints.APIKeyIds")
+		}
+		mg.Spec.InitProvider.QueryAPIEndpoints.APIKeyIds = reference.ToPtrValues(mrsp.ResolvedValues)
+		mg.Spec.InitProvider.QueryAPIEndpoints.APIKeyIdsRefs = mrsp.ResolvedReferences
+
+	}
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.WarehouseID),
 		Extract:      resource.ExtractParamPath("warehouse_id", true),

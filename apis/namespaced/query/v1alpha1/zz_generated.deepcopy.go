@@ -54,6 +54,18 @@ func (in *APIEndpointInitParameters) DeepCopyInto(out *APIEndpointInitParameters
 			}
 		}
 	}
+	if in.APIKeyIdsRefs != nil {
+		in, out := &in.APIKeyIdsRefs, &out.APIKeyIdsRefs
+		*out = make([]v2.NamespacedReference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.APIKeyIdsSelector != nil {
+		in, out := &in.APIKeyIdsSelector, &out.APIKeyIdsSelector
+		*out = new(v2.NamespacedSelector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.AllowedOrigins != nil {
 		in, out := &in.AllowedOrigins, &out.AllowedOrigins
 		*out = make([]*string, len(*in))
@@ -273,6 +285,18 @@ func (in *APIEndpointParameters) DeepCopyInto(out *APIEndpointParameters) {
 				**out = **in
 			}
 		}
+	}
+	if in.APIKeyIdsRefs != nil {
+		in, out := &in.APIKeyIdsRefs, &out.APIKeyIdsRefs
+		*out = make([]v2.NamespacedReference, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.APIKeyIdsSelector != nil {
+		in, out := &in.APIKeyIdsSelector, &out.APIKeyIdsSelector
+		*out = new(v2.NamespacedSelector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.AllowedOrigins != nil {
 		in, out := &in.AllowedOrigins, &out.AllowedOrigins

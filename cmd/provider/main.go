@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/alecthomas/kong"
@@ -25,6 +26,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -137,7 +139,9 @@ func main() {
 		LeaderElection:   cli.LeaderElection,
 		LeaderElectionID: "crossplane-leader-election-provider-clickhouse",
 		Cache: cache.Options{
-			SyncPeriod: &cli.SyncPeriod,
+			SyncPeriod:       &cli.SyncPeriod,
+			DefaultTransform: cache.TransformStripManagedFields(),
+			// ByObject transforms take precedence over DefaultTransform.
 			ByObject: map[client.Object]cache.ByObject{
 				&apiextensionsv1.CustomResourceDefinition{}: {
 					Transform: customresourcesgate.TransformStripCRDSchema,
@@ -241,6 +245,7 @@ func main() {
 			Logger:                  log,
 			Gate:                    crdGate,
 			MaxConcurrentReconciles: 1,
+			Groups:                  providerGroups(scheme, clusterProvider.RootGroup, namespacedProvider.RootGroup),
 		}), "Cannot setup CRD gate")
 		ctx.FatalIfErrorf(controllerCluster.SetupGated(mgr, clusterOpts), "Cannot setup cluster-scoped ClickHouse controllers")
 		ctx.FatalIfErrorf(controllerNamespaced.SetupGated(mgr, namespacedOpts), "Cannot setup namespaced ClickHouse controllers")
@@ -251,6 +256,21 @@ func main() {
 	}
 
 	ctx.FatalIfErrorf(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
+}
+
+// providerGroups returns the API groups registered in the scheme that are, or
+// are subgroups of, the supplied root groups. The CRD gate uses them to skip
+// CRDs that belong to other providers.
+func providerGroups(s *runtime.Scheme, roots ...string) []string {
+	groups := sets.New[string]()
+	for gvk := range s.AllKnownTypes() {
+		for _, root := range roots {
+			if gvk.Group == root || strings.HasSuffix(gvk.Group, "."+root) {
+				groups.Insert(gvk.Group)
+			}
+		}
+	}
+	return sets.List(groups)
 }
 
 func canWatchCRD(ctx context.Context, mgr manager.Manager) (bool, error) {

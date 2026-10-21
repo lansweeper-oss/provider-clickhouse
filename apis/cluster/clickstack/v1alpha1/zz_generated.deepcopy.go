@@ -225,6 +225,17 @@ func (in *AlertInitParameters) DeepCopyInto(out *AlertInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Tags != nil {
+		in, out := &in.Tags, &out.Tags
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.Team != nil {
 		in, out := &in.Team, &out.Team
 		*out = new(string)
@@ -384,6 +395,28 @@ func (in *AlertObservation) DeepCopyInto(out *AlertObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Tags != nil {
+		in, out := &in.Tags, &out.Tags
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
+	if in.TagsAll != nil {
+		in, out := &in.TagsAll, &out.TagsAll
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.Team != nil {
 		in, out := &in.Team, &out.Team
 		*out = new(string)
@@ -515,6 +548,17 @@ func (in *AlertParameters) DeepCopyInto(out *AlertParameters) {
 		in, out := &in.Source, &out.Source
 		*out = new(string)
 		**out = **in
+	}
+	if in.Tags != nil {
+		in, out := &in.Tags, &out.Tags
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.Team != nil {
 		in, out := &in.Team, &out.Team
@@ -1253,6 +1297,17 @@ func (in *DashboardObservation) DeepCopyInto(out *DashboardObservation) {
 		in, out := &in.NormalizedJSON, &out.NormalizedJSON
 		*out = new(string)
 		**out = **in
+	}
+	if in.TagsAll != nil {
+		in, out := &in.TagsAll, &out.TagsAll
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.Team != nil {
 		in, out := &in.Team, &out.Team
@@ -2712,6 +2767,17 @@ func (in *SavedSearchObservation) DeepCopyInto(out *SavedSearchObservation) {
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
+	if in.TagsAll != nil {
+		in, out := &in.TagsAll, &out.TagsAll
 		*out = make([]*string, len(*in))
 		for i := range *in {
 			if (*in)[i] != nil {

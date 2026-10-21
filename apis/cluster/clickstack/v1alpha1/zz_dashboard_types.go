@@ -46,6 +46,11 @@ type DashboardObservation struct {
 	// Server-canonical dashboard body returned by the API (defaults applied, server-assigned tile IDs).
 	NormalizedJSON *string `json:"normalizedJson,omitempty" tf:"normalized_json,omitempty"`
 
+	// (Set of String) All tags on the resource: its own tags plus the provider's clickstack_default_tags.
+	// All tags on the resource: its own tags plus the provider's `clickstack_default_tags`.
+	// +listType=set
+	TagsAll []*string `json:"tagsAll,omitempty" tf:"tags_all,omitempty"`
+
 	// hdx-team). Changing this forces replacement.
 	// Team ID to manage this dashboard under (`x-hdx-team`). Changing this forces replacement.
 	Team *string `json:"team,omitempty" tf:"team,omitempty"`

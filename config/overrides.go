@@ -9,6 +9,7 @@ import (
 )
 
 var gkvOverrideMap = map[string]schema.GroupVersionKind{
+	"clickhouse_api_key":     {Group: "iam", Kind: "APIKey"},
 	"clickhouse_clickpipe":   {Group: "clickpipe"},
 	"clickhouse_role":        {Group: "iam"},
 	"clickhouse_saved_query": {Group: "query", Kind: "SavedQuery"},
@@ -99,6 +100,9 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_query_api_endpoint", func(r *config.Resource) {
 		r.References = config.References{
+			"api_key_ids": {
+				TerraformName: "clickhouse_api_key",
+			},
 			"service_id": {
 				TerraformName: "clickhouse_service",
 			},
@@ -107,6 +111,9 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_role_assignment", func(r *config.Resource) {
 		r.References = config.References{
+			"api_key_ids": {
+				TerraformName: "clickhouse_api_key",
+			},
 			"role_id": {
 				TerraformName: "clickhouse_role",
 			},
@@ -134,6 +141,12 @@ func Configure(p *config.Provider) {
 
 	p.AddResourceConfigurator("clickhouse_service", func(r *config.Resource) {
 		r.References = config.References{
+			"byoc_id": {
+				TerraformName: "clickhouse_byoc_infrastructure",
+			},
+			"query_api_endpoints.api_key_ids": {
+				TerraformName: "clickhouse_api_key",
+			},
 			"warehouse_id": {
 				TerraformName: "clickhouse_service",
 				Extractor:     `github.com/crossplane/upjet/v2/pkg/resource.ExtractParamPath("warehouse_id",true)`,

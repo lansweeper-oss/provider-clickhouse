@@ -9,7 +9,8 @@ package v1alpha1
 import (
 	"context"
 	reference "github.com/crossplane/crossplane-runtime/v2/pkg/reference"
-	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
+	v1alpha11 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
+	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/iam/v1alpha1"
 	errors "github.com/pkg/errors"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,7 +20,25 @@ func (mg *APIEndpoint) ResolveReferences(ctx context.Context, c client.Reader) e
 	r := reference.NewAPIResolver(c, mg)
 
 	var rsp reference.ResolutionResponse
+	var mrsp reference.MultiResolutionResponse
 	var err error
+
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.APIKeyIds),
+		Extract:       reference.ExternalName(),
+		Namespace:     mg.GetNamespace(),
+		References:    mg.Spec.ForProvider.APIKeyIdsRefs,
+		Selector:      mg.Spec.ForProvider.APIKeyIdsSelector,
+		To: reference.To{
+			List:    &v1alpha1.APIKeyList{},
+			Managed: &v1alpha1.APIKey{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.APIKeyIds")
+	}
+	mg.Spec.ForProvider.APIKeyIds = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.APIKeyIdsRefs = mrsp.ResolvedReferences
 
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ServiceID),
@@ -28,8 +47,8 @@ func (mg *APIEndpoint) ResolveReferences(ctx context.Context, c client.Reader) e
 		Reference:    mg.Spec.ForProvider.ServiceIDRef,
 		Selector:     mg.Spec.ForProvider.ServiceIDSelector,
 		To: reference.To{
-			List:    &v1alpha1.ServiceList{},
-			Managed: &v1alpha1.Service{},
+			List:    &v1alpha11.ServiceList{},
+			Managed: &v1alpha11.Service{},
 		},
 	})
 	if err != nil {
@@ -38,6 +57,23 @@ func (mg *APIEndpoint) ResolveReferences(ctx context.Context, c client.Reader) e
 	mg.Spec.ForProvider.ServiceID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.ServiceIDRef = rsp.ResolvedReference
 
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.InitProvider.APIKeyIds),
+		Extract:       reference.ExternalName(),
+		Namespace:     mg.GetNamespace(),
+		References:    mg.Spec.InitProvider.APIKeyIdsRefs,
+		Selector:      mg.Spec.InitProvider.APIKeyIdsSelector,
+		To: reference.To{
+			List:    &v1alpha1.APIKeyList{},
+			Managed: &v1alpha1.APIKey{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.InitProvider.APIKeyIds")
+	}
+	mg.Spec.InitProvider.APIKeyIds = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.InitProvider.APIKeyIdsRefs = mrsp.ResolvedReferences
+
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.InitProvider.ServiceID),
 		Extract:      reference.ExternalName(),
@@ -45,8 +81,8 @@ func (mg *APIEndpoint) ResolveReferences(ctx context.Context, c client.Reader) e
 		Reference:    mg.Spec.InitProvider.ServiceIDRef,
 		Selector:     mg.Spec.InitProvider.ServiceIDSelector,
 		To: reference.To{
-			List:    &v1alpha1.ServiceList{},
-			Managed: &v1alpha1.Service{},
+			List:    &v1alpha11.ServiceList{},
+			Managed: &v1alpha11.Service{},
 		},
 	})
 	if err != nil {
@@ -72,8 +108,8 @@ func (mg *SavedQuery) ResolveReferences(ctx context.Context, c client.Reader) er
 		Reference:    mg.Spec.ForProvider.ServiceIDRef,
 		Selector:     mg.Spec.ForProvider.ServiceIDSelector,
 		To: reference.To{
-			List:    &v1alpha1.ServiceList{},
-			Managed: &v1alpha1.Service{},
+			List:    &v1alpha11.ServiceList{},
+			Managed: &v1alpha11.Service{},
 		},
 	})
 	if err != nil {
@@ -89,8 +125,8 @@ func (mg *SavedQuery) ResolveReferences(ctx context.Context, c client.Reader) er
 		Reference:    mg.Spec.InitProvider.ServiceIDRef,
 		Selector:     mg.Spec.InitProvider.ServiceIDSelector,
 		To: reference.To{
-			List:    &v1alpha1.ServiceList{},
-			Managed: &v1alpha1.Service{},
+			List:    &v1alpha11.ServiceList{},
+			Managed: &v1alpha11.Service{},
 		},
 	})
 	if err != nil {

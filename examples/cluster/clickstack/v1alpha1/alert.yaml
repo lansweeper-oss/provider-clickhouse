@@ -23,6 +23,9 @@ spec:
     savedSearchIdSelector:
       matchLabels:
         testing.upbound.io/example-name: errors
+    tags:
+    - production
+    - errors
     threshold: 100
     thresholdType: above
 

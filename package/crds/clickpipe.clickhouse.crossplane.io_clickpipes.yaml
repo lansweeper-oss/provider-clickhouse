@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: clickpipes.clickpipe.clickhouse.crossplane.io
 spec:
   group: clickpipe.clickhouse.crossplane.io
@@ -140,7 +140,7 @@ spec:
                                 type: string
                               versionColumnId:
                                 description: |-
-                                  Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree`.
+                                  Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
                                 type: string
                             type: object
                           partitionBy:
@@ -153,7 +153,7 @@ spec:
                             type: string
                           sortingKey:
                             description: |-
-                              The list of columns for the sorting key.
+                              The list of columns for the sorting key. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
                             items:
                               type: string
                             type: array
@@ -291,9 +291,15 @@ spec:
                         description: The BigQuery source configuration
                           for the ClickPipe. (see below for nested schema)
                         properties:
+                          authentication:
+                            description: |-
+                              Authentication method for the BigQuery source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
+                            type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               serviceAccountFileSecretRef:
                                 description: |-
@@ -314,6 +320,10 @@ spec:
                                 - namespace
                                 type: object
                             type: object
+                          projectId:
+                            description: |-
+                              GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+                            type: string
                           settings:
                             description: Advanced configuration options
                               for the ClickPipe. These settings are specific to each
@@ -329,9 +339,21 @@ spec:
                                 description: |-
                                   Number of parallel workers during initial load.
                                 type: number
+                              pullWindowSizeSeconds:
+                                description: |-
+                                  Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is `snapshot`. Defaults to 86400 (24 hours) for CDC modes.
+                                type: number
+                              queryCdcPullSyncParallelism:
+                                description: |-
+                                  Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is `snapshot`. Defaults to 4 for CDC modes.
+                                type: number
+                              replicationMethod:
+                                description: |-
+                                  How changes are captured from BigQuery. (`query_based`, `events_based`). `query_based` polls each table using a watermark timestamp column (see `query_cdc_watermark_column` in `table_mappings`), `events_based` reads the BigQuery change history using the `APPENDS` or `CHANGES` table function (see `events_function` in `table_mappings`). Required when `replication_mode` is `cdc` or `cdc_only`, and must be omitted for `snapshot`.
+                                type: string
                               replicationMode:
                                 description: |-
-                                  Replication mode for the BigQuery pipe. (`snapshot`)
+                                  Replication mode for the BigQuery pipe. (`cdc`, `snapshot`, `cdc_only`)
                                 type: string
                               snapshotNumRowsPerPartition:
                                 description: |-
@@ -340,6 +362,14 @@ spec:
                               snapshotNumberOfParallelTables:
                                 description: |-
                                   Number of parallel tables to snapshot.
+                                type: number
+                              syncDelaySeconds:
+                                description: |-
+                                  Each CDC sync reads data only up to now minus this delay, giving recently written rows time to become visible in BigQuery. Increase it if your tables are loaded via batch jobs or Google Cloud Dataflow; if set too low, late-visible rows may be skipped. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+                                type: number
+                              syncIntervalSeconds:
+                                description: |-
+                                  Interval in seconds between CDC syncs. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
                                 type: number
                             type: object
                           snapshotStagingPath:
@@ -352,6 +382,10 @@ spec:
                               schema)
                             items:
                               properties:
+                                eventsFunction:
+                                  description: |-
+                                    BigQuery table function used to read changes. (`appends`, `changes`). Required for every table when `replication_method` is `events_based`; must be omitted otherwise.
+                                  type: string
                                 excludedColumns:
                                   description: |-
                                     Columns to exclude from replication.
@@ -359,6 +393,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                queryCdcWatermarkColumn:
+                                  description: |-
+                                    Source column of type `TIMESTAMP` used as the CDC watermark. Required for every table when `replication_method` is `query_based`; must be omitted otherwise.
+                                  type: string
                                 sortingKeys:
                                   description: |-
                                     Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
@@ -394,8 +432,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`). Default is `PLAIN`.
+                              The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). Default is `PLAIN`. `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview and is supported only for GCMK.
                             type: string
                           brokers:
                             description: |-
@@ -412,7 +449,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               accessKeyIdSecretRef:
                                 description: |-
@@ -693,18 +732,20 @@ spec:
                                 type: object
                             type: object
                           schemaRegistry:
-                            description: '(Attributes) The schema registry for the
-                              Kafka source. Immutable: any change forces pipe replacement.
-                              (see below for nested schema)'
+                            description: 'compatible registry (url, authentication,
+                              credentials) or an AWS Glue schema registry (type =
+                              "glue" with a glue block). Immutable: any change forces
+                              pipe replacement. (see below for nested schema)'
                             properties:
                               authentication:
                                 description: |-
-                                  SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                                  The authentication method for the Schema Registry. Only supported is `PLAIN`.
+                                  The authentication method for the Schema Registry. Only supported is `PLAIN`. Required for `confluent` registries.
                                 type: string
                               credentials:
                                 description: The credentials
-                                  for BigQuery access. (see below for nested schema)
+                                  for BigQuery access. Required with SERVICE_ACCOUNT
+                                  authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                                  (see below for nested schema)
                                 properties:
                                   passwordSecretRef:
                                     description: |-
@@ -765,9 +806,31 @@ spec:
                                     - namespace
                                     type: object
                                 type: object
+                              glue:
+                                description: The AWS Glue schema registry.
+                                  Required for glue registries. (see below for nested
+                                  schema)
+                                properties:
+                                  region:
+                                    description: |-
+                                      The AWS region of the Glue schema registry.
+                                    type: string
+                                  registryName:
+                                    description: |-
+                                      The name of the Glue schema registry.
+                                    type: string
+                                  roleArn:
+                                    description: |-
+                                      The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses `IAM_ROLE` or `IAM_USER` authentication.
+                                    type: string
+                                type: object
+                              type:
+                                description: |-
+                                  The type of the schema registry. (`confluent`, `glue`). Default is `confluent`. The AWS Glue schema registry must be enabled for the organization.
+                                type: string
                               url:
                                 description: |-
-                                  The URL of the schema registry.
+                                  The URL of the schema registry. Required for `confluent` registries.
                                 type: string
                             type: object
                           sshKeyResourceId:
@@ -914,7 +977,6 @@ spec:
                             type: object
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               The authentication method for the Kinesis source. (`IAM_ROLE`, `IAM_USER`).
                             type: string
                           format:
@@ -938,9 +1000,10 @@ spec:
                               The AWS region of the Kinesis stream.
                             type: string
                           schemaRegistry:
-                            description: '(Attributes) The schema registry for the
-                              Kafka source. Immutable: any change forces pipe replacement.
-                              (see below for nested schema)'
+                            description: 'compatible registry (url, authentication,
+                              credentials) or an AWS Glue schema registry (type =
+                              "glue" with a glue block). Immutable: any change forces
+                              pipe replacement. (see below for nested schema)'
                             properties:
                               glueRegion:
                                 description: |-
@@ -983,7 +1046,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordSecretRef:
                                 description: |-
@@ -1201,7 +1266,6 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
@@ -1210,7 +1274,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordSecretRef:
                                 description: |-
@@ -1478,7 +1544,7 @@ spec:
                             type: string
                           type:
                             description: |-
-                              The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
+                              The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `cloudsqlmysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
                             type: string
                         type: object
                       objectStorage:
@@ -1529,8 +1595,7 @@ spec:
                             type: object
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER and SERVICE_ACCOUNT are for GCS. If not provided, no authentication is used
+                              CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER, SERVICE_ACCOUNT, and the Private Preview SERVICE_ACCOUNT_WORKLOAD_IDENTITY are for GCS. If not provided, no authentication is used.
                             type: string
                           azureContainerName:
                             description: |-
@@ -1624,7 +1689,6 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
@@ -1633,7 +1697,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordSecretRef:
                                 description: |-
@@ -1918,8 +1984,7 @@ spec:
                             type: number
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              The authentication method for the Pub/Sub source. Currently only `SERVICE_ACCOUNT` is supported.
+                              The authentication method for the Pub/Sub source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
                             type: string
                           enableOrdering:
                             description: |-
@@ -1978,7 +2043,7 @@ spec:
                     type: object
                   stopped:
                     description: |-
-                      Whether the ClickPipe should be stopped. Default is `false` (ClickPipe will be running). Cannot be set to `true` on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+                      Whether the ClickPipe should be stopped. Default is `false`. For streaming and object-storage ClickPipes, set to `true` to create the pipe without starting ingestion, then set to `false` and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; `state` reports the live status.
                     type: boolean
                   triggerResync:
                     description: |-
@@ -2058,7 +2123,7 @@ spec:
                                 type: string
                               versionColumnId:
                                 description: |-
-                                  Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree`.
+                                  Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
                                 type: string
                             type: object
                           partitionBy:
@@ -2071,7 +2136,7 @@ spec:
                             type: string
                           sortingKey:
                             description: |-
-                              The list of columns for the sorting key.
+                              The list of columns for the sorting key. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
                             items:
                               type: string
                             type: array
@@ -2209,9 +2274,15 @@ spec:
                         description: The BigQuery source configuration
                           for the ClickPipe. (see below for nested schema)
                         properties:
+                          authentication:
+                            description: |-
+                              Authentication method for the BigQuery source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
+                            type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               serviceAccountFileSecretRef:
                                 description: |-
@@ -2234,6 +2305,10 @@ spec:
                             required:
                             - serviceAccountFileSecretRef
                             type: object
+                          projectId:
+                            description: |-
+                              GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+                            type: string
                           settings:
                             description: Advanced configuration options
                               for the ClickPipe. These settings are specific to each
@@ -2249,9 +2324,21 @@ spec:
                                 description: |-
                                   Number of parallel workers during initial load.
                                 type: number
+                              pullWindowSizeSeconds:
+                                description: |-
+                                  Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is `snapshot`. Defaults to 86400 (24 hours) for CDC modes.
+                                type: number
+                              queryCdcPullSyncParallelism:
+                                description: |-
+                                  Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is `snapshot`. Defaults to 4 for CDC modes.
+                                type: number
+                              replicationMethod:
+                                description: |-
+                                  How changes are captured from BigQuery. (`query_based`, `events_based`). `query_based` polls each table using a watermark timestamp column (see `query_cdc_watermark_column` in `table_mappings`), `events_based` reads the BigQuery change history using the `APPENDS` or `CHANGES` table function (see `events_function` in `table_mappings`). Required when `replication_mode` is `cdc` or `cdc_only`, and must be omitted for `snapshot`.
+                                type: string
                               replicationMode:
                                 description: |-
-                                  Replication mode for the BigQuery pipe. (`snapshot`)
+                                  Replication mode for the BigQuery pipe. (`cdc`, `snapshot`, `cdc_only`)
                                 type: string
                               snapshotNumRowsPerPartition:
                                 description: |-
@@ -2260,6 +2347,14 @@ spec:
                               snapshotNumberOfParallelTables:
                                 description: |-
                                   Number of parallel tables to snapshot.
+                                type: number
+                              syncDelaySeconds:
+                                description: |-
+                                  Each CDC sync reads data only up to now minus this delay, giving recently written rows time to become visible in BigQuery. Increase it if your tables are loaded via batch jobs or Google Cloud Dataflow; if set too low, late-visible rows may be skipped. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+                                type: number
+                              syncIntervalSeconds:
+                                description: |-
+                                  Interval in seconds between CDC syncs. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
                                 type: number
                             type: object
                           snapshotStagingPath:
@@ -2272,6 +2367,10 @@ spec:
                               schema)
                             items:
                               properties:
+                                eventsFunction:
+                                  description: |-
+                                    BigQuery table function used to read changes. (`appends`, `changes`). Required for every table when `replication_method` is `events_based`; must be omitted otherwise.
+                                  type: string
                                 excludedColumns:
                                   description: |-
                                     Columns to exclude from replication.
@@ -2279,6 +2378,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                queryCdcWatermarkColumn:
+                                  description: |-
+                                    Source column of type `TIMESTAMP` used as the CDC watermark. Required for every table when `replication_method` is `query_based`; must be omitted otherwise.
+                                  type: string
                                 sortingKeys:
                                   description: |-
                                     Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
@@ -2314,8 +2417,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`). Default is `PLAIN`.
+                              The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). Default is `PLAIN`. `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview and is supported only for GCMK.
                             type: string
                           brokers:
                             description: |-
@@ -2332,7 +2434,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               accessKeyIdSecretRef:
                                 description: |-
@@ -2613,18 +2717,20 @@ spec:
                                 type: object
                             type: object
                           schemaRegistry:
-                            description: '(Attributes) The schema registry for the
-                              Kafka source. Immutable: any change forces pipe replacement.
-                              (see below for nested schema)'
+                            description: 'compatible registry (url, authentication,
+                              credentials) or an AWS Glue schema registry (type =
+                              "glue" with a glue block). Immutable: any change forces
+                              pipe replacement. (see below for nested schema)'
                             properties:
                               authentication:
                                 description: |-
-                                  SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                                  The authentication method for the Schema Registry. Only supported is `PLAIN`.
+                                  The authentication method for the Schema Registry. Only supported is `PLAIN`. Required for `confluent` registries.
                                 type: string
                               credentials:
                                 description: The credentials
-                                  for BigQuery access. (see below for nested schema)
+                                  for BigQuery access. Required with SERVICE_ACCOUNT
+                                  authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                                  (see below for nested schema)
                                 properties:
                                   passwordSecretRef:
                                     description: |-
@@ -2687,9 +2793,31 @@ spec:
                                 required:
                                 - usernameSecretRef
                                 type: object
+                              glue:
+                                description: The AWS Glue schema registry.
+                                  Required for glue registries. (see below for nested
+                                  schema)
+                                properties:
+                                  region:
+                                    description: |-
+                                      The AWS region of the Glue schema registry.
+                                    type: string
+                                  registryName:
+                                    description: |-
+                                      The name of the Glue schema registry.
+                                    type: string
+                                  roleArn:
+                                    description: |-
+                                      The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses `IAM_ROLE` or `IAM_USER` authentication.
+                                    type: string
+                                type: object
+                              type:
+                                description: |-
+                                  The type of the schema registry. (`confluent`, `glue`). Default is `confluent`. The AWS Glue schema registry must be enabled for the organization.
+                                type: string
                               url:
                                 description: |-
-                                  The URL of the schema registry.
+                                  The URL of the schema registry. Required for `confluent` registries.
                                 type: string
                             type: object
                           sshKeyResourceId:
@@ -2839,7 +2967,6 @@ spec:
                             type: object
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               The authentication method for the Kinesis source. (`IAM_ROLE`, `IAM_USER`).
                             type: string
                           format:
@@ -2863,9 +2990,10 @@ spec:
                               The AWS region of the Kinesis stream.
                             type: string
                           schemaRegistry:
-                            description: '(Attributes) The schema registry for the
-                              Kafka source. Immutable: any change forces pipe replacement.
-                              (see below for nested schema)'
+                            description: 'compatible registry (url, authentication,
+                              credentials) or an AWS Glue schema registry (type =
+                              "glue" with a glue block). Immutable: any change forces
+                              pipe replacement. (see below for nested schema)'
                             properties:
                               glueRegion:
                                 description: |-
@@ -2908,7 +3036,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordSecretRef:
                                 description: |-
@@ -3126,7 +3256,6 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
@@ -3135,7 +3264,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordSecretRef:
                                 description: |-
@@ -3405,7 +3536,7 @@ spec:
                             type: string
                           type:
                             description: |-
-                              The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
+                              The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `cloudsqlmysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
                             type: string
                         type: object
                       objectStorage:
@@ -3456,8 +3587,7 @@ spec:
                             type: object
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER and SERVICE_ACCOUNT are for GCS. If not provided, no authentication is used
+                              CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER, SERVICE_ACCOUNT, and the Private Preview SERVICE_ACCOUNT_WORKLOAD_IDENTITY are for GCS. If not provided, no authentication is used.
                             type: string
                           azureContainerName:
                             description: |-
@@ -3551,7 +3681,6 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
@@ -3560,7 +3689,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordSecretRef:
                                 description: |-
@@ -3847,8 +3978,7 @@ spec:
                             type: number
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              The authentication method for the Pub/Sub source. Currently only `SERVICE_ACCOUNT` is supported.
+                              The authentication method for the Pub/Sub source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
                             type: string
                           enableOrdering:
                             description: |-
@@ -3909,7 +4039,7 @@ spec:
                     type: object
                   stopped:
                     description: |-
-                      Whether the ClickPipe should be stopped. Default is `false` (ClickPipe will be running). Cannot be set to `true` on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+                      Whether the ClickPipe should be stopped. Default is `false`. For streaming and object-storage ClickPipes, set to `true` to create the pipe without starting ingestion, then set to `false` and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; `state` reports the live status.
                     type: boolean
                   triggerResync:
                     description: |-
@@ -4080,7 +4210,7 @@ spec:
                                 type: string
                               versionColumnId:
                                 description: |-
-                                  Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree`.
+                                  Column ID to use as version for ReplacingMergeTree engine. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
                                 type: string
                             type: object
                           partitionBy:
@@ -4093,7 +4223,7 @@ spec:
                             type: string
                           sortingKey:
                             description: |-
-                              The list of columns for the sorting key.
+                              The list of columns for the sorting key. Required when engine type is `ReplacingMergeTree` and the pipe is being created.
                             items:
                               type: string
                             type: array
@@ -4159,9 +4289,15 @@ spec:
                         description: The BigQuery source configuration
                           for the ClickPipe. (see below for nested schema)
                         properties:
+                          authentication:
+                            description: |-
+                              Authentication method for the BigQuery source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
+                            type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               serviceAccountFileSecretRef:
                                 description: |-
@@ -4182,6 +4318,10 @@ spec:
                                 - namespace
                                 type: object
                             type: object
+                          projectId:
+                            description: |-
+                              GCP project ID that owns the BigQuery resources. Required with SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication.
+                            type: string
                           settings:
                             description: Advanced configuration options
                               for the ClickPipe. These settings are specific to each
@@ -4197,9 +4337,21 @@ spec:
                                 description: |-
                                   Number of parallel workers during initial load.
                                 type: number
+                              pullWindowSizeSeconds:
+                                description: |-
+                                  Maximum amount of time one pull (query) can cover. Applies when the pipe has fallen behind, e.g. on the first CDC sync or when resuming after a pause: with a 6 hour limit, a pipe that is 3 days behind catches up in 12 smaller pulls instead of one large query. If a pull fails, only that pull is retried. Must be omitted when replication_mode is `snapshot`. Defaults to 86400 (24 hours) for CDC modes.
+                                type: number
+                              queryCdcPullSyncParallelism:
+                                description: |-
+                                  Number of tables pulled in parallel during a CDC sync. Must be omitted when replication_mode is `snapshot`. Defaults to 4 for CDC modes.
+                                type: number
+                              replicationMethod:
+                                description: |-
+                                  How changes are captured from BigQuery. (`query_based`, `events_based`). `query_based` polls each table using a watermark timestamp column (see `query_cdc_watermark_column` in `table_mappings`), `events_based` reads the BigQuery change history using the `APPENDS` or `CHANGES` table function (see `events_function` in `table_mappings`). Required when `replication_mode` is `cdc` or `cdc_only`, and must be omitted for `snapshot`.
+                                type: string
                               replicationMode:
                                 description: |-
-                                  Replication mode for the BigQuery pipe. (`snapshot`)
+                                  Replication mode for the BigQuery pipe. (`cdc`, `snapshot`, `cdc_only`)
                                 type: string
                               snapshotNumRowsPerPartition:
                                 description: |-
@@ -4208,6 +4360,14 @@ spec:
                               snapshotNumberOfParallelTables:
                                 description: |-
                                   Number of parallel tables to snapshot.
+                                type: number
+                              syncDelaySeconds:
+                                description: |-
+                                  Each CDC sync reads data only up to now minus this delay, giving recently written rows time to become visible in BigQuery. Increase it if your tables are loaded via batch jobs or Google Cloud Dataflow; if set too low, late-visible rows may be skipped. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
+                                type: number
+                              syncIntervalSeconds:
+                                description: |-
+                                  Interval in seconds between CDC syncs. Must be omitted when replication_mode is `snapshot`. Defaults to 60 for CDC modes.
                                 type: number
                             type: object
                           snapshotStagingPath:
@@ -4220,6 +4380,10 @@ spec:
                               schema)
                             items:
                               properties:
+                                eventsFunction:
+                                  description: |-
+                                    BigQuery table function used to read changes. (`appends`, `changes`). Required for every table when `replication_method` is `events_based`; must be omitted otherwise.
+                                  type: string
                                 excludedColumns:
                                   description: |-
                                     Columns to exclude from replication.
@@ -4227,6 +4391,10 @@ spec:
                                     type: string
                                   type: array
                                   x-kubernetes-list-type: set
+                                queryCdcWatermarkColumn:
+                                  description: |-
+                                    Source column of type `TIMESTAMP` used as the CDC watermark. Required for every table when `replication_method` is `query_based`; must be omitted otherwise.
+                                  type: string
                                 sortingKeys:
                                   description: |-
                                     Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
@@ -4262,8 +4430,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`). Default is `PLAIN`.
+                              The authentication method for the Kafka source. (`PLAIN`, `SCRAM-SHA-256`, `SCRAM-SHA-512`, `IAM_ROLE`, `IAM_USER`, `MUTUAL_TLS`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). Default is `PLAIN`. `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview and is supported only for GCMK.
                             type: string
                           brokers:
                             description: |-
@@ -4280,7 +4447,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordWoVersion:
                                 description: |-
@@ -4320,27 +4489,51 @@ spec:
                               type: string
                             type: array
                           schemaRegistry:
-                            description: '(Attributes) The schema registry for the
-                              Kafka source. Immutable: any change forces pipe replacement.
-                              (see below for nested schema)'
+                            description: 'compatible registry (url, authentication,
+                              credentials) or an AWS Glue schema registry (type =
+                              "glue" with a glue block). Immutable: any change forces
+                              pipe replacement. (see below for nested schema)'
                             properties:
                               authentication:
                                 description: |-
-                                  SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                                  The authentication method for the Schema Registry. Only supported is `PLAIN`.
+                                  The authentication method for the Schema Registry. Only supported is `PLAIN`. Required for `confluent` registries.
                                 type: string
                               credentials:
                                 description: The credentials
-                                  for BigQuery access. (see below for nested schema)
+                                  for BigQuery access. Required with SERVICE_ACCOUNT
+                                  authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                                  (see below for nested schema)
                                 properties:
                                   passwordWoVersion:
                                     description: |-
                                       Version trigger for `password_wo`. Incrementing signals a new password, which forces pipe replacement - schema registry credentials cannot be updated in place.
                                     type: number
                                 type: object
+                              glue:
+                                description: The AWS Glue schema registry.
+                                  Required for glue registries. (see below for nested
+                                  schema)
+                                properties:
+                                  region:
+                                    description: |-
+                                      The AWS region of the Glue schema registry.
+                                    type: string
+                                  registryName:
+                                    description: |-
+                                      The name of the Glue schema registry.
+                                    type: string
+                                  roleArn:
+                                    description: |-
+                                      The IAM role to assume for Glue schema registry access. Defaults to the IAM identity of the Kafka source, so it is required unless the Kafka source uses `IAM_ROLE` or `IAM_USER` authentication.
+                                    type: string
+                                type: object
+                              type:
+                                description: |-
+                                  The type of the schema registry. (`confluent`, `glue`). Default is `confluent`. The AWS Glue schema registry must be enabled for the organization.
+                                type: string
                               url:
                                 description: |-
-                                  The URL of the schema registry.
+                                  The URL of the schema registry. Required for `confluent` registries.
                                 type: string
                             type: object
                           sshKeyResourceId:
@@ -4411,7 +4604,6 @@ spec:
                             type: object
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               The authentication method for the Kinesis source. (`IAM_ROLE`, `IAM_USER`).
                             type: string
                           format:
@@ -4435,9 +4627,10 @@ spec:
                               The AWS region of the Kinesis stream.
                             type: string
                           schemaRegistry:
-                            description: '(Attributes) The schema registry for the
-                              Kafka source. Immutable: any change forces pipe replacement.
-                              (see below for nested schema)'
+                            description: 'compatible registry (url, authentication,
+                              credentials) or an AWS Glue schema registry (type =
+                              "glue" with a glue block). Immutable: any change forces
+                              pipe replacement. (see below for nested schema)'
                             properties:
                               glueRegion:
                                 description: |-
@@ -4480,7 +4673,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordWoVersion:
                                 description: |-
@@ -4586,7 +4781,6 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
@@ -4595,7 +4789,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordWoVersion:
                                 description: |-
@@ -4733,7 +4929,7 @@ spec:
                             type: string
                           type:
                             description: |-
-                              The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
+                              The type of MySQL-compatible source. (`mysql`, `rdsmysql`, `auroramysql`, `cloudsqlmysql`, `planetscalevitess`, `mariadb`, `rdsmariadb`). Default is `mysql`.
                             type: string
                         type: object
                       objectStorage:
@@ -4784,8 +4980,7 @@ spec:
                             type: object
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER and SERVICE_ACCOUNT are for GCS. If not provided, no authentication is used
+                              CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3. IAM_USER, SERVICE_ACCOUNT, and the Private Preview SERVICE_ACCOUNT_WORKLOAD_IDENTITY are for GCS. If not provided, no authentication is used.
                             type: string
                           azureContainerName:
                             description: |-
@@ -4843,7 +5038,6 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
                               Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
                             type: string
                           caCertificate:
@@ -4852,7 +5046,9 @@ spec:
                             type: string
                           credentials:
                             description: The credentials for
-                              BigQuery access. (see below for nested schema)
+                              BigQuery access. Required with SERVICE_ACCOUNT authentication
+                              and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY.
+                              (see below for nested schema)
                             properties:
                               passwordWoVersion:
                                 description: |-
@@ -5007,8 +5203,7 @@ spec:
                             type: number
                           authentication:
                             description: |-
-                              SHA-256, SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS). Default is PLAIN.
-                              The authentication method for the Pub/Sub source. Currently only `SERVICE_ACCOUNT` is supported.
+                              The authentication method for the Pub/Sub source. (`SERVICE_ACCOUNT`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`). `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` is in Private Preview.
                             type: string
                           enableOrdering:
                             description: |-
@@ -5071,7 +5266,7 @@ spec:
                     type: string
                   stopped:
                     description: |-
-                      Whether the ClickPipe should be stopped. Default is `false` (ClickPipe will be running). Cannot be set to `true` on creation — the ClickPipe must be created in a running state and then stopped via a subsequent apply.
+                      Whether the ClickPipe should be stopped. Default is `false`. For streaming and object-storage ClickPipes, set to `true` to create the pipe without starting ingestion, then set to `false` and apply to start it. Database ClickPipes cannot be created stopped. This is the configured intent; `state` reports the live status.
                     type: boolean
                   triggerResync:
                     description: |-

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: apiendpoints.query.clickhouse.crossplane.io
 spec:
   group: query.clickhouse.crossplane.io
@@ -34,15 +34,14 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: 'APIEndpoint is the Schema for the APIEndpoints API. Use this
+        description: APIEndpoint is the Schema for the APIEndpoints API. Use this
           resource to create a Query API endpoint from a SQL query in ClickHouse Cloud.
           The endpoint runs the query over HTTP, so callers do not need a native driver
           to connect to the ClickHouse Cloud service. You can configure query parameters,
           API keys, database roles, and CORS allowed domains. For more information,
           see Setting up query API endpoints https://clickhouse.com/docs/products/cloud/guides/sql-console/query-endpoints.
-          ~> Note: This resource is in beta. Its behavior may change in future provider
-          versions. You can import an existing endpoint if it was created through
-          the Query API endpoints API.'
+          You can import an existing endpoint if it was created through the Query
+          API endpoints API.
         properties:
           apiVersion:
             description: |-
@@ -94,6 +93,84 @@ spec:
                       type: string
                     type: array
                     x-kubernetes-list-type: set
+                  apiKeyIdsRefs:
+                    description: References to APIKey in iam to populate apiKeyIds.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                        policy:
+                          description: Policies for referencing.
+                          properties:
+                            resolution:
+                              default: Required
+                              description: |-
+                                Resolution specifies whether resolution of this reference is required.
+                                The default is 'Required', which means the reconcile will fail if the
+                                reference cannot be resolved. 'Optional' means this reference will be
+                                a no-op if it cannot be resolved.
+                              enum:
+                              - Required
+                              - Optional
+                              type: string
+                            resolve:
+                              description: |-
+                                Resolve specifies when this reference should be resolved. The default
+                                is 'IfNotPresent', which will attempt to resolve the reference only when
+                                the corresponding field is not present. Use 'Always' to resolve the
+                                reference on every reconcile.
+                              enum:
+                              - Always
+                              - IfNotPresent
+                              type: string
+                          type: object
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  apiKeyIdsSelector:
+                    description: Selector for a list of APIKey in iam to populate
+                      apiKeyIds.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                   database:
                     description: |-
                       Database used by the Query API endpoint.
@@ -228,6 +305,84 @@ spec:
                       type: string
                     type: array
                     x-kubernetes-list-type: set
+                  apiKeyIdsRefs:
+                    description: References to APIKey in iam to populate apiKeyIds.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                        policy:
+                          description: Policies for referencing.
+                          properties:
+                            resolution:
+                              default: Required
+                              description: |-
+                                Resolution specifies whether resolution of this reference is required.
+                                The default is 'Required', which means the reconcile will fail if the
+                                reference cannot be resolved. 'Optional' means this reference will be
+                                a no-op if it cannot be resolved.
+                              enum:
+                              - Required
+                              - Optional
+                              type: string
+                            resolve:
+                              description: |-
+                                Resolve specifies when this reference should be resolved. The default
+                                is 'IfNotPresent', which will attempt to resolve the reference only when
+                                the corresponding field is not present. Use 'Always' to resolve the
+                                reference on every reconcile.
+                              enum:
+                              - Always
+                              - IfNotPresent
+                              type: string
+                          type: object
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  apiKeyIdsSelector:
+                    description: Selector for a list of APIKey in iam to populate
+                      apiKeyIds.
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
                   database:
                     description: |-
                       Database used by the Query API endpoint.
@@ -422,10 +577,6 @@ spec:
             - forProvider
             type: object
             x-kubernetes-validations:
-            - message: spec.forProvider.apiKeyIds is a required parameter
-              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.apiKeyIds)
-                || (has(self.initProvider) && has(self.initProvider.apiKeyIds))'
             - message: spec.forProvider.database is a required parameter
               rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
                 || ''Update'' in self.managementPolicies) || has(self.forProvider.database)

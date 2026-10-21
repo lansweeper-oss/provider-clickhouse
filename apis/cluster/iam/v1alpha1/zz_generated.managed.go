@@ -8,6 +8,56 @@ package v1alpha1
 
 import xpv2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 
+// GetCondition of this APIKey.
+func (mg *APIKey) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this APIKey.
+func (mg *APIKey) GetDeletionPolicy() xpv2.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetManagementPolicies of this APIKey.
+func (mg *APIKey) GetManagementPolicies() xpv2.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// GetProviderConfigReference of this APIKey.
+func (mg *APIKey) GetProviderConfigReference() *xpv2.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+// GetWriteConnectionSecretToReference of this APIKey.
+func (mg *APIKey) GetWriteConnectionSecretToReference() *xpv2.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this APIKey.
+func (mg *APIKey) SetConditions(c ...xpv2.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this APIKey.
+func (mg *APIKey) SetDeletionPolicy(r xpv2.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this APIKey.
+func (mg *APIKey) SetManagementPolicies(r xpv2.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
+}
+
+// SetProviderConfigReference of this APIKey.
+func (mg *APIKey) SetProviderConfigReference(r *xpv2.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+// SetWriteConnectionSecretToReference of this APIKey.
+func (mg *APIKey) SetWriteConnectionSecretToReference(r *xpv2.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this Role.
 func (mg *Role) GetCondition(ct xpv2.ConditionType) xpv2.Condition {
 	return mg.Status.GetCondition(ct)

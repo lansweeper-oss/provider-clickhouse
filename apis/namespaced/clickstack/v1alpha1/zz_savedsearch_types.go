@@ -99,6 +99,11 @@ type SavedSearchObservation struct {
 	// Tags applied to the saved search.
 	Tags []*string `json:"tags,omitempty" tf:"tags,omitempty"`
 
+	// (Set of String) All tags on the resource: its own tags plus the provider's clickstack_default_tags.
+	// All tags on the resource: its own tags plus the provider's `clickstack_default_tags`.
+	// +listType=set
+	TagsAll []*string `json:"tagsAll,omitempty" tf:"tags_all,omitempty"`
+
 	// hdx-team). Changing this forces the saved search to be replaced.
 	// Team ID to manage this saved search under (`x-hdx-team`). Changing this forces the saved search to be replaced.
 	Team *string `json:"team,omitempty" tf:"team,omitempty"`

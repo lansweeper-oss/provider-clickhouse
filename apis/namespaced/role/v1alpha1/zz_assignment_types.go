@@ -17,8 +17,17 @@ type AssignmentInitParameters struct {
 
 	// (Set of String) Set of API key IDs to assign to the role.
 	// Set of API key IDs to assign to the role.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/iam/v1alpha1.APIKey
 	// +listType=set
 	APIKeyIds []*string `json:"apiKeyIds,omitempty" tf:"api_key_ids,omitempty"`
+
+	// References to APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsRefs []v2.NamespacedReference `json:"apiKeyIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsSelector *v2.NamespacedSelector `json:"apiKeyIdsSelector,omitempty" tf:"-"`
 
 	// (Set of String) Set of user IDs to assign to the role.
 	// Set of user IDs to assign to the role.
@@ -46,9 +55,18 @@ type AssignmentParameters struct {
 
 	// (Set of String) Set of API key IDs to assign to the role.
 	// Set of API key IDs to assign to the role.
+	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/iam/v1alpha1.APIKey
 	// +kubebuilder:validation:Optional
 	// +listType=set
 	APIKeyIds []*string `json:"apiKeyIds,omitempty" tf:"api_key_ids,omitempty"`
+
+	// References to APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsRefs []v2.NamespacedReference `json:"apiKeyIdsRefs,omitempty" tf:"-"`
+
+	// Selector for a list of APIKey in iam to populate apiKeyIds.
+	// +kubebuilder:validation:Optional
+	APIKeyIdsSelector *v2.NamespacedSelector `json:"apiKeyIdsSelector,omitempty" tf:"-"`
 
 	// (Set of String) Set of user IDs to assign to the role.
 	// Set of user IDs to assign to the role.

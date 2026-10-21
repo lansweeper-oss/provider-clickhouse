@@ -10,7 +10,8 @@ package cluster
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
+	v1alpha1 "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/byoc/v1alpha1"
+	v1alpha1clickhouse "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickhouse/v1alpha1"
 	v1alpha1clickpipe "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipe/v1alpha1"
 	v1alpha1clickpipes "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickpipes/v1alpha1"
 	v1alpha1clickstack "github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1"
@@ -29,6 +30,7 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		v1alpha1.SchemeBuilder.AddToScheme,
+		v1alpha1clickhouse.SchemeBuilder.AddToScheme,
 		v1alpha1clickpipe.SchemeBuilder.AddToScheme,
 		v1alpha1clickpipes.SchemeBuilder.AddToScheme,
 		v1alpha1clickstack.SchemeBuilder.AddToScheme,

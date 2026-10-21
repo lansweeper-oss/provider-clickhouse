@@ -111,10 +111,6 @@ type UdfInitParameters struct {
 	// Sandbox isolation level.
 	SandboxType *string `json:"sandboxType,omitempty" tf:"sandbox_type,omitempty"`
 
-	// (String) Sandbox runtime version.
-	// Sandbox runtime version.
-	SandboxVersion *string `json:"sandboxVersion,omitempty" tf:"sandbox_version,omitempty"`
-
 	// count chunk header.
 	// Whether ClickHouse sends a row-count chunk header.
 	SendChunkHeader *bool `json:"sendChunkHeader,omitempty" tf:"send_chunk_header,omitempty"`
@@ -190,10 +186,6 @@ type UdfObservation struct {
 	// (String) Sandbox isolation level.
 	// Sandbox isolation level.
 	SandboxType *string `json:"sandboxType,omitempty" tf:"sandbox_type,omitempty"`
-
-	// (String) Sandbox runtime version.
-	// Sandbox runtime version.
-	SandboxVersion *string `json:"sandboxVersion,omitempty" tf:"sandbox_version,omitempty"`
 
 	// count chunk header.
 	// Whether ClickHouse sends a row-count chunk header.
@@ -287,11 +279,6 @@ type UdfParameters struct {
 	// +kubebuilder:validation:Optional
 	SandboxType *string `json:"sandboxType,omitempty" tf:"sandbox_type,omitempty"`
 
-	// (String) Sandbox runtime version.
-	// Sandbox runtime version.
-	// +kubebuilder:validation:Optional
-	SandboxVersion *string `json:"sandboxVersion,omitempty" tf:"sandbox_version,omitempty"`
-
 	// count chunk header.
 	// Whether ClickHouse sends a row-count chunk header.
 	// +kubebuilder:validation:Optional
@@ -340,7 +327,7 @@ type UdfStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Udf is the Schema for the Udfs API. You can use the clickhouse_udf resource to create and manage User Defined Functions (UDFs) in ClickHouse Cloud. ~> Note: This resource is in beta. Its behavior may change in future provider versions. Point source_archive_path at a ZIP of your function source, and set source_archive_hash to filebase64sha256(... On apply, the provider uploads the archive and waits for the build to finish. If a build fails By default, a failed build fails the apply (fail_on_build_error = true). Set it to false if you'd rather get a warning and move on. Either way, the failed version stays in state, and applying again with the same source won't retry the build — you'll need to fix the source and give source_archive_hash a new value first. On create, a failed build also taints the resource, so the next apply replaces it from scratch. On update, the previous, working version keeps running while you sort things out. Either way, it stops rather than risk creating a duplicate version, and saves the last known status in state. A couple of things to know function_name can't reuse a built-in ClickHouse function name (like sum) — the API rejects reserved names. Deleting this resource removes all versions of the UDF and detaches it from every service that uses it.
+// Udf is the Schema for the Udfs API. You can use the clickhouse_udf resource to create and manage User Defined Functions (UDFs) in ClickHouse Cloud. Point source_archive_path at a ZIP of your function source, and set source_archive_hash to filebase64sha256(... On apply, the provider uploads the archive and waits for the build to finish. If a build fails By default, a failed build fails the apply (fail_on_build_error = true). Set it to false if you'd rather get a warning and move on. Either way, the failed version stays in state, and applying again with the same source won't retry the build — you'll need to fix the source and give source_archive_hash a new value first. On create, a failed build also taints the resource, so the next apply replaces it from scratch. On update, the previous, working version keeps running while you sort things out. Either way, it stops rather than risk creating a duplicate version, and saves the last known status in state. A couple of things to know function_name can't reuse a built-in ClickHouse function name (like sum) — the API rejects reserved names. Deleting this resource removes all versions of the UDF and detaches it from every service that uses it.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

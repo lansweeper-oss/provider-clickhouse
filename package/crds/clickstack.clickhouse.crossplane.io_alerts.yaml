@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: alerts.clickstack.clickhouse.crossplane.io
 spec:
   group: clickstack.clickhouse.crossplane.io
@@ -467,6 +467,12 @@ spec:
                     description: |-
                       What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
                     type: string
+                  tags:
+                    description: |-
+                      Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set `[]` for no tags of its own; provider default tags still apply.
+                    items:
+                      type: string
+                    type: array
                   team:
                     description: |-
                       Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
@@ -963,6 +969,12 @@ spec:
                     description: |-
                       What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
                     type: string
+                  tags:
+                    description: |-
+                      Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set `[]` for no tags of its own; provider default tags still apply.
+                    items:
+                      type: string
+                    type: array
                   team:
                     description: |-
                       Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
@@ -1249,6 +1261,19 @@ spec:
                     description: |-
                       What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
                     type: string
+                  tags:
+                    description: |-
+                      Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set `[]` for no tags of its own; provider default tags still apply.
+                    items:
+                      type: string
+                    type: array
+                  tagsAll:
+                    description: |-
+                      All tags on the resource: its own tags plus the provider's `clickstack_default_tags`. Null when `tags` is unset.
+                    items:
+                      type: string
+                    type: array
+                    x-kubernetes-list-type: set
                   team:
                     description: |-
                       Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.

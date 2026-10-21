@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.22.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: attachments.udf.clickhouse.m.crossplane.io
 spec:
   group: udf.clickhouse.m.crossplane.io
@@ -36,11 +36,9 @@ spec:
       openAPIV3Schema:
         description: 'Attachment is the Schema for the Attachments API. You can use
           the clickhouse_udf_attachment resource to attach a UDF version to a ClickHouse
-          Cloud service. ~> Note: This resource is in beta. Its behavior may change
-          in future provider versions. A service can only have one version of a function
-          attached at a time. version supports two ways to pick what gets attached:
-          Pin a version: set version to a fixed number.Track the latest version: set
-          version = clickhouse_udf.'
+          Cloud service. A service can only have one version of a function attached
+          at a time. version supports two ways to pick what gets attached: Pin a version:
+          set version to a fixed number.Track the latest version: set version = clickhouse_udf.'
         properties:
           apiVersion:
             description: |-

@@ -87,6 +87,10 @@ type AlertInitParameters struct {
 	// What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
 	Source *string `json:"source,omitempty" tf:"source,omitempty"`
 
+	// (List of String) Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set [] for no tags of its own; provider default tags still apply.
+	// Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set `[]` for no tags of its own; provider default tags still apply.
+	Tags []*string `json:"tags,omitempty" tf:"tags,omitempty"`
+
 	// hdx-team). Changing this forces the alert to be replaced.
 	// Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
 	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/namespaced/clickstack/v1alpha1.Team
@@ -175,6 +179,15 @@ type AlertObservation struct {
 	// (String) What the alert evaluates: saved_search (default, requires saved_search_id), tile (requires dashboard_id and tile_id), or inline (requires chart_config). Changing this forces replacement.
 	// What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
 	Source *string `json:"source,omitempty" tf:"source,omitempty"`
+
+	// (List of String) Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set [] for no tags of its own; provider default tags still apply.
+	// Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set `[]` for no tags of its own; provider default tags still apply.
+	Tags []*string `json:"tags,omitempty" tf:"tags,omitempty"`
+
+	// (Set of String) All tags on the resource: its own tags plus the provider's clickstack_default_tags. Null when tags is unset.
+	// All tags on the resource: its own tags plus the provider's `clickstack_default_tags`. Null when `tags` is unset.
+	// +listType=set
+	TagsAll []*string `json:"tagsAll,omitempty" tf:"tags_all,omitempty"`
 
 	// hdx-team). Changing this forces the alert to be replaced.
 	// Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.
@@ -284,6 +297,11 @@ type AlertParameters struct {
 	// What the alert evaluates: `saved_search` (default, requires `saved_search_id`), `tile` (requires `dashboard_id` and `tile_id`), or `inline` (requires `chart_config`). Changing this forces replacement.
 	// +kubebuilder:validation:Optional
 	Source *string `json:"source,omitempty" tf:"source,omitempty"`
+
+	// (List of String) Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set [] for no tags of its own; provider default tags still apply.
+	// Tags for the alert (up to 50, each at most 32 characters). Requires ClickStack API 2.38.0 or later. Set `[]` for no tags of its own; provider default tags still apply.
+	// +kubebuilder:validation:Optional
+	Tags []*string `json:"tags,omitempty" tf:"tags,omitempty"`
 
 	// hdx-team). Changing this forces the alert to be replaced.
 	// Team ID to manage this alert under (`x-hdx-team`). Changing this forces the alert to be replaced.

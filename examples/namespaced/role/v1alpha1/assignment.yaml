@@ -9,8 +9,8 @@ metadata:
   namespace: crossplane-system
 spec:
   forProvider:
-    apiKeyIds:
-    - ${data.clickhouse_api_key_id.current.id}
+    apiKeyIdsRefs:
+    - name: clickhouse_api_key_id
     userIds:
     - ${data.clickhouse_user.alice.id}
     - ${data.clickhouse_user.bob.id}

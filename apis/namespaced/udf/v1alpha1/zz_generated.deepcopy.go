@@ -373,11 +373,6 @@ func (in *UdfInitParameters) DeepCopyInto(out *UdfInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SandboxVersion != nil {
-		in, out := &in.SandboxVersion, &out.SandboxVersion
-		*out = new(string)
-		**out = **in
-	}
 	if in.SendChunkHeader != nil {
 		in, out := &in.SendChunkHeader, &out.SendChunkHeader
 		*out = new(bool)
@@ -522,11 +517,6 @@ func (in *UdfObservation) DeepCopyInto(out *UdfObservation) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SandboxVersion != nil {
-		in, out := &in.SandboxVersion, &out.SandboxVersion
-		*out = new(string)
-		**out = **in
-	}
 	if in.SendChunkHeader != nil {
 		in, out := &in.SendChunkHeader, &out.SendChunkHeader
 		*out = new(bool)
@@ -636,11 +626,6 @@ func (in *UdfParameters) DeepCopyInto(out *UdfParameters) {
 	}
 	if in.SandboxType != nil {
 		in, out := &in.SandboxType, &out.SandboxType
-		*out = new(string)
-		**out = **in
-	}
-	if in.SandboxVersion != nil {
-		in, out := &in.SandboxVersion, &out.SandboxVersion
 		*out = new(string)
 		**out = **in
 	}

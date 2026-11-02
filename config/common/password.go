@@ -124,13 +124,13 @@ func setPasswordSecretRef(ctx context.Context, cl client.Client, mg xpresource.M
 	switch setter := mg.(type) {
 	case ClusterPasswordSecretRefSetter:
 		setter.SetPasswordSecretRef(&xpv2.SecretKeySelector{
-			SecretReference: xpv2.SecretReference{Name: name, Namespace: namespace},
-			Key:             passwordKey,
+			Name: name, Namespace: namespace,
+			Key: passwordKey,
 		})
 	case NamespacedPasswordSecretRefSetter:
 		setter.SetPasswordSecretRef(&xpv2.LocalSecretKeySelector{
-			LocalSecretReference: xpv2.LocalSecretReference{Name: name},
-			Key:                  passwordKey,
+			Name: name,
+			Key:  passwordKey,
 		})
 	default:
 		return nil

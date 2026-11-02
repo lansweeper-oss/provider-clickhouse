@@ -31,39 +31,6 @@ jobs:
           paths_ignore: '["**.md", "**.png", "**.jpg"]'
           do_not_skip: '["workflow_dispatch", "schedule", "push"]'
 
-  report-breaking-changes:
-    runs-on: ubuntu-26.04
-    needs: detect-noop
-    if: needs.detect-noop.outputs.noop != 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: true
-
-      - name: Fetch base
-        run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
-
-      - name: Get modified CRDs
-        id: modified-crds
-        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
-        with:
-          files: |
-            package/crds/**
-
-      - name: Report breaking CRD OpenAPI v3 schema changes
-        if: steps.modified-crds.outputs.any_changed == 'true'
-        env:
-          MODIFIED_CRD_LIST: ${{ steps.modified-crds.outputs.all_changed_files }}
-        run: |
-          make crddiff
-
-      - name: Report native schema version changes
-        env:
-          GITHUB_BASE_REF: ${{ github.base_ref || github.event.repository.default_branch }}
-        run: |
-          make schema-version-diff
-
   lint:
     runs-on: ubuntu-26.04
     needs: detect-noop

@@ -1,0 +1,56 @@
+name: Breaking changes
+
+on:
+  pull_request:
+    branches:
+      - main
+    # labeled/unlabeled let the `ignore-breaking-change` label re-evaluate the check
+    # without re-running the whole CI workflow.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+    paths-ignore:
+      - "**.md"
+      - "**.png"
+      - "**.jpg"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  report-breaking-changes:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+
+      - name: Fetch base
+        run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+
+      - name: Get modified CRDs
+        id: modified-crds
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            package/crds/**
+
+      - name: Report breaking CRD OpenAPI v3 schema changes
+        if: steps.modified-crds.outputs.any_changed == 'true'
+        # PRs labelled `ignore-breaking-change` still get the report, but do not fail.
+        continue-on-error: ${{ contains(github.event.pull_request.labels.*.name, 'ignore-breaking-change') }}
+        env:
+          MODIFIED_CRD_LIST: ${{ steps.modified-crds.outputs.all_changed_files }}
+        run: |
+          make crddiff
+
+      - name: Report native schema version changes
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          make schema-version-diff

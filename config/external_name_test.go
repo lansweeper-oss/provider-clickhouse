@@ -11,8 +11,8 @@ func TestClickPipeGetIDFnUsesSentinelBeforeCreate(t *testing.T) {
 	getID := ExternalNameConfigs["clickhouse_clickpipe"].GetIDFn
 	const real = "3f1c2a9e-5b7d-4e8f-9a0b-1c2d3e4f5a6b"
 	for in, want := range map[string]string{
-		"":        sentinelUUID,
-		"my-pipe": sentinelUUID,
+		"":        clickPipeSentinelUUID,
+		"my-pipe": clickPipeSentinelUUID,
 		real:      real,
 	} {
 		got, err := getID(context.Background(), in, nil, nil)

@@ -33,6 +33,11 @@ func getExternalNameFromServiceID() func(map[string]any) (string, error) {
 // misses. v1 chosen over v7 to avoid collision with API-issued ids.
 const sentinelUUID = "00000000-0000-1000-8000-000000000000"
 
+// clickPipeSentinelUUID is the sentinel for ClickPipes: the ClickPipes API
+// answers a non-v4 id with 400, not 404, so the v1 sentinel never reads as
+// missing there.
+const clickPipeSentinelUUID = "00000000-0000-4000-8000-000000000000"
+
 // uuidRe matches a canonical UUID. Used to detect a real ClickHouse Cloud
 // resource id versus a pre-create placeholder (k8s name or empty).
 var uuidRe = regexp.MustCompile(`^[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}$`)
@@ -44,7 +49,7 @@ var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_api_key":                                                withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_byoc_infrastructure":                                    withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-	"clickhouse_clickpipe":                                              config.IdentifierFromProvider,
+	"clickhouse_clickpipe":                                              withSentinel(config.IdentifierFromProvider, clickPipeSentinelUUID),
 	"clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns": config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
 	"clickhouse_clickpipes_ssh_key":                                     withSentinelWhenNotUUID(config.IdentifierFromProvider),
@@ -132,6 +137,10 @@ func identifierFromParameterOrAnnotation(param string) config.ExternalName {
 // Covers empty (IdentifierFromProvider pre-create) and k8s metadata.name
 // fallback (Crossplane default when external-name annotation is unset).
 func withSentinelWhenNotUUID(base config.ExternalName) config.ExternalName {
+	return withSentinel(base, sentinelUUID)
+}
+
+func withSentinel(base config.ExternalName, sentinel string) config.ExternalName {
 	parentGetID := base.GetIDFn
 	base.GetIDFn = func(ctx context.Context, externalName string, parameters map[string]any, setup map[string]any) (string, error) {
 		id, err := parentGetID(ctx, externalName, parameters, setup)
@@ -139,7 +148,7 @@ func withSentinelWhenNotUUID(base config.ExternalName) config.ExternalName {
 			return "", err
 		}
 		if !uuidRe.MatchString(id) {
-			return sentinelUUID, nil
+			return sentinel, nil
 		}
 		return id, nil
 	}

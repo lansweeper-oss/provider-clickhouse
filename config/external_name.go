@@ -44,7 +44,7 @@ var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_api_key":                                                withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_byoc_infrastructure":                                    withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_clickpipe_cdc_infrastructure":                           withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
-	"clickhouse_clickpipe":                                              config.IdentifierFromProvider,
+	"clickhouse_clickpipe":                                              withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns": config.IdentifierFromProvider,
 	"clickhouse_clickpipes_reverse_private_endpoint":                    config.IdentifierFromProvider,
 	"clickhouse_clickpipes_ssh_key":                                     withSentinelWhenNotUUID(config.IdentifierFromProvider),

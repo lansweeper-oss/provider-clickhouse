@@ -12,7 +12,7 @@ TERRAFORM_VERSION_VALID := $(shell [ "$(TERRAFORM_VERSION)" = "`printf "$(TERRAF
 
 export TERRAFORM_PROVIDER_SOURCE ?= ClickHouse/clickhouse
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/ClickHouse/terraform-provider-clickhouse
-export TERRAFORM_PROVIDER_VERSION ?= 3.40.0
+export TERRAFORM_PROVIDER_VERSION ?= 3.43.0
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-clickhouse
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://github.com/ClickHouse/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/releases/download/v$(TERRAFORM_PROVIDER_VERSION)
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= $(TERRAFORM_PROVIDER_DOWNLOAD_NAME)_v$(TERRAFORM_PROVIDER_VERSION)
@@ -155,6 +155,7 @@ pull-docs: $(PROVIDER_VERSION_STAMP)
 		git clone -c advice.detachedHead=false --depth 1 --filter=blob:none --branch "v$(TERRAFORM_PROVIDER_VERSION)" --sparse "$(TERRAFORM_PROVIDER_REPO)" "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)"; \
 	fi
 	@git -C "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" sparse-checkout set "$(TERRAFORM_DOCS_PATH)"
+	@python3 scripts/clean_descriptions.py docs "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)/$(TERRAFORM_DOCS_PATH)"
 
 $(TERRAFORM_PROVIDER_SCHEMA:.json=.generated.lst): $(TERRAFORM_PROVIDER_SCHEMA)
 	@$(INFO) generating resource list from provider schema
@@ -194,7 +195,7 @@ provider-source-clean:
 
 clean-descriptions:
 	@$(INFO) cleaning generated field descriptions
-	@python3 scripts/clean_descriptions.py package/crds/
+	@python3 scripts/clean_descriptions.py crds package/crds/
 	@$(OK) cleaning generated field descriptions
 
 .PHONY: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs check-terraform-version clean-descriptions provider-source provider-source-clean

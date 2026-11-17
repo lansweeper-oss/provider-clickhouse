@@ -102,7 +102,7 @@ type AssignmentStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Assignment is the Schema for the Assignments API. Use the clickhouse_role_assignment resource to assign actors (users and/or API keys) to a role. Works for both system roles and custom roles. One resource manages all actors for a given role. Use user_ids to assign users, api_key_ids to assign API keys, or both. Only one clickhouse_role_assignment per role is needed. ~> Note: On delete, all actors are removed from the role. To look up the ID of a system role by name, use the clickhouse_role data source. To look up a user ID by email, use the clickhouse_user data source. Example Usage
+// Assignment is the Schema for the Assignments API. Use the clickhouse_role_assignment resource to assign actors (users and/or API keys) to a role. Works for both system roles and custom roles. One resource manages all actors for a given role. Use user_ids to assign users, api_key_ids to assign API keys, or both. Only one clickhouse_role_assignment per role is needed. ~> Note: On delete, all actors are removed from the role. To look up the ID of a system role by name, use the clickhouse_role data source. To look up a user ID by email, use the clickhouse_user data source.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

@@ -39,8 +39,8 @@ type WebhookInitParameters struct {
 	// Arbitrary value that, when changed, forces the write-only `query_params` to be re-sent to the API. As with `headers_version`, it re-sends the current value and cannot clear the secret; recreate the webhook to remove it.
 	QueryParamsVersion *string `json:"queryParamsVersion,omitempty" tf:"query_params_version,omitempty"`
 
-	// (String) Webhook service: one of slack, generic, or incidentio.
-	// Webhook service: one of `slack`, `generic`, or `incidentio`.
+	// (String) Webhook service: one of slack, generic, incidentio, slack_api, or pagerduty_api. slack_api and pagerduty_api webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
+	// Webhook service: one of `slack`, `generic`, `incidentio`, `slack_api`, or `pagerduty_api`. `slack_api` and `pagerduty_api` webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
 	Service *string `json:"service,omitempty" tf:"service,omitempty"`
 
 	// hdx-team header. Defaults to the API key's team. Changing this forces the webhook to be replaced.
@@ -82,8 +82,8 @@ type WebhookObservation struct {
 	// Arbitrary value that, when changed, forces the write-only `query_params` to be re-sent to the API. As with `headers_version`, it re-sends the current value and cannot clear the secret; recreate the webhook to remove it.
 	QueryParamsVersion *string `json:"queryParamsVersion,omitempty" tf:"query_params_version,omitempty"`
 
-	// (String) Webhook service: one of slack, generic, or incidentio.
-	// Webhook service: one of `slack`, `generic`, or `incidentio`.
+	// (String) Webhook service: one of slack, generic, incidentio, slack_api, or pagerduty_api. slack_api and pagerduty_api webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
+	// Webhook service: one of `slack`, `generic`, `incidentio`, `slack_api`, or `pagerduty_api`. `slack_api` and `pagerduty_api` webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
 	Service *string `json:"service,omitempty" tf:"service,omitempty"`
 
 	// hdx-team header. Defaults to the API key's team. Changing this forces the webhook to be replaced.
@@ -128,8 +128,8 @@ type WebhookParameters struct {
 	// +kubebuilder:validation:Optional
 	QueryParamsVersion *string `json:"queryParamsVersion,omitempty" tf:"query_params_version,omitempty"`
 
-	// (String) Webhook service: one of slack, generic, or incidentio.
-	// Webhook service: one of `slack`, `generic`, or `incidentio`.
+	// (String) Webhook service: one of slack, generic, incidentio, slack_api, or pagerduty_api. slack_api and pagerduty_api webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
+	// Webhook service: one of `slack`, `generic`, `incidentio`, `slack_api`, or `pagerduty_api`. `slack_api` and `pagerduty_api` webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
 	// +kubebuilder:validation:Optional
 	Service *string `json:"service,omitempty" tf:"service,omitempty"`
 

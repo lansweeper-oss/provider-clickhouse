@@ -43,3 +43,20 @@ spec:
       name: example-secret
       namespace: upbound-system
     username: default
+
+---
+
+apiVersion: clickstack.clickhouse.crossplane.io/v1alpha1
+kind: Connection
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickstack/v1alpha1/source
+  labels:
+    testing.upbound.io/example-name: prometheus
+  name: prometheus
+spec:
+  forProvider:
+    host: http://prometheus:9090
+    isPrometheusEndpoint: true
+    name: Prometheus
+    username: ""

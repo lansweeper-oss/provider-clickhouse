@@ -39,7 +39,13 @@ spec:
           and describes how to read one kind of data (log, trace, metric, session,
           or promql). The set of applicable fields depends on kind; the API validates
           per-kind requirements and returns an error at apply time if a required field
-          for the chosen kind is missing.
+          for the chosen kind is missing. PromQL sources (kind = "promql") are a preview
+          feature and must be enabled on the ClickStack deployment (ENABLE_PROMQL=true);
+          otherwise create and update fail with "PromQL is not enabled on this deployment".
+          They use only name, kind, connection_id, from, timestamp_value_expression,
+          section, disabled, query_settings and min_auto_granularity. The API drops
+          any other attribute for this kind, which fails apply with an inconsistent-result
+          error.
         properties:
           apiVersion:
             description: |-
@@ -83,7 +89,7 @@ spec:
                     type: string
                   connectionId:
                     description: |-
-                      ID of the ClickHouse connection used by this source.
+                      ID of the ClickHouse connection used by this source. For `promql`, this can also be a Prometheus-endpoint connection (`is_prometheus_endpoint = true`).
                     type: string
                   connectionIdRef:
                     description: Reference to a Connection in clickstack to populate
@@ -207,7 +213,11 @@ spec:
                               type: string
                             name:
                               description: |-
-                                Column name to filter on.
+                                Column of the source table that selected filter values are matched against.
+                              type: string
+                            valueExpression:
+                              description: |-
+                                SQL expression evaluated against the filter-values table (`database_name`.`table_name`) to produce this filter's options. Defaults to reading `name` from that table as a plain column.
                               type: string
                           type: object
                         type: array
@@ -226,11 +236,11 @@ spec:
                     properties:
                       databaseName:
                         description: |-
-                          ClickHouse database name.
+                          ClickHouse database name. Unused for `promql` on a Prometheus-endpoint connection, but must still be non-empty.
                         type: string
                       tableName:
                         description: |-
-                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`). For `promql`, the TimeSeries table; unused on a Prometheus-endpoint connection, but must still be non-empty (e.g. `default`).
                         type: string
                     type: object
                   highlightedRowAttributeExpressions:
@@ -532,6 +542,10 @@ spec:
                           Table containing summary metrics data.
                         type: string
                     type: object
+                  minAutoGranularity:
+                    description: |-
+                      Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as `1 minute` or `30 second`, not `1m` (unlike `materialized_views.min_granularity`). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for `$__rate_interval`. Applies to `metric` and `promql` only.
+                    type: string
                   name:
                     description: |-
                       Display name for the source.
@@ -761,7 +775,7 @@ spec:
                     type: object
                   timestampValueExpression:
                     description: |-
-                      DateTime column or expression that is part of the table's primary key.
+                      DateTime column or expression that is part of the table's primary key. Required by the API but unused for `promql`, where any value works (e.g. `timestamp`).
                     type: string
                   traceIdExpression:
                     description: |-
@@ -869,7 +883,7 @@ spec:
                     type: string
                   connectionId:
                     description: |-
-                      ID of the ClickHouse connection used by this source.
+                      ID of the ClickHouse connection used by this source. For `promql`, this can also be a Prometheus-endpoint connection (`is_prometheus_endpoint = true`).
                     type: string
                   connectionIdRef:
                     description: Reference to a Connection in clickstack to populate
@@ -993,7 +1007,11 @@ spec:
                               type: string
                             name:
                               description: |-
-                                Column name to filter on.
+                                Column of the source table that selected filter values are matched against.
+                              type: string
+                            valueExpression:
+                              description: |-
+                                SQL expression evaluated against the filter-values table (`database_name`.`table_name`) to produce this filter's options. Defaults to reading `name` from that table as a plain column.
                               type: string
                           type: object
                         type: array
@@ -1012,11 +1030,11 @@ spec:
                     properties:
                       databaseName:
                         description: |-
-                          ClickHouse database name.
+                          ClickHouse database name. Unused for `promql` on a Prometheus-endpoint connection, but must still be non-empty.
                         type: string
                       tableName:
                         description: |-
-                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`). For `promql`, the TimeSeries table; unused on a Prometheus-endpoint connection, but must still be non-empty (e.g. `default`).
                         type: string
                     type: object
                   highlightedRowAttributeExpressions:
@@ -1318,6 +1336,10 @@ spec:
                           Table containing summary metrics data.
                         type: string
                     type: object
+                  minAutoGranularity:
+                    description: |-
+                      Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as `1 minute` or `30 second`, not `1m` (unlike `materialized_views.min_granularity`). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for `$__rate_interval`. Applies to `metric` and `promql` only.
+                    type: string
                   name:
                     description: |-
                       Display name for the source.
@@ -1547,7 +1569,7 @@ spec:
                     type: object
                   timestampValueExpression:
                     description: |-
-                      DateTime column or expression that is part of the table's primary key.
+                      DateTime column or expression that is part of the table's primary key. Required by the API but unused for `promql`, where any value works (e.g. `timestamp`).
                     type: string
                   traceIdExpression:
                     description: |-
@@ -1750,7 +1772,7 @@ spec:
                     type: string
                   connectionId:
                     description: |-
-                      ID of the ClickHouse connection used by this source.
+                      ID of the ClickHouse connection used by this source. For `promql`, this can also be a Prometheus-endpoint connection (`is_prometheus_endpoint = true`).
                     type: string
                   defaultTableSelectExpression:
                     description: |-
@@ -1798,7 +1820,11 @@ spec:
                               type: string
                             name:
                               description: |-
-                                Column name to filter on.
+                                Column of the source table that selected filter values are matched against.
+                              type: string
+                            valueExpression:
+                              description: |-
+                                SQL expression evaluated against the filter-values table (`database_name`.`table_name`) to produce this filter's options. Defaults to reading `name` from that table as a plain column.
                               type: string
                           type: object
                         type: array
@@ -1817,11 +1843,11 @@ spec:
                     properties:
                       databaseName:
                         description: |-
-                          ClickHouse database name.
+                          ClickHouse database name. Unused for `promql` on a Prometheus-endpoint connection, but must still be non-empty.
                         type: string
                       tableName:
                         description: |-
-                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+                          ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`). For `promql`, the TimeSeries table; unused on a Prometheus-endpoint connection, but must still be non-empty (e.g. `default`).
                         type: string
                     type: object
                   highlightedRowAttributeExpressions:
@@ -1978,6 +2004,10 @@ spec:
                           Table containing summary metrics data.
                         type: string
                     type: object
+                  minAutoGranularity:
+                    description: |-
+                      Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as `1 minute` or `30 second`, not `1m` (unlike `materialized_views.min_granularity`). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for `$__rate_interval`. Applies to `metric` and `promql` only.
+                    type: string
                   name:
                     description: |-
                       Display name for the source.
@@ -2059,7 +2089,7 @@ spec:
                     type: string
                   timestampValueExpression:
                     description: |-
-                      DateTime column or expression that is part of the table's primary key.
+                      DateTime column or expression that is part of the table's primary key. Required by the API but unused for `promql`, where any value works (e.g. `timestamp`).
                     type: string
                   traceIdExpression:
                     description: |-

@@ -54,7 +54,12 @@ spec:
           before issuing the PUT so that an existing window (e.g. one configured out-of-band)
           surfaces a "please import" diagnostic instead of being silently overwritten.
           The check is best-effort: a window created between this resource''s GET
-          and PUT (e.g. Import'
+          and PUT (e.g.example <service_id> Import is refused with a clear diagnostic
+          when the supplied service ID does not exist or points at a secondary service.
+          Importing a primary service that does not yet have an upgrade window configured
+          succeeds, but the subsequent Read returns 404 and removes the resource from
+          state — leaving the next plan proposing a fresh create. Confirm the service
+          ID is correct before importing.'
         properties:
           apiVersion:
             description: |-

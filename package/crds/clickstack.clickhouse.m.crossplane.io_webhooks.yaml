@@ -111,7 +111,7 @@ spec:
                     type: string
                   service:
                     description: |-
-                      Webhook service: one of `slack`, `generic`, or `incidentio`.
+                      Webhook service: one of `slack`, `generic`, `incidentio`, `slack_api`, or `pagerduty_api`. `slack_api` and `pagerduty_api` webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
                     type: string
                   team:
                     description: |-
@@ -263,7 +263,7 @@ spec:
                     type: string
                   service:
                     description: |-
-                      Webhook service: one of `slack`, `generic`, or `incidentio`.
+                      Webhook service: one of `slack`, `generic`, `incidentio`, `slack_api`, or `pagerduty_api`. `slack_api` and `pagerduty_api` webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
                     type: string
                   team:
                     description: |-
@@ -461,7 +461,7 @@ spec:
                     type: string
                   service:
                     description: |-
-                      Webhook service: one of `slack`, `generic`, or `incidentio`.
+                      Webhook service: one of `slack`, `generic`, `incidentio`, `slack_api`, or `pagerduty_api`. `slack_api` and `pagerduty_api` webhooks hold credentials the API cannot set, so create them in the ClickStack UI and import them.
                     type: string
                   team:
                     description: |-

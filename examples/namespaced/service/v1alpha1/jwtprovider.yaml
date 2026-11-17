@@ -1,0 +1,33 @@
+apiVersion: service.clickhouse.m.crossplane.io/v1alpha1
+kind: JwtProvider
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/jwtprovider
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    audience: my-clickhouse-service
+    issuer: https://auth.example.com
+    jwksUrl: https://auth.example.com/.well-known/jwks.json
+    name: my-oidc-provider
+    rolesClaim: clickhouse:roles
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: svc
+
+---
+
+apiVersion: clickhouse.clickhouse.m.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: service/v1alpha1/jwtprovider
+  labels:
+    testing.upbound.io/example-name: svc
+  name: svc
+  namespace: crossplane-system
+spec:
+  forProvider: {}

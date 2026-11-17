@@ -10,6 +10,13 @@ spec:
   forProvider:
     cloudProvider: aws
     haType: async
+    ipAccess:
+    - description: Office Postgres
+      portRange: "5432"
+      source: 203.0.113.0/24
+    - description: Office PgBouncer
+      portRange: "6432"
+      source: 203.0.113.0/24
     name: my-postgres
     passwordSecretRef:
       key: example-key

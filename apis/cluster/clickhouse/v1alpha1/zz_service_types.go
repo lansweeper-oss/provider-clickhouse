@@ -282,6 +282,41 @@ type QueryAPIEndpointsParameters struct {
 	Roles []*string `json:"roles" tf:"roles,omitempty"`
 }
 
+type ReplicaAwareRoutingInitParameters struct {
+
+	// ClickHouse-Replica-Tag header.
+	// Whether replica aware routing is enabled for HTTP connections. When enabled, clients must send the X-ClickHouse-Replica-Tag header.
+	HTTPEnabled *bool `json:"httpEnabled,omitempty" tf:"http_enabled,omitempty"`
+
+	// (Boolean) Whether replica aware routing is enabled for native protocol connections.
+	// Whether replica aware routing is enabled for native protocol connections.
+	NativeEnabled *bool `json:"nativeEnabled,omitempty" tf:"native_enabled,omitempty"`
+}
+
+type ReplicaAwareRoutingObservation struct {
+
+	// ClickHouse-Replica-Tag header.
+	// Whether replica aware routing is enabled for HTTP connections. When enabled, clients must send the X-ClickHouse-Replica-Tag header.
+	HTTPEnabled *bool `json:"httpEnabled,omitempty" tf:"http_enabled,omitempty"`
+
+	// (Boolean) Whether replica aware routing is enabled for native protocol connections.
+	// Whether replica aware routing is enabled for native protocol connections.
+	NativeEnabled *bool `json:"nativeEnabled,omitempty" tf:"native_enabled,omitempty"`
+}
+
+type ReplicaAwareRoutingParameters struct {
+
+	// ClickHouse-Replica-Tag header.
+	// Whether replica aware routing is enabled for HTTP connections. When enabled, clients must send the X-ClickHouse-Replica-Tag header.
+	// +kubebuilder:validation:Optional
+	HTTPEnabled *bool `json:"httpEnabled" tf:"http_enabled,omitempty"`
+
+	// (Boolean) Whether replica aware routing is enabled for native protocol connections.
+	// Whether replica aware routing is enabled for native protocol connections.
+	// +kubebuilder:validation:Optional
+	NativeEnabled *bool `json:"nativeEnabled" tf:"native_enabled,omitempty"`
+}
+
 type ServiceInitParameters struct {
 
 	// replica memory, min_replica_memory_gb == max_replica_memory_gb). When omitted on create the mode is inferred from the scaling fields — a distinct min_replicas/max_replicas band is horizontal, otherwise vertical; on an existing service omitting it keeps the current mode. It is unset for development-tier services (which cannot set an autoscaling mode). Horizontal autoscaling must be enabled for your organization.
@@ -396,8 +431,8 @@ type ServiceInitParameters struct {
 	// Version number for password_wo. Increment this to trigger a password update when using password_wo.
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
-	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
-	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Changing the profile updates the service in place: a BYOC profile change must keep 'min_replica_memory_gb' and 'max_replica_memory_gb' equal to the new profile's memory size, and a non-BYOC custom profile cannot be changed in the same apply as a memory change. Use the 'clickhouse_service_profiles' data source to list the profiles available to your organization.
+	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Changing the profile updates the service in place: a BYOC profile change must keep 'min_replica_memory_gb' and 'max_replica_memory_gb' equal to the new profile's memory size, and a non-BYOC custom profile cannot be changed in the same apply as a memory change. Use the 'clickhouse_service_profiles' data source to list the profiles available to your organization.
 	Profile *string `json:"profile,omitempty" tf:"profile,omitempty"`
 
 	// (Attributes) Configuration of the query API endpoints feature. (see below for nested schema)
@@ -414,6 +449,9 @@ type ServiceInitParameters struct {
 	// (String) Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	// Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	ReleaseChannel *string `json:"releaseChannel,omitempty" tf:"release_channel,omitempty"`
+
+	// (Attributes) Configuration of replica aware routing for this service. Routes later connections from the same client to the same replica. Omit this block to leave the setting unmanaged. Refresh of a managed block treats a missing feature (403) as unset. Applying this block without the feature fails. Requires an organization with the Enterprise plan. (see below for nested schema)
+	ReplicaAwareRouting *ReplicaAwareRoutingInitParameters `json:"replicaAwareRouting,omitempty" tf:"replica_aware_routing,omitempty"`
 
 	// (Attributes) Configuration of service snapshot settings. Snapshots are a beta feature that requires the snapshots feature enabled for your organization, a PPv2 tier, and the backups entitlement. When enabling snapshots, an ineligible organization is rejected at plan time (when the organization API reports eligibility); otherwise an ineligible organization can still fail at apply. When enabled, gap and time_frame must be supplied together as a supported preset: (gap 30, time_frame 1440) or (gap 60, time_frame 2880). (see below for nested schema)
 	SnapshotConfiguration *SnapshotConfigurationInitParameters `json:"snapshotConfiguration,omitempty" tf:"snapshot_configuration,omitempty"`
@@ -546,8 +584,8 @@ type ServiceObservation struct {
 	// (Attributes) Service config for private endpoints (see below for nested schema)
 	PrivateEndpointConfig *PrivateEndpointConfigObservation `json:"privateEndpointConfig,omitempty" tf:"private_endpoint_config,omitempty"`
 
-	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
-	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Changing the profile updates the service in place: a BYOC profile change must keep 'min_replica_memory_gb' and 'max_replica_memory_gb' equal to the new profile's memory size, and a non-BYOC custom profile cannot be changed in the same apply as a memory change. Use the 'clickhouse_service_profiles' data source to list the profiles available to your organization.
+	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Changing the profile updates the service in place: a BYOC profile change must keep 'min_replica_memory_gb' and 'max_replica_memory_gb' equal to the new profile's memory size, and a non-BYOC custom profile cannot be changed in the same apply as a memory change. Use the 'clickhouse_service_profiles' data source to list the profiles available to your organization.
 	Profile *string `json:"profile,omitempty" tf:"profile,omitempty"`
 
 	// (Attributes) Configuration of the query API endpoints feature. (see below for nested schema)
@@ -564,6 +602,9 @@ type ServiceObservation struct {
 	// (String) Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	// Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	ReleaseChannel *string `json:"releaseChannel,omitempty" tf:"release_channel,omitempty"`
+
+	// (Attributes) Configuration of replica aware routing for this service. Routes later connections from the same client to the same replica. Omit this block to leave the setting unmanaged. Refresh of a managed block treats a missing feature (403) as unset. Applying this block without the feature fails. Requires an organization with the Enterprise plan. (see below for nested schema)
+	ReplicaAwareRouting *ReplicaAwareRoutingObservation `json:"replicaAwareRouting,omitempty" tf:"replica_aware_routing,omitempty"`
 
 	// (Attributes) Configuration of service snapshot settings. Snapshots are a beta feature that requires the snapshots feature enabled for your organization, a PPv2 tier, and the backups entitlement. When enabling snapshots, an ineligible organization is rejected at plan time (when the organization API reports eligibility); otherwise an ineligible organization can still fail at apply. When enabled, gap and time_frame must be supplied together as a supported preset: (gap 30, time_frame 1440) or (gap 60, time_frame 2880). (see below for nested schema)
 	SnapshotConfiguration *SnapshotConfigurationObservation `json:"snapshotConfiguration,omitempty" tf:"snapshot_configuration,omitempty"`
@@ -725,8 +766,8 @@ type ServiceParameters struct {
 	// +kubebuilder:validation:Optional
 	PasswordWoVersion *float64 `json:"passwordWoVersion,omitempty" tf:"password_wo_version,omitempty"`
 
-	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
-	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Can only be set at service creation time; changing it forces the service to be replaced. Use the 'available service profiles' OpenAPI endpoint to list the profiles available to your organization.
+	// standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Changing the profile updates the service in place: a BYOC profile change must keep 'min_replica_memory_gb' and 'max_replica_memory_gb' equal to the new profile's memory size, and a non-BYOC custom profile cannot be changed in the same apply as a memory change. Use the 'clickhouse_service_profiles' data source to list the profiles available to your organization.
+	// Custom instance profile for the service, only available for ENTERPRISE and BYOC organization tiers. BYOC services may use a dynamic BYOC profile configured for their infrastructure (e.g. 'v1-standard-byoc-4'); this requires 'byoc_id' to be set, and 'min_replica_memory_gb' and 'max_replica_memory_gb' must both equal the profile's per-replica memory size. Changing the profile updates the service in place: a BYOC profile change must keep 'min_replica_memory_gb' and 'max_replica_memory_gb' equal to the new profile's memory size, and a non-BYOC custom profile cannot be changed in the same apply as a memory change. Use the 'clickhouse_service_profiles' data source to list the profiles available to your organization.
 	// +kubebuilder:validation:Optional
 	Profile *string `json:"profile,omitempty" tf:"profile,omitempty"`
 
@@ -748,6 +789,10 @@ type ServiceParameters struct {
 	// Release channel to use for this service. Can be 'default', 'fast' or 'slow'.
 	// +kubebuilder:validation:Optional
 	ReleaseChannel *string `json:"releaseChannel,omitempty" tf:"release_channel,omitempty"`
+
+	// (Attributes) Configuration of replica aware routing for this service. Routes later connections from the same client to the same replica. Omit this block to leave the setting unmanaged. Refresh of a managed block treats a missing feature (403) as unset. Applying this block without the feature fails. Requires an organization with the Enterprise plan. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	ReplicaAwareRouting *ReplicaAwareRoutingParameters `json:"replicaAwareRouting,omitempty" tf:"replica_aware_routing,omitempty"`
 
 	// (Attributes) Configuration of service snapshot settings. Snapshots are a beta feature that requires the snapshots feature enabled for your organization, a PPv2 tier, and the backups entitlement. When enabling snapshots, an ineligible organization is rejected at plan time (when the organization API reports eligibility); otherwise an ineligible organization can still fail at apply. When enabled, gap and time_frame must be supplied together as a supported preset: (gap 30, time_frame 1440) or (gap 60, time_frame 2880). (see below for nested schema)
 	// +kubebuilder:validation:Optional

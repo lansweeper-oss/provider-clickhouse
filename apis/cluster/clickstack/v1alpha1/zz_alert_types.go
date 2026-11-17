@@ -22,7 +22,7 @@ type AlertInitParameters struct {
 	Channels []ChannelsInitParameters `json:"channels,omitempty" tf:"channels,omitempty"`
 
 	// level name, where and whereLanguage, which a tile config does not. Like dashboard_json, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list inline among its sources and has no chart config field, so it rejects the request. saved_search and tile alerts work on both.
-	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
+	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts (`configType = "promql"`) cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
 	ChartConfig *string `json:"chartConfig,omitempty" tf:"chart_config,omitempty"`
 
 	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
@@ -116,8 +116,8 @@ type AlertInitParameters struct {
 	// Comparison type: one of `above`, `below`, `above_exclusive`, `below_or_equal`, `equal`, `not_equal`, `between`, `not_between`.
 	ThresholdType *string `json:"thresholdType,omitempty" tf:"threshold_type,omitempty"`
 
-	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
-	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile, and not a PromQL tile: the API rejects an alert on a PromQL tile at apply time (the tile's config lives on the dashboard, so it cannot be checked at plan time). Changing this to a different known value forces replacement.
+	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile, and not a PromQL tile: the API rejects an alert on a PromQL tile at apply time (the tile's config lives on the dashboard, so it cannot be checked at plan time). Changing this to a different known value forces replacement.
 	TileID *string `json:"tileId,omitempty" tf:"tile_id,omitempty"`
 }
 
@@ -130,7 +130,7 @@ type AlertObservation struct {
 	Channels []ChannelsObservation `json:"channels,omitempty" tf:"channels,omitempty"`
 
 	// level name, where and whereLanguage, which a tile config does not. Like dashboard_json, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list inline among its sources and has no chart config field, so it rejects the request. saved_search and tile alerts work on both.
-	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
+	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts (`configType = "promql"`) cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
 	ChartConfig *string `json:"chartConfig,omitempty" tf:"chart_config,omitempty"`
 
 	// (String) ID of the dashboard that owns the tile. Required together with tile_id when source is tile: a tile lives inside its dashboard document, so it can only be looked up through the dashboard. Changing this forces replacement, including when the dashboard itself is replaced: the server deletes a dashboard's tile alerts along with it, so the alert cannot outlive the dashboard it points at.
@@ -205,8 +205,8 @@ type AlertObservation struct {
 	// Comparison type: one of `above`, `below`, `above_exclusive`, `below_or_equal`, `equal`, `not_equal`, `between`, `not_between`.
 	ThresholdType *string `json:"thresholdType,omitempty" tf:"threshold_type,omitempty"`
 
-	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
-	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile, and not a PromQL tile: the API rejects an alert on a PromQL tile at apply time (the tile's config lives on the dashboard, so it cannot be checked at plan time). Changing this to a different known value forces replacement.
+	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile, and not a PromQL tile: the API rejects an alert on a PromQL tile at apply time (the tile's config lives on the dashboard, so it cannot be checked at plan time). Changing this to a different known value forces replacement.
 	TileID *string `json:"tileId,omitempty" tf:"tile_id,omitempty"`
 }
 
@@ -221,7 +221,7 @@ type AlertParameters struct {
 	Channels []ChannelsParameters `json:"channels,omitempty" tf:"channels,omitempty"`
 
 	// level name, where and whereLanguage, which a tile config does not. Like dashboard_json, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list inline among its sources and has no chart config field, so it rejects the request. saved_search and tile alerts work on both.
-	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
+	// Chart config for a standalone alert, as a JSON string in the same v2 API dialect as a tile's `config` in `dashboard_json`. Use `jsonencode(...)` or `file(...)`. Required when `source` is `inline` and rejected for the other sources. Only `line`, `stacked_bar` and `number` display types can be alerted on, as builder configs or raw SQL (`configType = "sql"`); PromQL charts (`configType = "promql"`) cannot. A builder config also takes a chart-level `name`, `where` and `whereLanguage`, which a tile config does not. Like `dashboard_json`, this value is the sole source of truth: edits made to the alert's chart in the UI are not reported as drift. Self-hosted ClickStack only for now: the ClickHouse Cloud gateway's alert API does not list `inline` among its sources and has no chart config field, so it rejects the request. `saved_search` and `tile` alerts work on both.
 	// +kubebuilder:validation:Optional
 	ChartConfig *string `json:"chartConfig,omitempty" tf:"chart_config,omitempty"`
 
@@ -332,16 +332,28 @@ type AlertParameters struct {
 	// +kubebuilder:validation:Optional
 	ThresholdType *string `json:"thresholdType,omitempty" tf:"threshold_type,omitempty"`
 
-	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
-	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile. Changing this to a different known value forces replacement.
+	// assigned ID of the tile to alert on. Take it from the dashboard's tile_ids map by tile name; ids cannot be chosen in dashboard_json. Required together with dashboard_id when source is tile. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile, and not a PromQL tile: the API rejects an alert on a PromQL tile at apply time (the tile's config lives on the dashboard, so it cannot be checked at plan time). Changing this to a different known value forces replacement.
+	// Server-assigned ID of the tile to alert on. Take it from the dashboard's `tile_ids` map by tile name; ids cannot be chosen in `dashboard_json`. Required together with `dashboard_id` when `source` is `tile`. The alert has no query of its own: the server reads the tile's chart config from the dashboard on every evaluation. The tile must be a line, stacked bar, or number tile, and not a PromQL tile: the API rejects an alert on a PromQL tile at apply time (the tile's config lives on the dashboard, so it cannot be checked at plan time). Changing this to a different known value forces replacement.
 	// +kubebuilder:validation:Optional
 	TileID *string `json:"tileId,omitempty" tf:"tile_id,omitempty"`
 }
 
 type ChannelInitParameters struct {
 
-	// (String) Channel type. Currently only webhook is supported.
-	// Channel type. Currently only `webhook` is supported.
+	// (List of String) Email addresses to notify. Required when type is email.
+	// Email addresses to notify. Required when `type` is `email`.
+	EmailRecipients []*string `json:"emailRecipients,omitempty" tf:"email_recipients,omitempty"`
+
+	// (String) PagerDuty severity: one of critical, error, warning, info. Required when the webhook service is pagerduty_api.
+	// PagerDuty severity: one of `critical`, `error`, `warning`, `info`. Required when the webhook service is `pagerduty_api`.
+	Severity *string `json:"severity,omitempty" tf:"severity,omitempty"`
+
+	// (String) Slack channel ID to post to. Required when the webhook service is slack_api.
+	// Slack channel ID to post to. Required when the webhook service is `slack_api`.
+	SlackChannelID *string `json:"slackChannelId,omitempty" tf:"slack_channel_id,omitempty"`
+
+	// (String) Channel type: webhook or email.
+	// Channel type: `webhook` or `email`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
 	// (String) ID of the webhook to notify. Required when type is webhook.
@@ -356,23 +368,58 @@ type ChannelInitParameters struct {
 	// Selector for a Webhook in clickstack to populate webhookId.
 	// +kubebuilder:validation:Optional
 	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
+
+	// (String) Service of the webhook in webhook_id, such as slack_api or pagerduty_api. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check slack_channel_id and severity before apply.
+	// Service of the webhook in `webhook_id`, such as `slack_api` or `pagerduty_api`. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check `slack_channel_id` and `severity` before apply.
+	WebhookService *string `json:"webhookService,omitempty" tf:"webhook_service,omitempty"`
 }
 
 type ChannelObservation struct {
 
-	// (String) Channel type. Currently only webhook is supported.
-	// Channel type. Currently only `webhook` is supported.
+	// (List of String) Email addresses to notify. Required when type is email.
+	// Email addresses to notify. Required when `type` is `email`.
+	EmailRecipients []*string `json:"emailRecipients,omitempty" tf:"email_recipients,omitempty"`
+
+	// (String) PagerDuty severity: one of critical, error, warning, info. Required when the webhook service is pagerduty_api.
+	// PagerDuty severity: one of `critical`, `error`, `warning`, `info`. Required when the webhook service is `pagerduty_api`.
+	Severity *string `json:"severity,omitempty" tf:"severity,omitempty"`
+
+	// (String) Slack channel ID to post to. Required when the webhook service is slack_api.
+	// Slack channel ID to post to. Required when the webhook service is `slack_api`.
+	SlackChannelID *string `json:"slackChannelId,omitempty" tf:"slack_channel_id,omitempty"`
+
+	// (String) Channel type: webhook or email.
+	// Channel type: `webhook` or `email`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
 	// (String) ID of the webhook to notify. Required when type is webhook.
 	// ID of the webhook to notify. Required when `type` is `webhook`.
 	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+
+	// (String) Service of the webhook in webhook_id, such as slack_api or pagerduty_api. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check slack_channel_id and severity before apply.
+	// Service of the webhook in `webhook_id`, such as `slack_api` or `pagerduty_api`. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check `slack_channel_id` and `severity` before apply.
+	WebhookService *string `json:"webhookService,omitempty" tf:"webhook_service,omitempty"`
 }
 
 type ChannelParameters struct {
 
-	// (String) Channel type. Currently only webhook is supported.
-	// Channel type. Currently only `webhook` is supported.
+	// (List of String) Email addresses to notify. Required when type is email.
+	// Email addresses to notify. Required when `type` is `email`.
+	// +kubebuilder:validation:Optional
+	EmailRecipients []*string `json:"emailRecipients,omitempty" tf:"email_recipients,omitempty"`
+
+	// (String) PagerDuty severity: one of critical, error, warning, info. Required when the webhook service is pagerduty_api.
+	// PagerDuty severity: one of `critical`, `error`, `warning`, `info`. Required when the webhook service is `pagerduty_api`.
+	// +kubebuilder:validation:Optional
+	Severity *string `json:"severity,omitempty" tf:"severity,omitempty"`
+
+	// (String) Slack channel ID to post to. Required when the webhook service is slack_api.
+	// Slack channel ID to post to. Required when the webhook service is `slack_api`.
+	// +kubebuilder:validation:Optional
+	SlackChannelID *string `json:"slackChannelId,omitempty" tf:"slack_channel_id,omitempty"`
+
+	// (String) Channel type: webhook or email.
+	// Channel type: `webhook` or `email`.
 	// +kubebuilder:validation:Optional
 	Type *string `json:"type" tf:"type,omitempty"`
 
@@ -389,12 +436,29 @@ type ChannelParameters struct {
 	// Selector for a Webhook in clickstack to populate webhookId.
 	// +kubebuilder:validation:Optional
 	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
+
+	// (String) Service of the webhook in webhook_id, such as slack_api or pagerduty_api. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check slack_channel_id and severity before apply.
+	// Service of the webhook in `webhook_id`, such as `slack_api` or `pagerduty_api`. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check `slack_channel_id` and `severity` before apply.
+	// +kubebuilder:validation:Optional
+	WebhookService *string `json:"webhookService,omitempty" tf:"webhook_service,omitempty"`
 }
 
 type ChannelsInitParameters struct {
 
-	// (String) Channel type. Currently only webhook is supported.
-	// Channel type. Currently only `webhook` is supported.
+	// (List of String) Email addresses to notify. Required when type is email.
+	// Email addresses to notify. Required when `type` is `email`.
+	EmailRecipients []*string `json:"emailRecipients,omitempty" tf:"email_recipients,omitempty"`
+
+	// (String) PagerDuty severity: one of critical, error, warning, info. Required when the webhook service is pagerduty_api.
+	// PagerDuty severity: one of `critical`, `error`, `warning`, `info`. Required when the webhook service is `pagerduty_api`.
+	Severity *string `json:"severity,omitempty" tf:"severity,omitempty"`
+
+	// (String) Slack channel ID to post to. Required when the webhook service is slack_api.
+	// Slack channel ID to post to. Required when the webhook service is `slack_api`.
+	SlackChannelID *string `json:"slackChannelId,omitempty" tf:"slack_channel_id,omitempty"`
+
+	// (String) Channel type: webhook or email.
+	// Channel type: `webhook` or `email`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
 	// (String) ID of the webhook to notify. Required when type is webhook.
@@ -409,23 +473,58 @@ type ChannelsInitParameters struct {
 	// Selector for a Webhook in clickstack to populate webhookId.
 	// +kubebuilder:validation:Optional
 	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
+
+	// (String) Service of the webhook in webhook_id, such as slack_api or pagerduty_api. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check slack_channel_id and severity before apply.
+	// Service of the webhook in `webhook_id`, such as `slack_api` or `pagerduty_api`. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check `slack_channel_id` and `severity` before apply.
+	WebhookService *string `json:"webhookService,omitempty" tf:"webhook_service,omitempty"`
 }
 
 type ChannelsObservation struct {
 
-	// (String) Channel type. Currently only webhook is supported.
-	// Channel type. Currently only `webhook` is supported.
+	// (List of String) Email addresses to notify. Required when type is email.
+	// Email addresses to notify. Required when `type` is `email`.
+	EmailRecipients []*string `json:"emailRecipients,omitempty" tf:"email_recipients,omitempty"`
+
+	// (String) PagerDuty severity: one of critical, error, warning, info. Required when the webhook service is pagerduty_api.
+	// PagerDuty severity: one of `critical`, `error`, `warning`, `info`. Required when the webhook service is `pagerduty_api`.
+	Severity *string `json:"severity,omitempty" tf:"severity,omitempty"`
+
+	// (String) Slack channel ID to post to. Required when the webhook service is slack_api.
+	// Slack channel ID to post to. Required when the webhook service is `slack_api`.
+	SlackChannelID *string `json:"slackChannelId,omitempty" tf:"slack_channel_id,omitempty"`
+
+	// (String) Channel type: webhook or email.
+	// Channel type: `webhook` or `email`.
 	Type *string `json:"type,omitempty" tf:"type,omitempty"`
 
 	// (String) ID of the webhook to notify. Required when type is webhook.
 	// ID of the webhook to notify. Required when `type` is `webhook`.
 	WebhookID *string `json:"webhookId,omitempty" tf:"webhook_id,omitempty"`
+
+	// (String) Service of the webhook in webhook_id, such as slack_api or pagerduty_api. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check slack_channel_id and severity before apply.
+	// Service of the webhook in `webhook_id`, such as `slack_api` or `pagerduty_api`. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check `slack_channel_id` and `severity` before apply.
+	WebhookService *string `json:"webhookService,omitempty" tf:"webhook_service,omitempty"`
 }
 
 type ChannelsParameters struct {
 
-	// (String) Channel type. Currently only webhook is supported.
-	// Channel type. Currently only `webhook` is supported.
+	// (List of String) Email addresses to notify. Required when type is email.
+	// Email addresses to notify. Required when `type` is `email`.
+	// +kubebuilder:validation:Optional
+	EmailRecipients []*string `json:"emailRecipients,omitempty" tf:"email_recipients,omitempty"`
+
+	// (String) PagerDuty severity: one of critical, error, warning, info. Required when the webhook service is pagerduty_api.
+	// PagerDuty severity: one of `critical`, `error`, `warning`, `info`. Required when the webhook service is `pagerduty_api`.
+	// +kubebuilder:validation:Optional
+	Severity *string `json:"severity,omitempty" tf:"severity,omitempty"`
+
+	// (String) Slack channel ID to post to. Required when the webhook service is slack_api.
+	// Slack channel ID to post to. Required when the webhook service is `slack_api`.
+	// +kubebuilder:validation:Optional
+	SlackChannelID *string `json:"slackChannelId,omitempty" tf:"slack_channel_id,omitempty"`
+
+	// (String) Channel type: webhook or email.
+	// Channel type: `webhook` or `email`.
 	// +kubebuilder:validation:Optional
 	Type *string `json:"type" tf:"type,omitempty"`
 
@@ -442,6 +541,11 @@ type ChannelsParameters struct {
 	// Selector for a Webhook in clickstack to populate webhookId.
 	// +kubebuilder:validation:Optional
 	WebhookIDSelector *v2.Selector `json:"webhookIdSelector,omitempty" tf:"-"`
+
+	// (String) Service of the webhook in webhook_id, such as slack_api or pagerduty_api. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check slack_channel_id and severity before apply.
+	// Service of the webhook in `webhook_id`, such as `slack_api` or `pagerduty_api`. The server always sets it from the webhook, so a configured value must match it. Setting it lets the plan check `slack_channel_id` and `severity` before apply.
+	// +kubebuilder:validation:Optional
+	WebhookService *string `json:"webhookService,omitempty" tf:"webhook_service,omitempty"`
 }
 
 // AlertSpec defines the desired state of Alert
@@ -471,7 +575,7 @@ type AlertStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Alert is the Schema for the Alerts API. Manages a ClickStack alert that evaluates a saved search, a dashboard tile, or its own chart config on a schedule and notifies one or more channels when a threshold is crossed. Set source to saved_search (the default) with saved_search_id, to tile with dashboard_id and tile_id, or to inline with chart_config for a standalone alert that has no saved search or dashboard behind it. Tile ids are assigned by the server and cannot be set in dashboard_json; reference the tile through the dashboard's computed tile_ids map (tile_id = clickhouse_clickstack_dashboard.x.tile_ids["
+// Alert is the Schema for the Alerts API. Manages a ClickStack alert that evaluates a saved search, a dashboard tile, or its own chart config on a schedule and notifies one or more channels when a threshold is crossed. Set source to saved_search (the default) with saved_search_id, to tile with dashboard_id and tile_id, or to inline with chart_config for a standalone alert that has no saved search or dashboard behind it. Tile ids are assigned by the server and cannot be set in dashboard_json; reference the tile through the dashboard's computed tile_ids map (tile_id = clickhouse_clickstack_dashboard.x.tile_ids["<tile name>"]). Keep the tile's name unique and stable: a rename mints a new id and detaches the alert, and the plan fails with an invalid tile_ids index until the reference is updated. Only line, stacked bar, and number tiles can be alerted on. Import each alert separately by its own ID. Importing an inline alert fills in chart_config from the server, and fails with a clear error for the rare chart whose stored config uses query features the v2 API cannot express (filters, having, orderBy, limit), since importing it would drop them. Alerts are threshold-based (there is no anomaly mode). Configuration is validated at plan time; those rules mirror the ClickStack server contract on a best-effort basis, so a server-side rule change may make the plan-time checks slightly stale until a new provider release.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

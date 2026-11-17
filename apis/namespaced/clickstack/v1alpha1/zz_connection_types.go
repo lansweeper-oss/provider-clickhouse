@@ -15,25 +15,25 @@ import (
 
 type ConnectionInitParameters struct {
 
-	// (String) ClickHouse HTTP endpoint URL, e.g. https://clickhouse.example.com:8443.
-	// ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`.
+	// compatible API URL instead, e.g. http://prometheus:9090; put any Basic auth credentials in the URL (https://user:pass@prometheus.example.com). This attribute is not sensitive, so credentials in it appear in plan output unless host comes from a sensitive variable.
+	// ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`. When `is_prometheus_endpoint` is true, the Prometheus-compatible API URL instead, e.g. `http://prometheus:9090`; put any Basic auth credentials in the URL (`https://user:pass@prometheus.example.com`). This attribute is not sensitive, so credentials in it appear in plan output unless `host` comes from a sensitive variable.
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// specific ClickHouse settings. Must only contain alphanumeric characters and underscores.
 	// Prefix for HyperDX-specific ClickHouse settings. Must only contain alphanumeric characters and underscores.
 	HyperdxSettingPrefix *string `json:"hyperdxSettingPrefix,omitempty" tf:"hyperdx_setting_prefix,omitempty"`
 
+	// compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only promql sources. Defaults to false, where host is a ClickHouse HTTP endpoint.
+	// When true, `host` is a Prometheus-compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only `promql` sources. Defaults to false, where `host` is a ClickHouse HTTP endpoint.
+	IsPrometheusEndpoint *bool `json:"isPrometheusEndpoint,omitempty" tf:"is_prometheus_endpoint,omitempty"`
+
 	// (String) Display name for the connection.
 	// Display name for the connection.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// sends the configured password.
-	// ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password.
+	// sends the configured password. Ignored when is_prometheus_endpoint is true.
+	// ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password. Ignored when `is_prometheus_endpoint` is true.
 	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
-
-	// compatible API endpoint, e.g. http://prometheus:9090. When set, PromQL queries are proxied to this endpoint.
-	// Prometheus-compatible API endpoint, e.g. `http://prometheus:9090`. When set, PromQL queries are proxied to this endpoint.
-	PrometheusEndpoint *string `json:"prometheusEndpoint,omitempty" tf:"prometheus_endpoint,omitempty"`
 
 	// hdx-team header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
 	// Team ID to manage this connection under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
@@ -48,15 +48,15 @@ type ConnectionInitParameters struct {
 	// +kubebuilder:validation:Optional
 	TeamSelector *v2.NamespacedSelector `json:"teamSelector,omitempty" tf:"-"`
 
-	// (String) ClickHouse username.
-	// ClickHouse username.
+	// (String) ClickHouse username. Ignored when is_prometheus_endpoint is true; set it to "".
+	// ClickHouse username. Ignored when `is_prometheus_endpoint` is true; set it to `""`.
 	Username *string `json:"username,omitempty" tf:"username,omitempty"`
 }
 
 type ConnectionObservation struct {
 
-	// (String) ClickHouse HTTP endpoint URL, e.g. https://clickhouse.example.com:8443.
-	// ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`.
+	// compatible API URL instead, e.g. http://prometheus:9090; put any Basic auth credentials in the URL (https://user:pass@prometheus.example.com). This attribute is not sensitive, so credentials in it appear in plan output unless host comes from a sensitive variable.
+	// ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`. When `is_prometheus_endpoint` is true, the Prometheus-compatible API URL instead, e.g. `http://prometheus:9090`; put any Basic auth credentials in the URL (`https://user:pass@prometheus.example.com`). This attribute is not sensitive, so credentials in it appear in plan output unless `host` comes from a sensitive variable.
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// specific ClickHouse settings. Must only contain alphanumeric characters and underscores.
@@ -66,27 +66,27 @@ type ConnectionObservation struct {
 	// (String) Identifier of the connection.
 	ID *string `json:"id,omitempty" tf:"id,omitempty"`
 
+	// compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only promql sources. Defaults to false, where host is a ClickHouse HTTP endpoint.
+	// When true, `host` is a Prometheus-compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only `promql` sources. Defaults to false, where `host` is a ClickHouse HTTP endpoint.
+	IsPrometheusEndpoint *bool `json:"isPrometheusEndpoint,omitempty" tf:"is_prometheus_endpoint,omitempty"`
+
 	// (String) Display name for the connection.
 	// Display name for the connection.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
-
-	// compatible API endpoint, e.g. http://prometheus:9090. When set, PromQL queries are proxied to this endpoint.
-	// Prometheus-compatible API endpoint, e.g. `http://prometheus:9090`. When set, PromQL queries are proxied to this endpoint.
-	PrometheusEndpoint *string `json:"prometheusEndpoint,omitempty" tf:"prometheus_endpoint,omitempty"`
 
 	// hdx-team header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
 	// Team ID to manage this connection under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
 	Team *string `json:"team,omitempty" tf:"team,omitempty"`
 
-	// (String) ClickHouse username.
-	// ClickHouse username.
+	// (String) ClickHouse username. Ignored when is_prometheus_endpoint is true; set it to "".
+	// ClickHouse username. Ignored when `is_prometheus_endpoint` is true; set it to `""`.
 	Username *string `json:"username,omitempty" tf:"username,omitempty"`
 }
 
 type ConnectionParameters struct {
 
-	// (String) ClickHouse HTTP endpoint URL, e.g. https://clickhouse.example.com:8443.
-	// ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`.
+	// compatible API URL instead, e.g. http://prometheus:9090; put any Basic auth credentials in the URL (https://user:pass@prometheus.example.com). This attribute is not sensitive, so credentials in it appear in plan output unless host comes from a sensitive variable.
+	// ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`. When `is_prometheus_endpoint` is true, the Prometheus-compatible API URL instead, e.g. `http://prometheus:9090`; put any Basic auth credentials in the URL (`https://user:pass@prometheus.example.com`). This attribute is not sensitive, so credentials in it appear in plan output unless `host` comes from a sensitive variable.
 	// +kubebuilder:validation:Optional
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
@@ -95,20 +95,20 @@ type ConnectionParameters struct {
 	// +kubebuilder:validation:Optional
 	HyperdxSettingPrefix *string `json:"hyperdxSettingPrefix,omitempty" tf:"hyperdx_setting_prefix,omitempty"`
 
+	// compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only promql sources. Defaults to false, where host is a ClickHouse HTTP endpoint.
+	// When true, `host` is a Prometheus-compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only `promql` sources. Defaults to false, where `host` is a ClickHouse HTTP endpoint.
+	// +kubebuilder:validation:Optional
+	IsPrometheusEndpoint *bool `json:"isPrometheusEndpoint,omitempty" tf:"is_prometheus_endpoint,omitempty"`
+
 	// (String) Display name for the connection.
 	// Display name for the connection.
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// sends the configured password.
-	// ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password.
+	// sends the configured password. Ignored when is_prometheus_endpoint is true.
+	// ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password. Ignored when `is_prometheus_endpoint` is true.
 	// +kubebuilder:validation:Optional
 	PasswordSecretRef *v2.LocalSecretKeySelector `json:"passwordSecretRef,omitempty" tf:"-"`
-
-	// compatible API endpoint, e.g. http://prometheus:9090. When set, PromQL queries are proxied to this endpoint.
-	// Prometheus-compatible API endpoint, e.g. `http://prometheus:9090`. When set, PromQL queries are proxied to this endpoint.
-	// +kubebuilder:validation:Optional
-	PrometheusEndpoint *string `json:"prometheusEndpoint,omitempty" tf:"prometheus_endpoint,omitempty"`
 
 	// hdx-team header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
 	// Team ID to manage this connection under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
@@ -124,8 +124,8 @@ type ConnectionParameters struct {
 	// +kubebuilder:validation:Optional
 	TeamSelector *v2.NamespacedSelector `json:"teamSelector,omitempty" tf:"-"`
 
-	// (String) ClickHouse username.
-	// ClickHouse username.
+	// (String) ClickHouse username. Ignored when is_prometheus_endpoint is true; set it to "".
+	// ClickHouse username. Ignored when `is_prometheus_endpoint` is true; set it to `""`.
 	// +kubebuilder:validation:Optional
 	Username *string `json:"username,omitempty" tf:"username,omitempty"`
 }
@@ -157,7 +157,7 @@ type ConnectionStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Connection is the Schema for the Connections API. Manages a ClickHouse connection in ClickStack. Connections hold the credentials and endpoint used by sources to query ClickHouse. Note: on ClickHouse Cloud the connections endpoint is not exposed, and each service has a single connection to itself that the platform creates; this resource is for self-hosted ClickStack. To point a source at the Cloud connection, read its id from an existing source rather than creating one here.
+// Connection is the Schema for the Connections API. Manages a ClickHouse connection in ClickStack. Connections hold the credentials and endpoint used by sources to query ClickHouse, or a Prometheus-compatible API for PromQL sources. Note: on ClickHouse Cloud the connections endpoint is not exposed, and each service has a single connection to itself that the platform creates; this resource is for self-hosted ClickStack. To point a source at the Cloud connection, read its id from an existing source rather than creating one here.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

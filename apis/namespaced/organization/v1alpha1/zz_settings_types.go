@@ -65,7 +65,7 @@ type SettingsStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Settings is the Schema for the Settingss API. You can use the clickhouse_organization_settings resource to manage organization-level settings in ClickHouse Cloud. ~> Note: This resource manages settings for the organization configured in the provider. Only one instance of this resource should exist per organization. Example Usage
+// Settings is the Schema for the Settingss API. You can use the clickhouse_organization_settings resource to manage organization-level settings in ClickHouse Cloud. ~> Note: This resource manages settings for the organization configured in the provider. Only one instance of this resource should exist per organization.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

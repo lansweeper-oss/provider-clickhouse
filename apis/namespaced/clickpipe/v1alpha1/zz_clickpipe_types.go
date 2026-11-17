@@ -1380,6 +1380,10 @@ type MongodbSettingsParameters struct {
 
 type MongodbTableMappingsInitParameters struct {
 
+	// (Boolean) Persist the full document as it was right before it was deleted, instead of just its _id, when MongoDB delete events are ingested. Requires changeStreamPreAndPostImages to be enabled on the source collection. Has no effect on snapshot only pipes.
+	// Persist the full document as it was right before it was deleted, instead of just its `_id`, when MongoDB delete events are ingested. Requires `changeStreamPreAndPostImages` to be enabled on the source collection. Has no effect on `snapshot` only pipes.
+	PersistDeletedDocuments *bool `json:"persistDeletedDocuments,omitempty" tf:"persist_deleted_documents,omitempty"`
+
 	// (String) MongoDB source collection name.
 	// MongoDB source collection name.
 	SourceCollection *string `json:"sourceCollection,omitempty" tf:"source_collection,omitempty"`
@@ -1387,6 +1391,9 @@ type MongodbTableMappingsInitParameters struct {
 	// (String) MongoDB source database name.
 	// MongoDB source database name.
 	SourceDatabaseName *string `json:"sourceDatabaseName,omitempty" tf:"source_database_name,omitempty"`
+
+	// (Attributes) Replicate the collection into typed ClickHouse columns instead of a single JSON document column. Setting this block enables structured ingestion. When columns is omitted, they are inferred from a sample of the collection documents, however inference is not available for pipes using ssh_key_resource_id. Cannot be changed on an existing table mapping: remove the mapping and add it again instead. (see below for nested schema)
+	StructuredIngestion *StructuredIngestionInitParameters `json:"structuredIngestion,omitempty" tf:"structured_ingestion,omitempty"`
 
 	// (String) Table engine to use for the target table. (MergeTree, ReplacingMergeTree, Null)
 	// Table engine to use for the target table. (`MergeTree`, `ReplacingMergeTree`, `Null`)
@@ -1399,6 +1406,10 @@ type MongodbTableMappingsInitParameters struct {
 
 type MongodbTableMappingsObservation struct {
 
+	// (Boolean) Persist the full document as it was right before it was deleted, instead of just its _id, when MongoDB delete events are ingested. Requires changeStreamPreAndPostImages to be enabled on the source collection. Has no effect on snapshot only pipes.
+	// Persist the full document as it was right before it was deleted, instead of just its `_id`, when MongoDB delete events are ingested. Requires `changeStreamPreAndPostImages` to be enabled on the source collection. Has no effect on `snapshot` only pipes.
+	PersistDeletedDocuments *bool `json:"persistDeletedDocuments,omitempty" tf:"persist_deleted_documents,omitempty"`
+
 	// (String) MongoDB source collection name.
 	// MongoDB source collection name.
 	SourceCollection *string `json:"sourceCollection,omitempty" tf:"source_collection,omitempty"`
@@ -1406,6 +1417,9 @@ type MongodbTableMappingsObservation struct {
 	// (String) MongoDB source database name.
 	// MongoDB source database name.
 	SourceDatabaseName *string `json:"sourceDatabaseName,omitempty" tf:"source_database_name,omitempty"`
+
+	// (Attributes) Replicate the collection into typed ClickHouse columns instead of a single JSON document column. Setting this block enables structured ingestion. When columns is omitted, they are inferred from a sample of the collection documents, however inference is not available for pipes using ssh_key_resource_id. Cannot be changed on an existing table mapping: remove the mapping and add it again instead. (see below for nested schema)
+	StructuredIngestion *StructuredIngestionObservation `json:"structuredIngestion,omitempty" tf:"structured_ingestion,omitempty"`
 
 	// (String) Table engine to use for the target table. (MergeTree, ReplacingMergeTree, Null)
 	// Table engine to use for the target table. (`MergeTree`, `ReplacingMergeTree`, `Null`)
@@ -1418,6 +1432,11 @@ type MongodbTableMappingsObservation struct {
 
 type MongodbTableMappingsParameters struct {
 
+	// (Boolean) Persist the full document as it was right before it was deleted, instead of just its _id, when MongoDB delete events are ingested. Requires changeStreamPreAndPostImages to be enabled on the source collection. Has no effect on snapshot only pipes.
+	// Persist the full document as it was right before it was deleted, instead of just its `_id`, when MongoDB delete events are ingested. Requires `changeStreamPreAndPostImages` to be enabled on the source collection. Has no effect on `snapshot` only pipes.
+	// +kubebuilder:validation:Optional
+	PersistDeletedDocuments *bool `json:"persistDeletedDocuments,omitempty" tf:"persist_deleted_documents,omitempty"`
+
 	// (String) MongoDB source collection name.
 	// MongoDB source collection name.
 	// +kubebuilder:validation:Optional
@@ -1427,6 +1446,10 @@ type MongodbTableMappingsParameters struct {
 	// MongoDB source database name.
 	// +kubebuilder:validation:Optional
 	SourceDatabaseName *string `json:"sourceDatabaseName" tf:"source_database_name,omitempty"`
+
+	// (Attributes) Replicate the collection into typed ClickHouse columns instead of a single JSON document column. Setting this block enables structured ingestion. When columns is omitted, they are inferred from a sample of the collection documents, however inference is not available for pipes using ssh_key_resource_id. Cannot be changed on an existing table mapping: remove the mapping and add it again instead. (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	StructuredIngestion *StructuredIngestionParameters `json:"structuredIngestion,omitempty" tf:"structured_ingestion,omitempty"`
 
 	// (String) Table engine to use for the target table. (MergeTree, ReplacingMergeTree, Null)
 	// Table engine to use for the target table. (`MergeTree`, `ReplacingMergeTree`, `Null`)
@@ -1491,7 +1514,7 @@ type MySQLCredentialsParameters struct {
 type MySQLInitParameters struct {
 
 	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
-	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) PEM encoded CA certificates to validate the broker's certificate.
@@ -1505,8 +1528,8 @@ type MySQLInitParameters struct {
 	// Disable TLS for the MySQL connection.
 	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
 
-	// (String) The hostname of the MySQL instance.
-	// The hostname of the MySQL instance.
+	// (String) The hostname of the MySQL instance. For SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication, use the Cloud SQL instance connection name (project:region:instance).
+	// The hostname of the MySQL instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
@@ -1556,7 +1579,7 @@ type MySQLInitParameters struct {
 type MySQLObservation struct {
 
 	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
-	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) PEM encoded CA certificates to validate the broker's certificate.
@@ -1570,8 +1593,8 @@ type MySQLObservation struct {
 	// Disable TLS for the MySQL connection.
 	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
 
-	// (String) The hostname of the MySQL instance.
-	// The hostname of the MySQL instance.
+	// (String) The hostname of the MySQL instance. For SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication, use the Cloud SQL instance connection name (project:region:instance).
+	// The hostname of the MySQL instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
@@ -1612,7 +1635,7 @@ type MySQLObservation struct {
 type MySQLParameters struct {
 
 	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
-	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+	// Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -1623,15 +1646,15 @@ type MySQLParameters struct {
 
 	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
-	Credentials *MySQLCredentialsParameters `json:"credentials" tf:"credentials,omitempty"`
+	Credentials *MySQLCredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (Boolean) Disable TLS for the MongoDB connection. Defaults to false (TLS enabled).
 	// Disable TLS for the MySQL connection.
 	// +kubebuilder:validation:Optional
 	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
 
-	// (String) The hostname of the MySQL instance.
-	// The hostname of the MySQL instance.
+	// (String) The hostname of the MySQL instance. For SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication, use the Cloud SQL instance connection name (project:region:instance).
+	// The hostname of the MySQL instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
 	// +kubebuilder:validation:Optional
 	Host *string `json:"host" tf:"host,omitempty"`
 
@@ -1834,7 +1857,7 @@ type MySQLTableMappingsInitParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
@@ -1874,7 +1897,7 @@ type MySQLTableMappingsObservation struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
@@ -1915,7 +1938,7 @@ type MySQLTableMappingsParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
 	// +kubebuilder:validation:Optional
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
@@ -2276,7 +2299,7 @@ type PostgresCredentialsParameters struct {
 type PostgresInitParameters struct {
 
 	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
-	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) PEM encoded CA certificates to validate the broker's certificate.
@@ -2294,8 +2317,8 @@ type PostgresInitParameters struct {
 	// Disable TLS for the Postgres connection.
 	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
 
-	// (String) The hostname of the MySQL instance.
-	// The hostname of the Postgres instance.
+	// (String) The hostname of the MySQL instance. For SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication, use the Cloud SQL instance connection name (project:region:instance).
+	// The hostname of the Postgres instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
@@ -2341,7 +2364,7 @@ type PostgresInitParameters struct {
 type PostgresObservation struct {
 
 	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
-	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
 	// (String) PEM encoded CA certificates to validate the broker's certificate.
@@ -2359,8 +2382,8 @@ type PostgresObservation struct {
 	// Disable TLS for the Postgres connection.
 	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
 
-	// (String) The hostname of the MySQL instance.
-	// The hostname of the Postgres instance.
+	// (String) The hostname of the MySQL instance. For SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication, use the Cloud SQL instance connection name (project:region:instance).
+	// The hostname of the Postgres instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
 	Host *string `json:"host,omitempty" tf:"host,omitempty"`
 
 	// (String) The IAM role for the Kafka source. Use with IAM_ROLE authentication. It can be used with AWS ClickHouse service only. Read more at https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
@@ -2397,7 +2420,7 @@ type PostgresObservation struct {
 type PostgresParameters struct {
 
 	// (String) Authentication method for the BigQuery source. (SERVICE_ACCOUNT, SERVICE_ACCOUNT_WORKLOAD_IDENTITY). SERVICE_ACCOUNT_WORKLOAD_IDENTITY is in Private Preview.
-	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+	// Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
 	// +kubebuilder:validation:Optional
 	Authentication *string `json:"authentication,omitempty" tf:"authentication,omitempty"`
 
@@ -2408,7 +2431,7 @@ type PostgresParameters struct {
 
 	// (Attributes, Sensitive) The credentials for BigQuery access. Required with SERVICE_ACCOUNT authentication and must be omitted with SERVICE_ACCOUNT_WORKLOAD_IDENTITY. (see below for nested schema)
 	// +kubebuilder:validation:Optional
-	Credentials *PostgresCredentialsParameters `json:"credentials" tf:"credentials,omitempty"`
+	Credentials *PostgresCredentialsParameters `json:"credentials,omitempty" tf:"credentials,omitempty"`
 
 	// (String) The name of the ClickHouse database. Default is default.
 	// The database name of the Postgres instance.
@@ -2420,8 +2443,8 @@ type PostgresParameters struct {
 	// +kubebuilder:validation:Optional
 	DisableTLS *bool `json:"disableTls,omitempty" tf:"disable_tls,omitempty"`
 
-	// (String) The hostname of the MySQL instance.
-	// The hostname of the Postgres instance.
+	// (String) The hostname of the MySQL instance. For SERVICE_ACCOUNT_WORKLOAD_IDENTITY authentication, use the Cloud SQL instance connection name (project:region:instance).
+	// The hostname of the Postgres instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
 	// +kubebuilder:validation:Optional
 	Host *string `json:"host" tf:"host,omitempty"`
 
@@ -2632,7 +2655,7 @@ type PostgresTableMappingsInitParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
@@ -2672,7 +2695,7 @@ type PostgresTableMappingsObservation struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
 
@@ -2713,7 +2736,7 @@ type PostgresTableMappingsParameters struct {
 	// +listType=set
 	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
 
-	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping.
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
 	// ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it. Cannot be changed on an existing table mapping: remove the mapping in one apply, then re-add it with the new value in a subsequent apply (re-adding re-snapshots the table).
 	// +kubebuilder:validation:Optional
 	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
@@ -3299,6 +3322,115 @@ type SourceParameters struct {
 	// (Attributes) The GCP Pub/Sub source configuration for the ClickPipe. (see below for nested schema)
 	// +kubebuilder:validation:Optional
 	Pubsub *PubsubParameters `json:"pubsub,omitempty" tf:"pubsub,omitempty"`
+}
+
+type StructuredIngestionColumnsInitParameters struct {
+
+	// (String) The name of the ClickPipe.
+	// Top-level document field name.
+	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+
+	// (String) The type of the column.
+	// ClickHouse type the field is replicated as, e.g. `Float64` or `DateTime64(9)`. Must be a ClickHouse column type supported by structured ingestion.
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+}
+
+type StructuredIngestionColumnsObservation struct {
+
+	// (String) The name of the ClickPipe.
+	// Top-level document field name.
+	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+
+	// (String) The type of the column.
+	// ClickHouse type the field is replicated as, e.g. `Float64` or `DateTime64(9)`. Must be a ClickHouse column type supported by structured ingestion.
+	Type *string `json:"type,omitempty" tf:"type,omitempty"`
+}
+
+type StructuredIngestionColumnsParameters struct {
+
+	// (String) The name of the ClickPipe.
+	// Top-level document field name.
+	// +kubebuilder:validation:Optional
+	Name *string `json:"name" tf:"name,omitempty"`
+
+	// (String) The type of the column.
+	// ClickHouse type the field is replicated as, e.g. `Float64` or `DateTime64(9)`. Must be a ClickHouse column type supported by structured ingestion.
+	// +kubebuilder:validation:Optional
+	Type *string `json:"type" tf:"type,omitempty"`
+}
+
+type StructuredIngestionInitParameters struct {
+
+	// (Attributes List) The list of columns for the ClickHouse table. Required for all sources except Postgres CDC (where columns are determined from source tables). (see below for nested schema)
+	Columns []StructuredIngestionColumnsInitParameters `json:"columns,omitempty" tf:"columns,omitempty"`
+
+	// (Boolean) When true, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to false.
+	// When `true`, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to `false`.
+	DropUnexpectedValues *bool `json:"dropUnexpectedValues,omitempty" tf:"drop_unexpected_values,omitempty"`
+
+	// (Set of String) Columns to exclude from replication.
+	// Names of inferred columns to leave out of replication. Names that match no column are ignored. Must not overlap with `columns`. `_id` cannot be excluded.
+	// +listType=set
+	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
+	// ClickHouse `PARTITION BY` expression applied to the destination table when ClickPipes creates it, e.g. `toYYYYMM(created_at)`.
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
+
+	// (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
+	// Ordered list of column names to use as the sorting (`ORDER BY`) key. Each must be `_id` or one of the collection columns, and not excluded. Defaults to the `_id` document key.
+	SortingKeys []*string `json:"sortingKeys,omitempty" tf:"sorting_keys,omitempty"`
+}
+
+type StructuredIngestionObservation struct {
+
+	// (Attributes List) The list of columns for the ClickHouse table. Required for all sources except Postgres CDC (where columns are determined from source tables). (see below for nested schema)
+	Columns []StructuredIngestionColumnsObservation `json:"columns,omitempty" tf:"columns,omitempty"`
+
+	// (Boolean) When true, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to false.
+	// When `true`, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to `false`.
+	DropUnexpectedValues *bool `json:"dropUnexpectedValues,omitempty" tf:"drop_unexpected_values,omitempty"`
+
+	// (Set of String) Columns to exclude from replication.
+	// Names of inferred columns to leave out of replication. Names that match no column are ignored. Must not overlap with `columns`. `_id` cannot be excluded.
+	// +listType=set
+	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
+	// ClickHouse `PARTITION BY` expression applied to the destination table when ClickPipes creates it, e.g. `toYYYYMM(created_at)`.
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
+
+	// (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
+	// Ordered list of column names to use as the sorting (`ORDER BY`) key. Each must be `_id` or one of the collection columns, and not excluded. Defaults to the `_id` document key.
+	SortingKeys []*string `json:"sortingKeys,omitempty" tf:"sorting_keys,omitempty"`
+}
+
+type StructuredIngestionParameters struct {
+
+	// (Attributes List) The list of columns for the ClickHouse table. Required for all sources except Postgres CDC (where columns are determined from source tables). (see below for nested schema)
+	// +kubebuilder:validation:Optional
+	Columns []StructuredIngestionColumnsParameters `json:"columns,omitempty" tf:"columns,omitempty"`
+
+	// (Boolean) When true, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to false.
+	// When `true`, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to `false`.
+	// +kubebuilder:validation:Optional
+	DropUnexpectedValues *bool `json:"dropUnexpectedValues,omitempty" tf:"drop_unexpected_values,omitempty"`
+
+	// (Set of String) Columns to exclude from replication.
+	// Names of inferred columns to leave out of replication. Names that match no column are ignored. Must not overlap with `columns`. `_id` cannot be excluded.
+	// +kubebuilder:validation:Optional
+	// +listType=set
+	ExcludedColumns []*string `json:"excludedColumns,omitempty" tf:"excluded_columns,omitempty"`
+
+	// (String) ClickHouse PARTITION BY expression applied to the destination table when ClickPipes creates it, e.g. toYYYYMM(created_at).
+	// ClickHouse `PARTITION BY` expression applied to the destination table when ClickPipes creates it, e.g. `toYYYYMM(created_at)`.
+	// +kubebuilder:validation:Optional
+	PartitionByExpr *string `json:"partitionByExpr,omitempty" tf:"partition_by_expr,omitempty"`
+
+	// (List of String) Ordered list of columns to use as sorting key for the target table. Required when use_custom_sorting_key is true.
+	// Ordered list of column names to use as the sorting (`ORDER BY`) key. Each must be `_id` or one of the collection columns, and not excluded. Defaults to the `_id` document key.
+	// +kubebuilder:validation:Optional
+	SortingKeys []*string `json:"sortingKeys,omitempty" tf:"sorting_keys,omitempty"`
 }
 
 type TableDefinitionInitParameters struct {

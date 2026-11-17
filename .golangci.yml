@@ -108,6 +108,10 @@ linters:
       - linters:
           - gosec
         text: "G104:"
+      # Resource configuration reads better with Terraform names spelled out.
+      - linters:
+          - goconst
+        path: ^config/
     paths:
       - zz_\..+\.go$
       - third_party$

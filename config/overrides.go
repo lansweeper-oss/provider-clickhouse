@@ -168,6 +168,23 @@ func Configure(p *config.Provider) {
 		}
 	})
 
+	p.AddResourceConfigurator("clickhouse_service_clickhouse_settings", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+		r.ExternalName.GetExternalNameFn = getExternalNameFromServiceID()
+	})
+
+	p.AddResourceConfigurator("clickhouse_service_jwt_provider", func(r *config.Resource) {
+		r.References = config.References{
+			"service_id": {
+				TerraformName: "clickhouse_service",
+			},
+		}
+	})
+
 	p.AddResourceConfigurator("clickhouse_service_private_endpoints_attachment", func(r *config.Resource) {
 		r.References = config.References{
 			"service_id": {

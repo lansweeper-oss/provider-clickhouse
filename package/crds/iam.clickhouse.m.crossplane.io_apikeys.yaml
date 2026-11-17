@@ -41,7 +41,7 @@ spec:
           will have an empty key_secret. To assign RBAC roles (system or custom) to
           the key, use the clickhouse_role_assignment resource with api_key_ids. This
           resource does not manage roles directly: keys are created with no roles
-          assigned, and updates never touch role assignments. Example Usage'
+          assigned, and updates never touch role assignments.'
         properties:
           apiVersion:
             description: |-

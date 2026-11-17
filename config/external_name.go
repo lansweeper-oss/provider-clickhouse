@@ -53,6 +53,8 @@ var ExternalNameConfigs = map[string]config.ExternalName{
 	"clickhouse_role_assignment":                                        withSentinelWhenNotUUID(config.ParameterAsIdentifier("role_id")),
 	"clickhouse_role":                                                   withSentinelWhenNotUUID(config.IdentifierFromProvider),
 	"clickhouse_saved_query":                                            withSentinelWhenNotUUID(config.IdentifierFromProvider),
+	"clickhouse_service_clickhouse_settings":                            withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
+	"clickhouse_service_jwt_provider":                                   identifierFromParameter("name"),
 	"clickhouse_service_private_endpoints_attachment":                   withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 	"clickhouse_service_scheduled_scaling":                              withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),
 	"clickhouse_service_transparent_data_encryption_key_association":    withSentinelWhenNotUUID(config.ParameterAsIdentifier("service_id")),

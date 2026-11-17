@@ -13,6 +13,44 @@ import (
 	v2 "github.com/crossplane/crossplane/apis/v2/core/v2"
 )
 
+type DNSTargetsInitParameters struct {
+}
+
+type DNSTargetsObservation struct {
+
+	// (String) Unique identifier for the reverse private endpoint
+	// Target ID. For `RESOURCE_CONFIGURATION`, the resource configuration ID (`rcfg-...`); for a GROUP, the CHILD resource configuration ID. For `AVAILABILITY_ZONE`, the AWS availability zone ID, for example `use1-az1`.
+	ID *string `json:"id,omitempty" tf:"id,omitempty"`
+
+	// (String) Internal DNS name of the target.
+	// Internal DNS name of the target.
+	InternalDNSName *string `json:"internalDnsName,omitempty" tf:"internal_dns_name,omitempty"`
+
+	// (String) Target kind: RESOURCE_CONFIGURATION or AVAILABILITY_ZONE. New kinds may be added.
+	// Target kind: `RESOURCE_CONFIGURATION` or `AVAILABILITY_ZONE`. New kinds may be added.
+	Kind *string `json:"kind,omitempty" tf:"kind,omitempty"`
+}
+
+type DNSTargetsParameters struct {
+}
+
+type PrivateDNSMappingsInitParameters struct {
+}
+
+type PrivateDNSMappingsObservation struct {
+
+	// (String) Internal DNS name of the target.
+	// Internal DNS name the private DNS name resolves to.
+	InternalDNSName *string `json:"internalDnsName,omitempty" tf:"internal_dns_name,omitempty"`
+
+	// (String) Private DNS name.
+	// Private DNS name.
+	PrivateDNSName *string `json:"privateDnsName,omitempty" tf:"private_dns_name,omitempty"`
+}
+
+type PrivateDNSMappingsParameters struct {
+}
+
 type ReversePrivateEndpointInitParameters struct {
 
 	// (String) Description of the reverse private endpoint
@@ -67,6 +105,9 @@ type ReversePrivateEndpointObservation struct {
 	// Reverse private endpoint internal DNS names
 	DNSNames []*string `json:"dnsNames,omitempty" tf:"dns_names,omitempty"`
 
+	// region VPC_ENDPOINT_SERVICE endpoints report one AVAILABILITY_ZONE target per zonal endpoint DNS name. Other endpoint types, including cross-region VPC_ENDPOINT_SERVICE endpoints, report no targets. (see below for nested schema)
+	DNSTargets []DNSTargetsObservation `json:"dnsTargets,omitempty" tf:"dns_targets,omitempty"`
+
 	// (String) Description of the reverse private endpoint
 	// Description of the reverse private endpoint
 	Description *string `json:"description,omitempty" tf:"description,omitempty"`
@@ -89,6 +130,9 @@ type ReversePrivateEndpointObservation struct {
 	// (String) MSK cluster ARN, required for MSK_MULTI_VPC type
 	// MSK cluster ARN, required for MSK_MULTI_VPC type
 	MskClusterArn *string `json:"mskClusterArn,omitempty" tf:"msk_cluster_arn,omitempty"`
+
+	// (Attributes List) Private DNS names and the internal DNS names they resolve to, as reported by the reverse private endpoint. (see below for nested schema)
+	PrivateDNSMappings []PrivateDNSMappingsObservation `json:"privateDnsMappings,omitempty" tf:"private_dns_mappings,omitempty"`
 
 	// (List of String) Reverse private endpoint private DNS names
 	// Reverse private endpoint private DNS names
@@ -203,7 +247,7 @@ type ReversePrivateEndpointStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// ReversePrivateEndpoint is the Schema for the ReversePrivateEndpoints API. You can use the clickhouse_clickpipes_reverse_private_endpoint resource to create and manage reverse private endpoints for secure ClickPipes data source connections in ClickHouse Cloud. Supported endpoint types: VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, and GCP_PSC_SERVICE_ATTACHMENT. ~> Note: All fields on this resource are immutable after creation. Any change will force replacement (destroy and recreate). Use clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns to manage custom private DNS mappings for a reverse private endpoint.
+// ReversePrivateEndpoint is the Schema for the ReversePrivateEndpoints API. You can use the clickhouse_clickpipes_reverse_private_endpoint resource to create and manage reverse private endpoints for secure ClickPipes data source connections in ClickHouse Cloud. Supported endpoint types: VPC_ENDPOINT_SERVICE, VPC_RESOURCE, MSK_MULTI_VPC, and GCP_PSC_SERVICE_ATTACHMENT. ~> Note: All fields on this resource are immutable after creation. Any change will force replacement (destroy and recreate). Use clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns to manage custom private DNS mappings for a reverse private endpoint. dns_targets lists the DNS targets the endpoint reports, which custom private DNS mappings can reference by target_id: VPC_RESOURCE endpoints report one RESOURCE_CONFIGURATION entry per VPC resource configuration association. For a GROUP resource configuration, each entry's id is a CHILD resource configuration ID.Same-region VPC_ENDPOINT_SERVICE endpoints report one AVAILABILITY_ZONE entry per zonal endpoint DNS name. Each entry's id is an AWS availability zone ID, for example use1-az1. The regional DNS name is the default target and is not listed.Cross-region VPC_ENDPOINT_SERVICE endpoints and other endpoint types report no targets. Targets appear once the endpoint has provisioned them, so the list can be empty right after creation. New target kinds may be added.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

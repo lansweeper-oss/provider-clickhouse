@@ -18,6 +18,10 @@ type MappingInitParameters struct {
 	// (String) Custom private DNS name managed by ClickHouse Cloud.
 	// Custom private DNS name managed by ClickHouse Cloud.
 	PrivateDNSName *string `json:"privateDnsName,omitempty" tf:"private_dns_name,omitempty"`
+
+	// to a resource configuration ID. For a GROUP resource configuration, use the CHILD resource configuration ID, for example to give each database node its own hostname.
+	// ID of the DNS target this private DNS name resolves to, from the reverse private endpoint's `dns_targets`. For VPC_RESOURCE endpoints, use the resource configuration ID (`rcfg-...`); for a GROUP, use the CHILD resource configuration ID. For same-region VPC_ENDPOINT_SERVICE endpoints, use an AWS availability zone ID that the endpoint service offers, for example `use1-az1`; ClickHouse Cloud adds that zone to the endpoint if needed. Cross-region VPC_ENDPOINT_SERVICE endpoints and other endpoint types do not support `target_id`. If unset, the endpoint's default target is used.
+	TargetID *string `json:"targetId,omitempty" tf:"target_id,omitempty"`
 }
 
 type MappingObservation struct {
@@ -25,6 +29,10 @@ type MappingObservation struct {
 	// (String) Custom private DNS name managed by ClickHouse Cloud.
 	// Custom private DNS name managed by ClickHouse Cloud.
 	PrivateDNSName *string `json:"privateDnsName,omitempty" tf:"private_dns_name,omitempty"`
+
+	// to a resource configuration ID. For a GROUP resource configuration, use the CHILD resource configuration ID, for example to give each database node its own hostname.
+	// ID of the DNS target this private DNS name resolves to, from the reverse private endpoint's `dns_targets`. For VPC_RESOURCE endpoints, use the resource configuration ID (`rcfg-...`); for a GROUP, use the CHILD resource configuration ID. For same-region VPC_ENDPOINT_SERVICE endpoints, use an AWS availability zone ID that the endpoint service offers, for example `use1-az1`; ClickHouse Cloud adds that zone to the endpoint if needed. Cross-region VPC_ENDPOINT_SERVICE endpoints and other endpoint types do not support `target_id`. If unset, the endpoint's default target is used.
+	TargetID *string `json:"targetId,omitempty" tf:"target_id,omitempty"`
 }
 
 type MappingParameters struct {
@@ -33,6 +41,11 @@ type MappingParameters struct {
 	// Custom private DNS name managed by ClickHouse Cloud.
 	// +kubebuilder:validation:Optional
 	PrivateDNSName *string `json:"privateDnsName" tf:"private_dns_name,omitempty"`
+
+	// to a resource configuration ID. For a GROUP resource configuration, use the CHILD resource configuration ID, for example to give each database node its own hostname.
+	// ID of the DNS target this private DNS name resolves to, from the reverse private endpoint's `dns_targets`. For VPC_RESOURCE endpoints, use the resource configuration ID (`rcfg-...`); for a GROUP, use the CHILD resource configuration ID. For same-region VPC_ENDPOINT_SERVICE endpoints, use an AWS availability zone ID that the endpoint service offers, for example `use1-az1`; ClickHouse Cloud adds that zone to the endpoint if needed. Cross-region VPC_ENDPOINT_SERVICE endpoints and other endpoint types do not support `target_id`. If unset, the endpoint's default target is used.
+	// +kubebuilder:validation:Optional
+	TargetID *string `json:"targetId,omitempty" tf:"target_id,omitempty"`
 }
 
 type ReversePrivateEndpointCustomPrivateDNSInitParameters struct {
@@ -146,7 +159,7 @@ type ReversePrivateEndpointCustomPrivateDNSStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// ReversePrivateEndpointCustomPrivateDNS is the Schema for the ReversePrivateEndpointCustomPrivateDNSs API. Use the clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns resource to manage the full set of custom private DNS mappings for an existing ClickPipes reverse private endpoint. This resource updates only custom private DNS mappings. The mapping list is a full replacement list, and deleting this resource clears all custom private DNS mappings on the reverse private endpoint.
+// ReversePrivateEndpointCustomPrivateDNS is the Schema for the ReversePrivateEndpointCustomPrivateDNSs API. Use the clickhouse_clickpipes_reverse_private_endpoint_custom_private_dns resource to manage the full set of custom private DNS mappings for an existing ClickPipes reverse private endpoint. This resource updates only custom private DNS mappings. The mapping list is a full replacement list, and deleting this resource clears all custom private DNS mappings on the reverse private endpoint. By default, each private_dns_name resolves to the endpoint's default target. Set target_id to resolve the name to a specific target instead. The reverse private endpoint's dns_targets attribute shows which targets are reported. VPC_RESOURCE: set target_id to a resource configuration ID. For a GROUP resource configuration, use the CHILD resource configuration ID, for example to give each database node its own hostname.Same-region VPC_ENDPOINT_SERVICE: set target_id to an AWS availability zone ID that the endpoint service offers, for example use1-az1. Use this for providers that address nodes through per-zone hostnames, such as Confluent Cloud brokers. If the endpoint is not in that zone yet, ClickHouse Cloud adds it, and the mapping is served once the zone appears in dns_targets.Cross-region VPC_ENDPOINT_SERVICE endpoints and other endpoint types do not support target_id.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

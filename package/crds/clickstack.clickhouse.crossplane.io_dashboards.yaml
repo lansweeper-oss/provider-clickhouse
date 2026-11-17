@@ -38,14 +38,16 @@ spec:
           dashboard from a JSON document (the v2 API dashboard body: name, tiles,
           tags, filters, savedQuery, containers). The JSON is validated at plan time
           against the ClickStack API when the validate endpoint is available. PromQL
-          tiles are not supported by the API and cannot be managed here.g. edits in
-          the UI). Tile alerts are managed with clickhouse_clickstack_alert (source
-          = "tile"), which references this dashboard''s id and a tile id. Tile ids
-          are assigned by the server and cannot be set in dashboard_json (an authored
-          id is ignored on create and replaced on update unless the server already
-          has it). Position only decides ids among blank- or duplicate-named tiles.
-          Importing a dashboard does not import its tile alerts; import each alert
-          separately.'
+          tiles (configType = "promql") and PROMETHEUS_LABEL filters are supported;
+          both must reference a source of kind promql, a preview feature that must
+          be enabled on the ClickStack deployment. Alerts cannot be attached to PromQL
+          tiles.g. edits in the UI). Tile alerts are managed with clickhouse_clickstack_alert
+          (source = "tile"), which references this dashboard''s id and a tile id.
+          Tile ids are assigned by the server and cannot be set in dashboard_json
+          (an authored id is ignored on create and replaced on update unless the server
+          already has it). Position only decides ids among blank- or duplicate-named
+          tiles. Importing a dashboard does not import its tile alerts; import each
+          alert separately.'
         properties:
           apiVersion:
             description: |-

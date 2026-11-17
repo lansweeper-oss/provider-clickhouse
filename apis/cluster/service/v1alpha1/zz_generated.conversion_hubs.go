@@ -7,6 +7,12 @@
 package v1alpha1
 
 // Hub marks this type as a conversion hub.
+func (tr *ClickhouseSettings) Hub() {}
+
+// Hub marks this type as a conversion hub.
+func (tr *JwtProvider) Hub() {}
+
+// Hub marks this type as a conversion hub.
 func (tr *PrivateEndpointsAttachment) Hub() {}
 
 // Hub marks this type as a conversion hub.

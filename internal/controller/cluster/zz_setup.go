@@ -33,6 +33,8 @@ import (
 	apiendpoint "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/query/apiendpoint"
 	savedquery "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/query/savedquery"
 	assignment "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/role/assignment"
+	clickhousesettings "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/clickhousesettings"
+	jwtprovider "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/jwtprovider"
 	privateendpointsattachment "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/privateendpointsattachment"
 	scheduledscaling "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/scheduledscaling"
 	transparentdataencryptionkeyassociation "github.com/lansweeper-oss/provider-clickhouse/internal/controller/cluster/service/transparentdataencryptionkeyassociation"
@@ -69,6 +71,8 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		apiendpoint.Setup,
 		savedquery.Setup,
 		assignment.Setup,
+		clickhousesettings.Setup,
+		jwtprovider.Setup,
 		privateendpointsattachment.Setup,
 		scheduledscaling.Setup,
 		transparentdataencryptionkeyassociation.Setup,
@@ -111,6 +115,8 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		apiendpoint.SetupGated,
 		savedquery.SetupGated,
 		assignment.SetupGated,
+		clickhousesettings.SetupGated,
+		jwtprovider.SetupGated,
 		privateendpointsattachment.SetupGated,
 		scheduledscaling.SetupGated,
 		transparentdataencryptionkeyassociation.SetupGated,
@@ -152,6 +158,8 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		apiendpoint.SetupWebhookWithManager,
 		savedquery.SetupWebhookWithManager,
 		assignment.SetupWebhookWithManager,
+		clickhousesettings.SetupWebhookWithManager,
+		jwtprovider.SetupWebhookWithManager,
 		privateendpointsattachment.SetupWebhookWithManager,
 		scheduledscaling.SetupWebhookWithManager,
 		transparentdataencryptionkeyassociation.SetupWebhookWithManager,

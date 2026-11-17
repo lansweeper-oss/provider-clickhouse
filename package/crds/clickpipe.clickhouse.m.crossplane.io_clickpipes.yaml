@@ -1158,6 +1158,10 @@ spec:
                               schema)
                             items:
                               properties:
+                                persistDeletedDocuments:
+                                  description: |-
+                                    Persist the full document as it was right before it was deleted, instead of just its `_id`, when MongoDB delete events are ingested. Requires `changeStreamPreAndPostImages` to be enabled on the source collection. Has no effect on `snapshot` only pipes.
+                                  type: boolean
                                 sourceCollection:
                                   description: |-
                                     MongoDB source collection name.
@@ -1166,6 +1170,58 @@ spec:
                                   description: |-
                                     MongoDB source database name.
                                   type: string
+                                structuredIngestion:
+                                  description: '(Attributes) Replicate the collection
+                                    into typed ClickHouse columns instead of a single
+                                    JSON document column. Setting this block enables
+                                    structured ingestion. When columns is omitted,
+                                    they are inferred from a sample of the collection
+                                    documents, however inference is not available
+                                    for pipes using ssh_key_resource_id. Cannot be
+                                    changed on an existing table mapping: remove the
+                                    mapping and add it again instead. (see below for
+                                    nested schema)'
+                                  properties:
+                                    columns:
+                                      description: The list of columns
+                                        for the ClickHouse table. Required for all
+                                        sources except Postgres CDC (where columns
+                                        are determined from source tables). (see below
+                                        for nested schema)
+                                      items:
+                                        properties:
+                                          name:
+                                            description: |-
+                                              Top-level document field name.
+                                            type: string
+                                          type:
+                                            description: |-
+                                              ClickHouse type the field is replicated as, e.g. `Float64` or `DateTime64(9)`. Must be a ClickHouse column type supported by structured ingestion.
+                                            type: string
+                                        type: object
+                                      type: array
+                                    dropUnexpectedValues:
+                                      description: |-
+                                        When `true`, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to `false`.
+                                      type: boolean
+                                    excludedColumns:
+                                      description: |-
+                                        Names of inferred columns to leave out of replication. Names that match no column are ignored. Must not overlap with `columns`. `_id` cannot be excluded.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    partitionByExpr:
+                                      description: |-
+                                        ClickHouse `PARTITION BY` expression applied to the destination table when ClickPipes creates it, e.g. `toYYYYMM(created_at)`.
+                                      type: string
+                                    sortingKeys:
+                                      description: |-
+                                        Ordered list of column names to use as the sorting (`ORDER BY`) key. Each must be `_id` or one of the collection columns, and not excluded. Defaults to the `_id` document key.
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 tableEngine:
                                   description: |-
                                     Table engine to use for the target table. (`MergeTree`, `ReplacingMergeTree`, `Null`)
@@ -1191,7 +1247,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+                              Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -1253,7 +1309,7 @@ spec:
                             type: boolean
                           host:
                             description: |-
-                              The hostname of the MySQL instance.
+                              The hostname of the MySQL instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
                             type: string
                           iamRole:
                             description: |-
@@ -1585,7 +1641,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -1651,7 +1707,7 @@ spec:
                             type: boolean
                           host:
                             description: |-
-                              The hostname of the Postgres instance.
+                              The hostname of the Postgres instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
                             type: string
                           iamRole:
                             description: |-
@@ -3044,6 +3100,10 @@ spec:
                               schema)
                             items:
                               properties:
+                                persistDeletedDocuments:
+                                  description: |-
+                                    Persist the full document as it was right before it was deleted, instead of just its `_id`, when MongoDB delete events are ingested. Requires `changeStreamPreAndPostImages` to be enabled on the source collection. Has no effect on `snapshot` only pipes.
+                                  type: boolean
                                 sourceCollection:
                                   description: |-
                                     MongoDB source collection name.
@@ -3052,6 +3112,58 @@ spec:
                                   description: |-
                                     MongoDB source database name.
                                   type: string
+                                structuredIngestion:
+                                  description: '(Attributes) Replicate the collection
+                                    into typed ClickHouse columns instead of a single
+                                    JSON document column. Setting this block enables
+                                    structured ingestion. When columns is omitted,
+                                    they are inferred from a sample of the collection
+                                    documents, however inference is not available
+                                    for pipes using ssh_key_resource_id. Cannot be
+                                    changed on an existing table mapping: remove the
+                                    mapping and add it again instead. (see below for
+                                    nested schema)'
+                                  properties:
+                                    columns:
+                                      description: The list of columns
+                                        for the ClickHouse table. Required for all
+                                        sources except Postgres CDC (where columns
+                                        are determined from source tables). (see below
+                                        for nested schema)
+                                      items:
+                                        properties:
+                                          name:
+                                            description: |-
+                                              Top-level document field name.
+                                            type: string
+                                          type:
+                                            description: |-
+                                              ClickHouse type the field is replicated as, e.g. `Float64` or `DateTime64(9)`. Must be a ClickHouse column type supported by structured ingestion.
+                                            type: string
+                                        type: object
+                                      type: array
+                                    dropUnexpectedValues:
+                                      description: |-
+                                        When `true`, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to `false`.
+                                      type: boolean
+                                    excludedColumns:
+                                      description: |-
+                                        Names of inferred columns to leave out of replication. Names that match no column are ignored. Must not overlap with `columns`. `_id` cannot be excluded.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    partitionByExpr:
+                                      description: |-
+                                        ClickHouse `PARTITION BY` expression applied to the destination table when ClickPipes creates it, e.g. `toYYYYMM(created_at)`.
+                                      type: string
+                                    sortingKeys:
+                                      description: |-
+                                        Ordered list of column names to use as the sorting (`ORDER BY`) key. Each must be `_id` or one of the collection columns, and not excluded. Defaults to the `_id` document key.
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 tableEngine:
                                   description: |-
                                     Table engine to use for the target table. (`MergeTree`, `ReplacingMergeTree`, `Null`)
@@ -3077,7 +3189,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+                              Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -3141,7 +3253,7 @@ spec:
                             type: boolean
                           host:
                             description: |-
-                              The hostname of the MySQL instance.
+                              The hostname of the MySQL instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
                             type: string
                           iamRole:
                             description: |-
@@ -3473,7 +3585,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -3541,7 +3653,7 @@ spec:
                             type: boolean
                           host:
                             description: |-
-                              The hostname of the Postgres instance.
+                              The hostname of the Postgres instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
                             type: string
                           iamRole:
                             description: |-
@@ -4483,6 +4595,10 @@ spec:
                               schema)
                             items:
                               properties:
+                                persistDeletedDocuments:
+                                  description: |-
+                                    Persist the full document as it was right before it was deleted, instead of just its `_id`, when MongoDB delete events are ingested. Requires `changeStreamPreAndPostImages` to be enabled on the source collection. Has no effect on `snapshot` only pipes.
+                                  type: boolean
                                 sourceCollection:
                                   description: |-
                                     MongoDB source collection name.
@@ -4491,6 +4607,58 @@ spec:
                                   description: |-
                                     MongoDB source database name.
                                   type: string
+                                structuredIngestion:
+                                  description: '(Attributes) Replicate the collection
+                                    into typed ClickHouse columns instead of a single
+                                    JSON document column. Setting this block enables
+                                    structured ingestion. When columns is omitted,
+                                    they are inferred from a sample of the collection
+                                    documents, however inference is not available
+                                    for pipes using ssh_key_resource_id. Cannot be
+                                    changed on an existing table mapping: remove the
+                                    mapping and add it again instead. (see below for
+                                    nested schema)'
+                                  properties:
+                                    columns:
+                                      description: The list of columns
+                                        for the ClickHouse table. Required for all
+                                        sources except Postgres CDC (where columns
+                                        are determined from source tables). (see below
+                                        for nested schema)
+                                      items:
+                                        properties:
+                                          name:
+                                            description: |-
+                                              Top-level document field name.
+                                            type: string
+                                          type:
+                                            description: |-
+                                              ClickHouse type the field is replicated as, e.g. `Float64` or `DateTime64(9)`. Must be a ClickHouse column type supported by structured ingestion.
+                                            type: string
+                                        type: object
+                                      type: array
+                                    dropUnexpectedValues:
+                                      description: |-
+                                        When `true`, values that don't fit their inferred schema column are reported with only the field name and reason, without the value. Defaults to `false`.
+                                      type: boolean
+                                    excludedColumns:
+                                      description: |-
+                                        Names of inferred columns to leave out of replication. Names that match no column are ignored. Must not overlap with `columns`. `_id` cannot be excluded.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    partitionByExpr:
+                                      description: |-
+                                        ClickHouse `PARTITION BY` expression applied to the destination table when ClickPipes creates it, e.g. `toYYYYMM(created_at)`.
+                                      type: string
+                                    sortingKeys:
+                                      description: |-
+                                        Ordered list of column names to use as the sorting (`ORDER BY`) key. Each must be `_id` or one of the collection columns, and not excluded. Defaults to the `_id` document key.
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
                                 tableEngine:
                                   description: |-
                                     Table engine to use for the target table. (`MergeTree`, `ReplacingMergeTree`, `Null`)
@@ -4516,7 +4684,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+                              Authentication method for MySQL connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -4539,7 +4707,7 @@ spec:
                             type: boolean
                           host:
                             description: |-
-                              The hostname of the MySQL instance.
+                              The hostname of the MySQL instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
                             type: string
                           iamRole:
                             description: |-
@@ -4763,7 +4931,7 @@ spec:
                         properties:
                           authentication:
                             description: |-
-                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`. Default is `basic`.
+                              Authentication method for Postgres connection. Supported values: `basic`, `IAM_ROLE`, `SERVICE_ACCOUNT_WORKLOAD_IDENTITY`. Default is `basic`.
                             type: string
                           caCertificate:
                             description: |-
@@ -4790,7 +4958,7 @@ spec:
                             type: boolean
                           host:
                             description: |-
-                              The hostname of the Postgres instance.
+                              The hostname of the Postgres instance. For `SERVICE_ACCOUNT_WORKLOAD_IDENTITY` authentication, use the Cloud SQL instance connection name (`project:region:instance`).
                             type: string
                           iamRole:
                             description: |-

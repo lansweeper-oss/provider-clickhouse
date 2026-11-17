@@ -81,7 +81,7 @@ type AttachmentStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Attachment is the Schema for the Attachments API. You can use the clickhouse_udf_attachment resource to attach a UDF version to a ClickHouse Cloud service. A service can only have one version of a function attached at a time. version supports two ways to pick what gets attached: Pin a version: set version to a fixed number.Track the latest version: set version = clickhouse_udf.
+// Attachment is the Schema for the Attachments API. You can use the clickhouse_udf_attachment resource to attach a UDF version to a ClickHouse Cloud service. A service can only have one version of a function attached at a time. version supports two ways to pick what gets attached: Pin a version: set version to a fixed number.Track the latest version: set version = clickhouse_udf.<name>.version. Only ready versions can be attached. Attaching can take several minutes. Refresh or run plan to check whether the attachment completed before applying again.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

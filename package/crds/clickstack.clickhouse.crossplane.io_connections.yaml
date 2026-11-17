@@ -36,11 +36,12 @@ spec:
       openAPIV3Schema:
         description: 'Connection is the Schema for the Connections API. Manages a
           ClickHouse connection in ClickStack. Connections hold the credentials and
-          endpoint used by sources to query ClickHouse. Note: on ClickHouse Cloud
-          the connections endpoint is not exposed, and each service has a single connection
-          to itself that the platform creates; this resource is for self-hosted ClickStack.
-          To point a source at the Cloud connection, read its id from an existing
-          source rather than creating one here.'
+          endpoint used by sources to query ClickHouse, or a Prometheus-compatible
+          API for PromQL sources. Note: on ClickHouse Cloud the connections endpoint
+          is not exposed, and each service has a single connection to itself that
+          the platform creates; this resource is for self-hosted ClickStack. To point
+          a source at the Cloud connection, read its id from an existing source rather
+          than creating one here.'
         properties:
           apiVersion:
             description: |-
@@ -80,19 +81,23 @@ spec:
                 properties:
                   host:
                     description: |-
-                      ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`.
+                      ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`. When `is_prometheus_endpoint` is true, the Prometheus-compatible API URL instead, e.g. `http://prometheus:9090`; put any Basic auth credentials in the URL (`https://user:pass@prometheus.example.com`). This attribute is not sensitive, so credentials in it appear in plan output unless `host` comes from a sensitive variable.
                     type: string
                   hyperdxSettingPrefix:
                     description: |-
                       Prefix for HyperDX-specific ClickHouse settings. Must only contain alphanumeric characters and underscores.
                     type: string
+                  isPrometheusEndpoint:
+                    description: |-
+                      When true, `host` is a Prometheus-compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only `promql` sources. Defaults to false, where `host` is a ClickHouse HTTP endpoint.
+                    type: boolean
                   name:
                     description: |-
                       Display name for the connection.
                     type: string
                   passwordSecretRef:
                     description: |-
-                      ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password.
+                      ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password. Ignored when `is_prometheus_endpoint` is true.
                     properties:
                       key:
                         description: The key to select.
@@ -108,10 +113,6 @@ spec:
                     - name
                     - namespace
                     type: object
-                  prometheusEndpoint:
-                    description: |-
-                      Prometheus-compatible API endpoint, e.g. `http://prometheus:9090`. When set, PromQL queries are proxied to this endpoint.
-                    type: string
                   team:
                     description: |-
                       Team ID to manage this connection under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
@@ -192,7 +193,7 @@ spec:
                     type: object
                   username:
                     description: |-
-                      ClickHouse username.
+                      ClickHouse username. Ignored when `is_prometheus_endpoint` is true; set it to `""`.
                     type: string
                 type: object
               initProvider:
@@ -210,19 +211,23 @@ spec:
                 properties:
                   host:
                     description: |-
-                      ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`.
+                      ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`. When `is_prometheus_endpoint` is true, the Prometheus-compatible API URL instead, e.g. `http://prometheus:9090`; put any Basic auth credentials in the URL (`https://user:pass@prometheus.example.com`). This attribute is not sensitive, so credentials in it appear in plan output unless `host` comes from a sensitive variable.
                     type: string
                   hyperdxSettingPrefix:
                     description: |-
                       Prefix for HyperDX-specific ClickHouse settings. Must only contain alphanumeric characters and underscores.
                     type: string
+                  isPrometheusEndpoint:
+                    description: |-
+                      When true, `host` is a Prometheus-compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only `promql` sources. Defaults to false, where `host` is a ClickHouse HTTP endpoint.
+                    type: boolean
                   name:
                     description: |-
                       Display name for the connection.
                     type: string
                   passwordSecretRef:
                     description: |-
-                      ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password.
+                      ClickHouse password. The API never returns the password, so drift in this attribute cannot be detected. After import, the next apply re-sends the configured password. Ignored when `is_prometheus_endpoint` is true.
                     properties:
                       key:
                         description: The key to select.
@@ -238,10 +243,6 @@ spec:
                     - name
                     - namespace
                     type: object
-                  prometheusEndpoint:
-                    description: |-
-                      Prometheus-compatible API endpoint, e.g. `http://prometheus:9090`. When set, PromQL queries are proxied to this endpoint.
-                    type: string
                   team:
                     description: |-
                       Team ID to manage this connection under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments, which validate the API key's membership in the team; single-team (OSS) deployments ignore it. Changing this forces the connection to be replaced, since a connection ID is scoped to a single team.
@@ -322,7 +323,7 @@ spec:
                     type: object
                   username:
                     description: |-
-                      ClickHouse username.
+                      ClickHouse username. Ignored when `is_prometheus_endpoint` is true; set it to `""`.
                     type: string
                 type: object
               managementPolicies:
@@ -431,7 +432,7 @@ spec:
                 properties:
                   host:
                     description: |-
-                      ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`.
+                      ClickHouse HTTP endpoint URL, e.g. `https://clickhouse.example.com:8443`. When `is_prometheus_endpoint` is true, the Prometheus-compatible API URL instead, e.g. `http://prometheus:9090`; put any Basic auth credentials in the URL (`https://user:pass@prometheus.example.com`). This attribute is not sensitive, so credentials in it appear in plan output unless `host` comes from a sensitive variable.
                     type: string
                   hyperdxSettingPrefix:
                     description: |-
@@ -440,13 +441,13 @@ spec:
                   id:
                     description: Identifier of the connection.
                     type: string
+                  isPrometheusEndpoint:
+                    description: |-
+                      When true, `host` is a Prometheus-compatible API endpoint (e.g. Prometheus or Thanos) and PromQL sources on this connection proxy their queries to it. Such a connection serves only `promql` sources. Defaults to false, where `host` is a ClickHouse HTTP endpoint.
+                    type: boolean
                   name:
                     description: |-
                       Display name for the connection.
-                    type: string
-                  prometheusEndpoint:
-                    description: |-
-                      Prometheus-compatible API endpoint, e.g. `http://prometheus:9090`. When set, PromQL queries are proxied to this endpoint.
                     type: string
                   team:
                     description: |-
@@ -454,7 +455,7 @@ spec:
                     type: string
                   username:
                     description: |-
-                      ClickHouse username.
+                      ClickHouse username. Ignored when `is_prometheus_endpoint` is true; set it to `""`.
                     type: string
                 type: object
               conditions:

@@ -72,8 +72,12 @@ type ColumnsInitParameters struct {
 	Label *string `json:"label,omitempty" tf:"label,omitempty"`
 
 	// (String) Display name for the source.
-	// Column name to filter on.
+	// Column of the source table that selected filter values are matched against.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+
+	// values table (database_name.table_name) to produce this filter's options. Defaults to reading name from that table as a plain column.
+	// SQL expression evaluated against the filter-values table (`database_name`.`table_name`) to produce this filter's options. Defaults to reading `name` from that table as a plain column.
+	ValueExpression *string `json:"valueExpression,omitempty" tf:"value_expression,omitempty"`
 }
 
 type ColumnsObservation struct {
@@ -87,8 +91,12 @@ type ColumnsObservation struct {
 	Label *string `json:"label,omitempty" tf:"label,omitempty"`
 
 	// (String) Display name for the source.
-	// Column name to filter on.
+	// Column of the source table that selected filter values are matched against.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
+
+	// values table (database_name.table_name) to produce this filter's options. Defaults to reading name from that table as a plain column.
+	// SQL expression evaluated against the filter-values table (`database_name`.`table_name`) to produce this filter's options. Defaults to reading `name` from that table as a plain column.
+	ValueExpression *string `json:"valueExpression,omitempty" tf:"value_expression,omitempty"`
 }
 
 type ColumnsParameters struct {
@@ -104,9 +112,14 @@ type ColumnsParameters struct {
 	Label *string `json:"label,omitempty" tf:"label,omitempty"`
 
 	// (String) Display name for the source.
-	// Column name to filter on.
+	// Column of the source table that selected filter values are matched against.
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name" tf:"name,omitempty"`
+
+	// values table (database_name.table_name) to produce this filter's options. Defaults to reading name from that table as a plain column.
+	// SQL expression evaluated against the filter-values table (`database_name`.`table_name`) to produce this filter's options. Defaults to reading `name` from that table as a plain column.
+	// +kubebuilder:validation:Optional
+	ValueExpression *string `json:"valueExpression,omitempty" tf:"value_expression,omitempty"`
 }
 
 type FilterSettingsInitParameters struct {
@@ -114,11 +127,11 @@ type FilterSettingsInitParameters struct {
 	// (Attributes List) Columns that must be filtered on every query against this source. (see below for nested schema)
 	Columns []ColumnsInitParameters `json:"columns,omitempty" tf:"columns,omitempty"`
 
-	// (String) ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
 	// Database of the dictionary table backing the filter values.
 	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// endpoint connection, but must still be non-empty (e.g. default).
 	// Dictionary table backing the filter values.
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 }
@@ -128,11 +141,11 @@ type FilterSettingsObservation struct {
 	// (Attributes List) Columns that must be filtered on every query against this source. (see below for nested schema)
 	Columns []ColumnsObservation `json:"columns,omitempty" tf:"columns,omitempty"`
 
-	// (String) ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
 	// Database of the dictionary table backing the filter values.
 	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// endpoint connection, but must still be non-empty (e.g. default).
 	// Dictionary table backing the filter values.
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 }
@@ -143,12 +156,12 @@ type FilterSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	Columns []ColumnsParameters `json:"columns" tf:"columns,omitempty"`
 
-	// (String) ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
 	// Database of the dictionary table backing the filter values.
 	// +kubebuilder:validation:Optional
 	DatabaseName *string `json:"databaseName" tf:"database_name,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// endpoint connection, but must still be non-empty (e.g. default).
 	// Dictionary table backing the filter values.
 	// +kubebuilder:validation:Optional
 	TableName *string `json:"tableName" tf:"table_name,omitempty"`
@@ -156,35 +169,35 @@ type FilterSettingsParameters struct {
 
 type FromInitParameters struct {
 
-	// (String) ClickHouse database name.
-	// ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
+	// ClickHouse database name. Unused for `promql` on a Prometheus-endpoint connection, but must still be non-empty.
 	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
-	// ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+	// endpoint connection, but must still be non-empty (e.g. default).
+	// ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`). For `promql`, the TimeSeries table; unused on a Prometheus-endpoint connection, but must still be non-empty (e.g. `default`).
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 }
 
 type FromObservation struct {
 
-	// (String) ClickHouse database name.
-	// ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
+	// ClickHouse database name. Unused for `promql` on a Prometheus-endpoint connection, but must still be non-empty.
 	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
-	// ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+	// endpoint connection, but must still be non-empty (e.g. default).
+	// ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`). For `promql`, the TimeSeries table; unused on a Prometheus-endpoint connection, but must still be non-empty (e.g. `default`).
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 }
 
 type FromParameters struct {
 
-	// (String) ClickHouse database name.
-	// ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
+	// ClickHouse database name. Unused for `promql` on a Prometheus-endpoint connection, but must still be non-empty.
 	// +kubebuilder:validation:Optional
 	DatabaseName *string `json:"databaseName" tf:"database_name,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
-	// ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`).
+	// endpoint connection, but must still be non-empty (e.g. default).
+	// ClickHouse table name. Required for all kinds except `metric` (which locates tables via `metric_tables`). For `promql`, the TimeSeries table; unused on a Prometheus-endpoint connection, but must still be non-empty (e.g. `default`).
 	// +kubebuilder:validation:Optional
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 }
@@ -290,7 +303,7 @@ type MaterializedViewsInitParameters struct {
 	// aggregated by the materialized view. (see below for nested schema)
 	AggregatedColumns []AggregatedColumnsInitParameters `json:"aggregatedColumns,omitempty" tf:"aggregated_columns,omitempty"`
 
-	// (String) ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
 	// Materialized view database name.
 	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
 
@@ -306,7 +319,7 @@ type MaterializedViewsInitParameters struct {
 	// Timestamp granularity in short form (e.g. `5m`, `15s`, `1h`, `1d`).
 	MinGranularity *string `json:"minGranularity,omitempty" tf:"min_granularity,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// endpoint connection, but must still be non-empty (e.g. default).
 	// Materialized view table name.
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 
@@ -320,7 +333,7 @@ type MaterializedViewsObservation struct {
 	// aggregated by the materialized view. (see below for nested schema)
 	AggregatedColumns []AggregatedColumnsObservation `json:"aggregatedColumns,omitempty" tf:"aggregated_columns,omitempty"`
 
-	// (String) ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
 	// Materialized view database name.
 	DatabaseName *string `json:"databaseName,omitempty" tf:"database_name,omitempty"`
 
@@ -336,7 +349,7 @@ type MaterializedViewsObservation struct {
 	// Timestamp granularity in short form (e.g. `5m`, `15s`, `1h`, `1d`).
 	MinGranularity *string `json:"minGranularity,omitempty" tf:"min_granularity,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// endpoint connection, but must still be non-empty (e.g. default).
 	// Materialized view table name.
 	TableName *string `json:"tableName,omitempty" tf:"table_name,omitempty"`
 
@@ -351,7 +364,7 @@ type MaterializedViewsParameters struct {
 	// +kubebuilder:validation:Optional
 	AggregatedColumns []AggregatedColumnsParameters `json:"aggregatedColumns" tf:"aggregated_columns,omitempty"`
 
-	// (String) ClickHouse database name.
+	// endpoint connection, but must still be non-empty.
 	// Materialized view database name.
 	// +kubebuilder:validation:Optional
 	DatabaseName *string `json:"databaseName" tf:"database_name,omitempty"`
@@ -371,7 +384,7 @@ type MaterializedViewsParameters struct {
 	// +kubebuilder:validation:Optional
 	MinGranularity *string `json:"minGranularity" tf:"min_granularity,omitempty"`
 
-	// (String) ClickHouse table name. Required for all kinds except metric (which locates tables via metric_tables).
+	// endpoint connection, but must still be non-empty (e.g. default).
 	// Materialized view table name.
 	// +kubebuilder:validation:Optional
 	TableName *string `json:"tableName" tf:"table_name,omitempty"`
@@ -545,8 +558,8 @@ type SourceInitParameters struct {
 	// Expression to extract the log message body (log).
 	BodyExpression *string `json:"bodyExpression,omitempty" tf:"body_expression,omitempty"`
 
-	// (String) ID of the ClickHouse connection used by this source.
-	// ID of the ClickHouse connection used by this source.
+	// endpoint connection (is_prometheus_endpoint = true).
+	// ID of the ClickHouse connection used by this source. For `promql`, this can also be a Prometheus-endpoint connection (`is_prometheus_endpoint = true`).
 	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Connection
 	ConnectionID *string `json:"connectionId,omitempty" tf:"connection_id,omitempty"`
 
@@ -641,6 +654,10 @@ type SourceInitParameters struct {
 	// (Attributes) Mapping of metric data types to table names (metric). At least one must be set. (see below for nested schema)
 	MetricTables *MetricTablesInitParameters `json:"metricTables,omitempty" tf:"metric_tables,omitempty"`
 
+	// (String) Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as 1 minute or 30 second, not 1m (unlike materialized_views.min_granularity). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for $__rate_interval. Applies to metric and promql only.
+	// Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as `1 minute` or `30 second`, not `1m` (unlike `materialized_views.min_granularity`). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for `$__rate_interval`. Applies to `metric` and `promql` only.
+	MinAutoGranularity *string `json:"minAutoGranularity,omitempty" tf:"min_auto_granularity,omitempty"`
+
 	// (String) Display name for the source.
 	// Display name for the source.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
@@ -726,8 +743,8 @@ type SourceInitParameters struct {
 	// +kubebuilder:validation:Optional
 	TeamSelector *v2.Selector `json:"teamSelector,omitempty" tf:"-"`
 
-	// (String) DateTime column or expression that is part of the table's primary key.
-	// DateTime column or expression that is part of the table's primary key.
+	// (String) DateTime column or expression that is part of the table's primary key. Required by the API but unused for promql, where any value works (e.g. timestamp).
+	// DateTime column or expression that is part of the table's primary key. Required by the API but unused for `promql`, where any value works (e.g. `timestamp`).
 	TimestampValueExpression *string `json:"timestampValueExpression,omitempty" tf:"timestamp_value_expression,omitempty"`
 
 	// (String) Expression to extract the trace ID.
@@ -758,8 +775,8 @@ type SourceObservation struct {
 	// Expression to extract the log message body (log).
 	BodyExpression *string `json:"bodyExpression,omitempty" tf:"body_expression,omitempty"`
 
-	// (String) ID of the ClickHouse connection used by this source.
-	// ID of the ClickHouse connection used by this source.
+	// endpoint connection (is_prometheus_endpoint = true).
+	// ID of the ClickHouse connection used by this source. For `promql`, this can also be a Prometheus-endpoint connection (`is_prometheus_endpoint = true`).
 	ConnectionID *string `json:"connectionId,omitempty" tf:"connection_id,omitempty"`
 
 	// (String) Default columns selected in search results. Required for log and trace.
@@ -830,6 +847,10 @@ type SourceObservation struct {
 	// (Attributes) Mapping of metric data types to table names (metric). At least one must be set. (see below for nested schema)
 	MetricTables *MetricTablesObservation `json:"metricTables,omitempty" tf:"metric_tables,omitempty"`
 
+	// (String) Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as 1 minute or 30 second, not 1m (unlike materialized_views.min_granularity). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for $__rate_interval. Applies to metric and promql only.
+	// Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as `1 minute` or `30 second`, not `1m` (unlike `materialized_views.min_granularity`). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for `$__rate_interval`. Applies to `metric` and `promql` only.
+	MinAutoGranularity *string `json:"minAutoGranularity,omitempty" tf:"min_auto_granularity,omitempty"`
+
 	// (String) Display name for the source.
 	// Display name for the source.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
@@ -897,8 +918,8 @@ type SourceObservation struct {
 	// Team ID to manage this source under, sent as the `x-hdx-team` header. Defaults to the API key's team. Only honored by multi-team (EE) deployments. Changing this forces the source to be replaced.
 	Team *string `json:"team,omitempty" tf:"team,omitempty"`
 
-	// (String) DateTime column or expression that is part of the table's primary key.
-	// DateTime column or expression that is part of the table's primary key.
+	// (String) DateTime column or expression that is part of the table's primary key. Required by the API but unused for promql, where any value works (e.g. timestamp).
+	// DateTime column or expression that is part of the table's primary key. Required by the API but unused for `promql`, where any value works (e.g. `timestamp`).
 	TimestampValueExpression *string `json:"timestampValueExpression,omitempty" tf:"timestamp_value_expression,omitempty"`
 
 	// (String) Expression to extract the trace ID.
@@ -921,8 +942,8 @@ type SourceParameters struct {
 	// +kubebuilder:validation:Optional
 	BodyExpression *string `json:"bodyExpression,omitempty" tf:"body_expression,omitempty"`
 
-	// (String) ID of the ClickHouse connection used by this source.
-	// ID of the ClickHouse connection used by this source.
+	// endpoint connection (is_prometheus_endpoint = true).
+	// ID of the ClickHouse connection used by this source. For `promql`, this can also be a Prometheus-endpoint connection (`is_prometheus_endpoint = true`).
 	// +crossplane:generate:reference:type=github.com/lansweeper-oss/provider-clickhouse/apis/cluster/clickstack/v1alpha1.Connection
 	// +kubebuilder:validation:Optional
 	ConnectionID *string `json:"connectionId,omitempty" tf:"connection_id,omitempty"`
@@ -1036,6 +1057,11 @@ type SourceParameters struct {
 	// +kubebuilder:validation:Optional
 	MetricTables *MetricTablesParameters `json:"metricTables,omitempty" tf:"metric_tables,omitempty"`
 
+	// (String) Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as 1 minute or 30 second, not 1m (unlike materialized_views.min_granularity). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for $__rate_interval. Applies to metric and promql only.
+	// Floor for "auto" chart granularity, so short time ranges don't pick buckets smaller than the scrape interval. Long form such as `1 minute` or `30 second`, not `1m` (unlike `materialized_views.min_granularity`). Granularities set explicitly on a tile are never overridden. PromQL sources also use it as the scrape interval for `$__rate_interval`. Applies to `metric` and `promql` only.
+	// +kubebuilder:validation:Optional
+	MinAutoGranularity *string `json:"minAutoGranularity,omitempty" tf:"min_auto_granularity,omitempty"`
+
 	// (String) Display name for the source.
 	// Display name for the source.
 	// +kubebuilder:validation:Optional
@@ -1138,8 +1164,8 @@ type SourceParameters struct {
 	// +kubebuilder:validation:Optional
 	TeamSelector *v2.Selector `json:"teamSelector,omitempty" tf:"-"`
 
-	// (String) DateTime column or expression that is part of the table's primary key.
-	// DateTime column or expression that is part of the table's primary key.
+	// (String) DateTime column or expression that is part of the table's primary key. Required by the API but unused for promql, where any value works (e.g. timestamp).
+	// DateTime column or expression that is part of the table's primary key. Required by the API but unused for `promql`, where any value works (e.g. `timestamp`).
 	// +kubebuilder:validation:Optional
 	TimestampValueExpression *string `json:"timestampValueExpression,omitempty" tf:"timestamp_value_expression,omitempty"`
 
@@ -1195,7 +1221,7 @@ type SourceStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Source is the Schema for the Sources API. Manages a ClickStack source (v2 sources API). A source ties a ClickHouse connection to a table and describes how to read one kind of data (log, trace, metric, session, or promql). The set of applicable fields depends on kind; the API validates per-kind requirements and returns an error at apply time if a required field for the chosen kind is missing.
+// Source is the Schema for the Sources API. Manages a ClickStack source (v2 sources API). A source ties a ClickHouse connection to a table and describes how to read one kind of data (log, trace, metric, session, or promql). The set of applicable fields depends on kind; the API validates per-kind requirements and returns an error at apply time if a required field for the chosen kind is missing. PromQL sources (kind = "promql") are a preview feature and must be enabled on the ClickStack deployment (ENABLE_PROMQL=true); otherwise create and update fail with "PromQL is not enabled on this deployment". They use only name, kind, connection_id, from, timestamp_value_expression, section, disabled, query_settings and min_auto_granularity. The API drops any other attribute for this kind, which fails apply with an inconsistent-result error.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

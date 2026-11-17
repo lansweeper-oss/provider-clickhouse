@@ -206,7 +206,7 @@ type RoleStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Role is the Schema for the Roles API. You can use the clickhouse_role resource to manage custom RBAC roles in ClickHouse Cloud. Example Usage
+// Role is the Schema for the Roles API. You can use the clickhouse_role resource to manage custom RBAC roles in ClickHouse Cloud. For custom SQL console access, set grants instead of role: Permission reconciliation The provider only tracks the permissions you declare in configuration. The backend may auto-grant additional permissions as a side effect of a declared one (for example, granting control-plane:service:manage may also grant a related permission). Those extra permissions are intentionally not recorded in state. A permission you declared that the backend actually removed is still detected as drift and re-added on the next apply.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

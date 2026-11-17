@@ -17,3 +17,44 @@ spec:
     serviceIdSelector:
       matchLabels:
         testing.upbound.io/example-name: example
+
+---
+
+apiVersion: clickpipes.clickhouse.m.crossplane.io/v1alpha1
+kind: ReversePrivateEndpoint
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipes/v1alpha1/reverseprivateendpointcustomprivatedns
+  labels:
+    testing.upbound.io/example-name: confluent
+  name: confluent
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Confluent Cloud PrivateLink
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    type: VPC_ENDPOINT_SERVICE
+    vpcEndpointServiceName: ${confluent_network.aws.aws[0].private_link_endpoint_service}
+
+---
+
+apiVersion: clickpipes.clickhouse.m.crossplane.io/v1alpha1
+kind: ReversePrivateEndpoint
+metadata:
+  annotations:
+    meta.upbound.io/example-id: clickpipes/v1alpha1/reverseprivateendpointcustomprivatedns
+  labels:
+    testing.upbound.io/example-name: mongo
+  name: mongo
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: MongoDB GROUP reverse private endpoint
+    serviceIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    type: VPC_RESOURCE
+    vpcResourceConfigurationId: ${aws_vpclattice_resource_configuration.mongo.id}
+    vpcResourceShareArn: ${aws_ram_resource_share.mongo.arn}

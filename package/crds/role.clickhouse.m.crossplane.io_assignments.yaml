@@ -41,7 +41,7 @@ spec:
           Only one clickhouse_role_assignment per role is needed. ~> Note: On delete,
           all actors are removed from the role. To look up the ID of a system role
           by name, use the clickhouse_role data source. To look up a user ID by email,
-          use the clickhouse_user data source. Example Usage'
+          use the clickhouse_user data source.'
         properties:
           apiVersion:
             description: |-

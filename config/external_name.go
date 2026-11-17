@@ -132,14 +132,15 @@ func identifierFromParameterOrAnnotation(param string) config.ExternalName {
 	return e
 }
 
-// withSentinelWhenNotUUID wraps an ExternalName so GetIDFn returns sentinelUUID
-// whenever the parent would return a value that is not a canonical UUID.
-// Covers empty (IdentifierFromProvider pre-create) and k8s metadata.name
-// fallback (Crossplane default when external-name annotation is unset).
+// withSentinelWhenNotUUID is withSentinel with the default sentinelUUID.
 func withSentinelWhenNotUUID(base config.ExternalName) config.ExternalName {
 	return withSentinel(base, sentinelUUID)
 }
 
+// withSentinel wraps an ExternalName so GetIDFn returns sentinel whenever the
+// parent would return a value that is not a canonical UUID.
+// Covers empty (IdentifierFromProvider pre-create) and k8s metadata.name
+// fallback (Crossplane default when external-name annotation is unset).
 func withSentinel(base config.ExternalName, sentinel string) config.ExternalName {
 	parentGetID := base.GetIDFn
 	base.GetIDFn = func(ctx context.Context, externalName string, parameters map[string]any, setup map[string]any) (string, error) {

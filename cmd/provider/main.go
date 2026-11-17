@@ -313,7 +313,7 @@ func newDiffServer(log logging.Logger) (*diffserver.Server, *runtime.Scheme, err
 	s := diffserver.NewServer(
 		diffserver.WithProviderConfigurations(clusterProvider, config.GetProviderNamespaced()),
 		diffserver.WithLogger(log),
-		diffserver.WithTerraformSetupFn(clients.OfflineTerraformSetupBuilder(clusterProvider.TerraformPluginFrameworkProvider)),
+		diffserver.WithTerraformSetupFn(clients.OfflineTerraformSetupBuilder(clusterProvider.TerraformPluginFrameworkProvider, log)),
 	)
 	return s, scheme, nil
 }

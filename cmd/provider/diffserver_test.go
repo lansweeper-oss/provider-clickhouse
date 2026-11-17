@@ -93,8 +93,8 @@ spec:
     team: team-b
     defaultUserRoleId: role-a
 `
-	// coreDumpsEnabled is set: without it, upstream's ModifyPlan reads the
-	// current value from the API and panics on the missing client.
+	// coreDumpsEnabled is unset, so upstream's ModifyPlan reads the current
+	// value from the API, with no client to read it from.
 	orgSettings = `
 apiVersion: organization.clickhouse.crossplane.io/v1alpha1
 kind: Settings
@@ -103,8 +103,7 @@ metadata:
 spec:
   providerConfigRef:
     name: missing
-  forProvider:
-    coreDumpsEnabled: true
+  forProvider: {}
 `
 )
 
@@ -171,9 +170,6 @@ func TestDiffServerPlan(t *testing.T) {
 		"ClusterOrgSettingsCreate": {
 			desired: orgSettings,
 			action:  diffv1alpha1.Action_ACTION_CREATE,
-			changes: map[string]string{
-				"spec.forProvider.coreDumpsEnabled": "<unset> -> true",
-			},
 		},
 	}
 	for name, tc := range cases {

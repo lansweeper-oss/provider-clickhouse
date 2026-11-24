@@ -32,6 +32,7 @@ func GetProvider() *ujconfig.Provider {
 		ujconfig.WithDefaultResourceOptions(
 			ExternalNameConfigurations(),
 			gvkOverride(),
+			addExternalTags(),
 		))
 
 	Configure(pc)
@@ -52,6 +53,7 @@ func GetProviderNamespaced() *ujconfig.Provider {
 		ujconfig.WithDefaultResourceOptions(
 			ExternalNameConfigurations(),
 			gvkOverride(),
+			addExternalTags(),
 		),
 		ujconfig.WithExampleManifestConfiguration(ujconfig.ExampleManifestConfiguration{
 			ManagedResourceNamespace: "crossplane-system",

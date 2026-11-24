@@ -33,6 +33,20 @@ func gvkOverride() config.ResourceOption {
 	}
 }
 
+// addExternalTags registers upjet's tagger for resources whose tags field is a map,
+// so they carry the crossplane-* tags defined in upjet.
+// Resources with tags as a list (ClickStack Alert, SavedSearch) are left out: the tagger writes a map.
+func addExternalTags() config.ResourceOption {
+	return func(r *config.Resource) {
+		if r.TerraformResource == nil {
+			return
+		}
+		if s, ok := r.TerraformResource.Schema["tags"]; ok && s.Type == sdkschema.TypeMap {
+			r.InitializerFns = append(r.InitializerFns, config.TagInitializer)
+		}
+	}
+}
+
 func Configure(p *config.Provider) {
 	p.AddResourceConfigurator("clickhouse_clickpipe", func(r *config.Resource) {
 		// Upjet only supports primitive types (string, *string, …) as sensitive.

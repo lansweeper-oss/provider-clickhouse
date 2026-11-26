@@ -18,13 +18,13 @@ func TestPasswordGeneratorManagementPolicies(t *testing.T) {
 		policies  xpv2.ManagementPolicies
 		wantWrite bool
 	}{
-		"ObserveOnly":            {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve}},
-		"ObserveLateInitialize":  {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionLateInitialize}},
-		"ObserveDelete":          {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionDelete}},
-		"All":                    {policies: xpv2.ManagementPolicies{xpv2.ManagementActionAll}, wantWrite: true},
-		"ObserveCreate":          {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionCreate}, wantWrite: true},
-		"ObserveUpdate":          {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionUpdate}, wantWrite: true},
-		"EmptyCountsAsFullyMgmt": {policies: nil, wantWrite: true},
+		"ObserveOnly":              {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve}},
+		"ObserveLateInitialize":    {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionLateInitialize}},
+		"ObserveDelete":            {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionDelete}},
+		"All":                      {policies: xpv2.ManagementPolicies{xpv2.ManagementActionAll}, wantWrite: true},
+		"ObserveCreate":            {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionCreate}, wantWrite: true},
+		"ObserveUpdate":            {policies: xpv2.ManagementPolicies{xpv2.ManagementActionObserve, xpv2.ManagementActionUpdate}, wantWrite: true},
+		"EmptyMeansFullManagement": {policies: nil, wantWrite: true},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {

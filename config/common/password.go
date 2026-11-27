@@ -13,6 +13,7 @@ import (
 	"github.com/crossplane/upjet/v2/pkg/config"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
@@ -33,12 +34,16 @@ type NamespacedPasswordSecretRefSetter interface {
 }
 
 // PasswordGenerator returns a NewInitializerFn:
+//   - Observe-only: if management policies allow neither Create nor Update, no-op.
 //   - BYOP: if byopSecretRefPath is already set, no-op.
 //   - Auto-generate: if writeConnectionSecretPath is set, generate a password,
 //     write it to that secret under "password", and point passwordSecretRef at it.
 func PasswordGenerator(byopSecretRefPath, writeConnectionSecretPath string) config.NewInitializerFn {
 	return func(cl client.Client) managed.Initializer {
 		return managed.InitializerFn(func(ctx context.Context, mg xpresource.Managed) error {
+			if !canWriteExternal(mg.GetManagementPolicies()) {
+				return nil
+			}
 			paved, err := fieldpath.PaveObject(mg)
 			if err != nil {
 				return fmt.Errorf("cannot pave object: %w", err)
@@ -57,6 +62,16 @@ func PasswordGenerator(byopSecretRefPath, writeConnectionSecretPath string) conf
 			return reconcilePassword(ctx, cl, mg, name, ns)
 		})
 	}
+}
+
+// canWriteExternal reports whether the policies let the provider send a password to ClickHouse Cloud.
+// Initializers run for every policy, before Observe; a password generated for an Observe-only
+// resource never reaches the service, so the secret would hold a value the service rejects.
+// Empty policies mean the CRD default ("*") was not applied, so they count as full management.
+func canWriteExternal(p xpv2.ManagementPolicies) bool {
+	return len(p) == 0 || sets.New(p...).HasAny(
+		xpv2.ManagementActionAll, xpv2.ManagementActionCreate, xpv2.ManagementActionUpdate,
+	)
 }
 
 func checkBYOP(paved *fieldpath.Paved, path string) (bool, error) {
